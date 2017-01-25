@@ -1,0 +1,81 @@
+div.dialog{
+    border: 0px solid #333;
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius:1px;
+    min-height:500px;
+    max-height:520px;
+    padding-top: 25px;
+    overflow: auto;
+}
+
+ul.dialog{
+    padding: 0px;
+    margin: 0px;
+    list-style-type: none;
+}
+
+div.message{
+    padding: 5px 15px 5px 15px;
+    border-radius: 6px;
+    vertical-align:bottom;
+}
+
+div.message p{
+    padding: 2px 5px 2px 20px;
+    font-size: 16px;
+    margin: 7px 0px 7px 0px;
+}
+
+div.message h5{
+    margin: 0px 0px 5px 0px;
+    font-weight:700;
+}
+
+div.message h6{
+    margin: 7px 0px 0px 0px;
+    font-weight:100;
+}
+
+div.message-to h6{
+    text-align: right;
+}
+
+div.message-to{
+    margin: 10px;
+    margin-left:35%;
+    background-color: rgba(174, 177, 234, 0.4);
+}
+
+div.message-from{
+    margin: 10px;
+    margin-right:35%;
+    background-color: rgba(181, 247, 222, 0.4);
+}
+
+div.message-error{
+    margin: 10px 15% 10px 15%;
+    background-color: rgba(247, 81, 71, 0.54);
+    //border: 2px solid rgb(247, 81, 71);
+}
+
+div.dialog div.message-input{
+    margin-top:20px;
+    padding: 0px;
+}
+
+textarea.dialog {
+    margin: 0px;
+    width:100%;
+    height:60px;
+    resize: none;
+}
+
+
+
+li.dialog-list{
+    border: 1px solid black;
+    width: 100%;
+    margin: 15px 0px 5px 0px;
+    padding: 20px 10px 20px 10px;
+}
