@@ -53,6 +53,25 @@ class Message extends Model
         return $messages;
     }
 
+    static function getOldMessageInstances(int $user_id, int $dialog_id, int $last_message_id, int $limit = null){
+
+        $query = MessageReferenceRecord::find()->where(['user_id' => $user_id, 'dialog_id' => $dialog_id])->andWhere(["<", "message_id", $last_message_id])->orderBy(['id' => "SORT_DESC"]);
+
+        $offset = $query->count() - $limit;
+
+        if ( !empty( $limit) ){
+            $query =  $query -> offset($offset) -> limit($limit) ;
+        }
+
+        $message_reference_records = $query -> all();
+        $messages = [];
+
+        foreach ($message_reference_records as $record){
+            $messages[] = static::getMessageInstance($record->message_id);
+        }
+
+        return $messages;
+    }
 
     public function save(){
         $this->message_record->save();

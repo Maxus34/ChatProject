@@ -80,8 +80,8 @@ class Dialog extends Model
         return Message::getMessagesInstances($this->user_id, $this->getId(), $offset, $limit);
     }
 
-    public function getOldMessages(int $last_message_id){
-
+    public function getOldMessages(int $last_message_id, int $limit = null){
+        return Message::getOldMessageInstances($this->user_id, $this->getId(), $last_message_id, $limit);
     }
 
     public function getMessagesCount($new = false){

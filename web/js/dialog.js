@@ -73,34 +73,42 @@ var Dialog = (function () {
     }
 
     function loadOldMessages(){
-        if (loadMoreMessages.isLoading == undefined){
-            loadMoreMessages.isLoading = false;
+        if (loadOldMessages.isLoading == undefined){
+            loadOldMessages.isLoading = false;
+            loadOldMessages.canLoadMore = true;
         }
-        if (loadMoreMessages.isLoading) {
-            console.log('messages are loading...');
+        if (loadOldMessages.isLoading || !loadOldMessages.canLoadMore) {
             return 0;
         }
-        loadMoreMessages.isLoading = true;
 
-        let firstMessage = dialogBlock.firstElementChild;
+        loadOldMessages.isLoading = true;
+
+        let firstMessage = dialogList.firstElementChild;
         let date = firstMessage.getAttribute('data-creation-date');
+        let lst_m_id = firstMessage.getAttribute('data-id');
         let dialog_id = $('#send_message').data('dialog_id');
+
         $.ajax({
-            url: "/dialog/load-more-messages",
+            url: "load-old-messages",
             data: {
                 dialog_id: dialog_id,
                 creation_date: date,
+                last_message_id: lst_m_id
             },
             type: "POST",
             success: function (res) {
+                if (res === ""){
+                    loadOldMessages.canLoadMore = false;
+                    dialogList.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + dialogList.innerHTML;
+                }
                 let scrollBottom = dialogBlock.scrollHeight - dialogBlock.scrollTop;
-                dialogBlock.innerHTML = res + dialogBlock.innerHTML;
+                dialogList.innerHTML = res + dialogList.innerHTML;
                 dialogBlock.scrollTop = dialogBlock.scrollHeight - scrollBottom;
-                loadMoreMessages.isLoading = false;
+                loadOldMessages.isLoading = false;
             },
             error: function (err) {
-                console.log("loadMoreMessages ERROR");
-                loadMoreMessages.isLoading = false;
+                console.log("loadOldMessages ERROR");
+                loadOldMessages.isLoading = false;
             }
         });
     }

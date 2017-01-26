@@ -10,6 +10,7 @@ namespace app\modules\chat\controllers;
 
 
 use app\modules\chat\models\Dialog;
+use yii\base\Exception;
 use yii\data\ArrayDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -17,7 +18,7 @@ use yii\filters\VerbFilter;
 class DefaultController extends \yii\web\Controller
 {
     const DIALOGS_PER_PAGE = 10;
-    const MESSAGES_PER_PAGE = 20;
+    const MESSAGES_PER_PAGE = 10;
 
     public function behaviors()
     {
@@ -63,9 +64,30 @@ class DefaultController extends \yii\web\Controller
         return $this->render('_message', ['message' => $message]);
     }
 
-    public function actionLoadOldMessages($last_message_id){
+    public function actionLoadOldMessages()
+    {
+        $dialog_id = \Yii::$app->request->post('dialog_id');
+        $last_message_id = \Yii::$app->request->post('last_message_id');
 
+        try {
+            $dialog = Dialog::getDialogInstance($dialog_id);
+        } catch (Exception $e) {
+
+        }
+
+        $messages = $dialog->getOldMessages($last_message_id, static::MESSAGES_PER_PAGE);
+
+        $messages_html = "";
+        foreach ($messages as $message) {
+            ob_start();
+            include(__DIR__ . '/../views/default/' . '_message.php');
+            $messages_html .= ob_get_clean();
+        }
+
+
+        return $messages_html;
     }
+
 
     public function actionLoadNewMessages($last_message_id){
 

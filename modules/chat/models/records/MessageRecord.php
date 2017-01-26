@@ -21,7 +21,8 @@ class MessageRecord extends ActiveRecord
     }
 
 
-    static function tableName(){
+    static function tableName()
+    {
         return 'message';
     }
 
