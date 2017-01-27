@@ -14,6 +14,7 @@ use yii\base\Exception;
 use yii\data\ArrayDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
+use yii\helpers\Json;
 
 class DefaultController extends \yii\web\Controller
 {
@@ -32,12 +33,6 @@ class DefaultController extends \yii\web\Controller
                     ],
                 ]
             ],
-            'verb' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-
-                ]
-            ]
         ];
     }
 
@@ -48,7 +43,13 @@ class DefaultController extends \yii\web\Controller
     }
 
     public function  actionView ($id){
-        $dialog = Dialog::getDialogInstance($id);
+        try{
+            $dialog = Dialog::getDialogInstance($id);
+        } catch (Exception $e){
+            \Yii::$app->session->setFlash('error', "You doesn't belong to this dialog or dialog does not exists");
+            return $this->redirect('index');
+        }
+
         $messages = $dialog->getMessages(-10, static::MESSAGES_PER_PAGE);
         return $this->render('dialog', compact('dialog', 'messages'));
     }
@@ -72,10 +73,14 @@ class DefaultController extends \yii\web\Controller
         try {
             $dialog = Dialog::getDialogInstance($dialog_id);
         } catch (Exception $e) {
-
+            return "error";
         }
 
-        $messages = $dialog->getOldMessages($last_message_id, static::MESSAGES_PER_PAGE);
+        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "message_id", $last_message_id]]);
+
+        if(empty($messages)){
+            return "no_more";
+        }
 
         $messages_html = "";
         foreach ($messages as $message) {
@@ -84,13 +89,68 @@ class DefaultController extends \yii\web\Controller
             $messages_html .= ob_get_clean();
         }
 
+        return $messages_html;
+    }
+
+    public function actionLoadNewMessages(){
+        $dialog_id = \Yii::$app->request->post('dialog_id');
+        $last_message_id = \Yii::$app->request->post('last_message_id');
+
+        try {
+            $dialog = Dialog::getDialogInstance($dialog_id);
+        } catch (Exception $e) {
+            return "error";
+        }
+
+        $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["=", "is_author", 0]]);
+        //$messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id]]);
+
+        if(empty($messages)){
+            return "empty";
+        }
+
+        $messages_html = "";
+        foreach ($messages as $message) {
+            ob_start();
+            include(__DIR__ . '/../views/default/' . '_message.php');
+            $messages_html .= ob_get_clean();
+        }
 
         return $messages_html;
     }
 
+    public function actionAjax(){
+        $json_string = \Yii::$app->request->post('json_string');
+        $j_object = Json::decode($json_string);
+        $request_arr = [];
 
-    public function actionLoadNewMessages($last_message_id){
+        if (isset($j_object['load_old_messages'])){
+            $request_arr['old_messages'] = $this->loadOldMessagesAjax($j_object);
+        }
 
+        return Json::encode($request_arr);
+    }
+
+    private function loadOldMessagesAjax($j_object){
+        $dialog_id =  $j_object['load_old_messages']['dialog-id'];
+        $last_message_id =  $j_object['load_old_messages']['first_message-id'];
+
+        try {
+            $dialog = Dialog::getDialogInstance($dialog_id);
+        } catch (Exception $e) {
+            return "error";
+        }
+
+        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "message_id", $last_message_id]]);
+
+        $messages_html = "";
+        foreach ($messages as $message) {
+            ob_start();
+            include(__DIR__ . '/../views/default/' . '_message.php');
+            $messages_html .= ob_get_clean();
+        }
+
+        return $messages_html;
     }
 
     private function  wrapIntoDataProvider ($data){

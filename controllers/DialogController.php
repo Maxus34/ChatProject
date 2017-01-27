@@ -19,7 +19,7 @@ use Yii;
 
 class DialogController extends Controller
 {
-    const MESSAGES_PER_PAGE = 15;
+    const MESSAGES_PER_PAGE = 10s;
 
     public function behaviors()
     {

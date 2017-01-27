@@ -4,11 +4,12 @@ $this->title = "Dialog";
 ?>
 <div class="col-md-8 col-md-offset-2">
     <div>
-        <span class="text-left">Dialog #<?= $dialog->getId() ?> |
+        <button type="button" class="btn-info btn-xs" onclick="history.back()">Назад</button>
+        <span class="text-left">&nbsp;&nbsp;&nbsp;Dialog #<?= $dialog->getId() ?> &nbsp;|&nbsp;
         <b>Users</b>: <?php foreach ($dialog->getUsers() as $user) echo " " . $user->username ?></span>
 
-        <div class="btn-group">
-            <button data-toggle="dropdown" class="btn btn-sm dropdown-toggle"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></button>
+        <div class="btn-group pull-right">
+            <button data-toggle="dropdown" class="three-dots dropdown-toggle"><i class="fa fa-ellipsis-h" aria-hidden="true" style="text-size: 15px;"></i></button>
             <ul class="dropdown-menu">
                 <li><a href="#">Добавить собеседника</a></li>
                 <li><a href="#">Что то еще ...</a></li>
@@ -16,7 +17,9 @@ $this->title = "Dialog";
             </ul>
         </div>
     </div>
+</div>
 
+<div class="col-md-8 col-md-offset-2">
     <div class="dialog" id="dialog_block">
         <ul class="dialog" id="messages_list">
             <?php if (!empty($messages)): ?>

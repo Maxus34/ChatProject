@@ -10,6 +10,7 @@ namespace app\modules\chat\models;
 
 use app\models\User;
 use app\modules\chat\models\records\MessageReferenceRecord;
+use yii\base\Exception;
 use yii\base\Model;
 use app\modules\chat\models\records\DialogRecord;
 use app\modules\chat\models\records\DialogReferenceRecord;
@@ -26,7 +27,7 @@ class Dialog extends Model
         }
         $dialog_record = DialogRecord::findOne($dialog_id);
         if (empty($dialog_record))
-            return null;
+            throw new Exception("Вы не принадлежите к этому диалогу");
 
         return (new static())->initDialog($dialog_record, \Yii::$app->user->getId());
     }
@@ -75,22 +76,17 @@ class Dialog extends Model
         return $users;
     }
 
-    public function getMessages(int $offset = null, int $limit = null){
+    public function getMessages(int $offset = null, int $limit = null, array $conditions = null){
 
-        return Message::getMessagesInstances($this->user_id, $this->getId(), $offset, $limit);
-    }
+        return Message::getMessagesInstances($this->user_id, $this->getId(), $offset, $limit, $conditions);
 
-    public function getOldMessages(int $last_message_id, int $limit = null){
-        return Message::getOldMessageInstances($this->user_id, $this->getId(), $last_message_id, $limit);
     }
 
     public function getMessagesCount($new = false){
-        $query = MessageReferenceRecord::find();
-        if (empty($new)){
-            $query = $query -> where(['dialog_id' => $this->getId(), 'user_id' => $this->user_id]);
-        } else {
-            $query = $query -> where(['dialog_id' => $this->getId(), 'user_id' => $this->user_id, 'is_new' => true]);
-        }
+        $query = MessageReferenceRecord::find() -> where(['dialog_id' => $this->getId(), 'user_id' => $this->user_id]);
+
+        if (!$new)
+            $query = $query -> andWhere(['is_new' => 1]);
 
         return $query->count();
     }
