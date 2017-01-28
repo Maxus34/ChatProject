@@ -61,9 +61,17 @@ div.message-error{
     //border: 2px solid rgb(247, 81, 71);
 }
 
-div.dialog div.message-input{
-    margin-top:20px;
+div.message-input{
+    margin-top:2px;
     padding: 0px;
+}
+
+div.typing{
+    height:18px;
+    padding: 2px 15px 0px 15px;
+    font-family: Consolas;
+    font-style: italic;
+    font-weight: 600;
 }
 
 textarea.dialog {

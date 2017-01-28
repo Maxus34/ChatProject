@@ -27,7 +27,7 @@ class Dialog extends Model
         }
         $dialog_record = DialogRecord::findOne($dialog_id);
         if (empty($dialog_record))
-            throw new Exception("Вы не принадлежите к этому диалогу");
+            throw new Exception("Диалог не существует");
 
         return (new static())->initDialog($dialog_record, \Yii::$app->user->getId());
     }
@@ -76,6 +76,21 @@ class Dialog extends Model
         return $users;
     }
 
+    public function getTypingUsers(){
+        if (empty($this->dialog_references)){
+            $this->findDialogReferences();
+        }
+
+        $users_array = [];
+        foreach ($this->dialog_references as $reference){
+            if ( ($reference->is_typing) && ($reference->user_id != $this->user_id) ){
+                $users_array[] = $reference->user->username;
+            }
+        }
+
+        return $users_array;
+    }
+
     public function getMessages(int $offset = null, int $limit = null, array $conditions = null){
 
         return Message::getMessagesInstances($this->user_id, $this->getId(), $offset, $limit, $conditions);
@@ -90,6 +105,17 @@ class Dialog extends Model
 
         return $query->count();
     }
+
+    public function setIsTyping($is_typing){
+         if ( !isset($this->dialog_references[$this->user_id]) )
+             $reference = DialogReferenceRecord::findOne(['user_id' => \Yii::$app->user->getId(), 'dialog_id' => $this->getId()]);
+         else
+             $reference = $this->dialog_references[$this->user_id];
+
+         $reference -> is_typing = $is_typing ? 1 : 0;
+         $reference -> save();
+    }
+
 
     public function addMessage($content){
         try{

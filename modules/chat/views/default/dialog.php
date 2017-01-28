@@ -33,6 +33,10 @@ $this->title = "Dialog";
 
     </div>
 
+    <div class="typing" id="typing">
+
+    </div>
+
     <div class="message-input">
         <textarea class="dialog" id="textarea"></textarea>
         <button id="send_message" class="btn" data-dialog_id="<?= $dialog->getId() ?>"

@@ -1,185 +1,69 @@
 "use strict";
 
-var DiaLog = function () {
-    let dialogBlock = document.getElementById('dialog_block');
-    let dialogList = document.getElementById('messages_list');
-    console.log(dialogList);
-    let textArea = $('#textarea');
-
-    if (dialogBlock == undefined) {
-        return;
-    }
-
-    goToTheDialogBottom();
-
-    $('#send_message').on('click', function (e) {
-        let text = textArea.val();
-        let user_id = $(this).data('user_id');
-        let dialog_id = $(this).data('dialog_id');
-
-        let message = createMessage('<b>Sending...</b>');
-        let li = document.createElement('li');
-        li.append(message);
-        dialogList.appendChild(li);
-        dialogBlock.scrollTop = dialogBlock.scrollHeight;
-
-        $.ajax({
-            url: "send-message",
-            data: {
-                dialog_id: dialog_id,
-                content: text,
-            },
-            type: "POST",
-            success: function (result) {
-                console.log(result);
-                dialogList.removeChild(li);
-                dialogList.innerHTML += result;
-
-                textArea.val('');
-                goToTheDialogBottom();
-            },
-
-            error: function (err) {
-                message.innerHTML = "<b>Error, please try later</b>";
-                message.classList.add('message-error');
-                goToTheDialogBottom();
-            }
-        });
-    });
-
-    $('#dialog_block').on('scroll', function DialogScrollHandler(e) {
-        if (e.target.scrollTop < 1) {
-            loadOldMessages();
+var createElementsByHTML = (function(){
+    var div = document.createElement("div");
+    return function ( html ) {
+        var res = [];
+        div.innerHTML = html;
+        while ( div.firstChild ) {
+            res[ res.length ] = div.removeChild( div.firstChild );
         }
-    });
-
-    //vinterval = setTimeout(loadNewMessages, 5000);
-    function createMessage(message, from = 1) {
-        let messageDiv = document.createElement('div');
-        messageDiv.classList.add('message');
-        if (from == 1) {
-            messageDiv.classList.add('message-to');
-        } else if (from == 0) {
-            messageDiv.classList.add('message-from');
-        } else {
-            messageDiv.classList.add('message-error');
-        }
-        messageDiv.innerHTML = message;
-        return messageDiv;
-    }
-
-    //Отображение нижней части диалога
-    function goToTheDialogBottom() {
-        dialogBlock.scrollTop = dialogBlock.scrollHeight;
-    }
-
-    function loadOldMessages() {
-        if (loadOldMessages.isLoading == undefined) {
-            loadOldMessages.isLoading = false;
-            loadOldMessages.canLoadMore = true;
-        }
-        if (loadOldMessages.isLoading || !loadOldMessages.canLoadMore) {
-            return 0;
-        }
-
-        loadOldMessages.isLoading = true;
-
-        let firstMessage = dialogList.firstElementChild;
-        let date = firstMessage.getAttribute('data-creation-date');
-        let lst_m_id = firstMessage.getAttribute('data-id');
-        let dialog_id = $('#send_message').data('dialog_id');
-
-        $.ajax({
-            url: "load-old-messages",
-            data: {
-                dialog_id: dialog_id,
-                creation_date: date,
-                last_message_id: lst_m_id
-            },
-            type: "POST",
-            success: function (res) {
-                if (res == "no_more") {
-                    loadOldMessages.canLoadMore = false;
-                    dialogList.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + dialogList.innerHTML;
-                    return;
-                }
-                let scrollBottom = dialogBlock.scrollHeight - dialogBlock.scrollTop;
-                dialogList.innerHTML = res + dialogList.innerHTML;
-                dialogBlock.scrollTop = dialogBlock.scrollHeight - scrollBottom;
-                loadOldMessages.isLoading = false;
-            },
-            error: function (err) {
-                console.log("loadOldMessages ERROR");
-                loadOldMessages.isLoading = false;
-            }
-        });
-    }
-
-    function loadNewMessages() {
-        let messagesFromUsersInDialog = dialogList.getElementsByClassName('message-from');
-        let lastMessage = messagesFromUsersInDialog[messagesFromUsersInDialog.length - 1];
-        let last_m_id = lastMessage.parentNode.getAttribute('data-id');
-        let dialog_id = $('#send_message').data('dialog_id');
-
-        console.log("id = " + last_m_id);
-
-        $.ajax({
-            url: "load-new-messages",
-            data: {
-                dialog_id: dialog_id,
-                last_message_id: last_m_id,
-            },
-            type: "POST",
-            success: function (res) {
-                if (res == 'empty') {
-                    return false;
-                }
-                dialogBlock.innerHTML += res;
-                goToTheDialogBottom();
-            },
-            error: function (err) {
-                console.log("loadNewMessages ERROR");
-            }
-        });
-    }
-
-};
+        return res;
+    };
+})();
 
 class Dialog {
-    constructor() {
-        this.dialogBlock = document.getElementById('dialog_block');
-        this.messagesList = document.getElementById('messages_list');
-        this.textArea = document.getElementById('textares');
-        this.sendMessageButton = document.getElementById('send_message');
 
+    constructor () {
+        this.dialogBlock = document.getElementById('dialog_block');
         if (this.dialogBlock == undefined) {
             return;
         }
 
+        this.messagesList       = document.getElementById('messages_list');
+        this.textArea           = document.getElementById('textarea');
+        this.typingDiv          = document.getElementById('typing');
+        this.sendMessageButton  = document.getElementById('send_message');
+        this.dialogId           = this.sendMessageButton.getAttribute('data-dialog_id');
+
+        this.eventListeners  = {};
+        this.isLoading       = false;
+        this.isTyping        = false;
+
         this.goToTheDialogBottom();
+        this.addEventListeners();
+    }
 
+    addEventListeners () {
         let that = this;
-        this.sendMessageButton.addEventListener('click', function () {
-            that.sendMessage.apply(that);
-        });
 
-        this.dialogBlock.addEventListener('scroll', function (e) {
+        this.eventListeners['sendMessageButton'] =  function (e) {
+            that.sendMessage.apply(that);
+        }
+        this.eventListeners['dialogBlock']       =  function (e) {
             if (e.target.scrollTop < 1) {
                 that.loadOldMessages.apply(that);
             }
-        });
+        }
+        this.eventListeners['textArea']          =  function (e) {
+            that.isTyping = true;
+        }
 
-        //setTimeout;
+        this.sendMessageButton .addEventListener('click',  this.eventListeners['sendMessageButton']);
+        this.dialogBlock       .addEventListener('scroll', this.eventListeners['dialogBlock']);
+        this.textArea          .addEventListener('keydown', this.eventListeners['textArea']);
 
-        this.isLoading = false;
+        this.queryInterval = setInterval(function (e) {
+            that.loadNews.apply(that);
+        }, 1000);
+
+        this.checkInterval = setInterval(function (e) {
+            that.resetIsTyping.apply(that);
+        }, 5000);
     }
 
-    goToTheDialogBottom() {
-        this.dialogBlock.scrollTop = this.dialogBlock.scrollHeight;
-    }
-
-    sendAjax(url, data, success, error, type = "POST") {
-        $.ajax({
+    sendAjax (url, data, success, error, type = "POST") {
+        return $.ajax({
             type : type,
             url  : url,
             success : success,
@@ -210,7 +94,7 @@ class Dialog {
         }); */
     }
 
-    createMessage(message, from = 1) {
+    createMessage (message, from = 1) {
         let messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
         if (from == 1) {
@@ -224,19 +108,132 @@ class Dialog {
         return messageDiv;
     }
 
-    sendMessage() {
+    sendMessage () {
+        function success (res) {
+            try{
+                var response = JSON.parse(res);
+            } catch (e) {
+                console.log(e);
+                return;
+            }
 
+            that.messagesList.removeChild(list_node);
+            that.messagesList.innerHTML += response.message;
+
+            that.textArea.value = '';
+            that.goToTheDialogBottom();
+        }
+
+        function error (res) {
+            list_node.firstElementChild.innerHTML = "<h5 class='text-danger'>" + "Error: '" + res.statusText + "'</h5>";
+        }
+
+        var that = this;
+        let text = this.textArea.value;
+        let message = this.createMessage('<b>Sending...</b>');
+        let list_node = document.createElement('li');
+        list_node.append(message);
+
+        this.messagesList.appendChild(list_node);
+        this.goToTheDialogBottom();
+
+        let data = JSON.stringify({
+            "send_message" : {
+                "dialog-id" : this.dialogId,
+                "content"   : text
+            },
+        });
+
+        this.sendAjax("ajax", {"json_string" : data}, success, error, "POST")
+        /* .catch(function (e) {
+         console.log(e);
+         }); */
     }
 
-    loadOldMessages() {
+    loadNews () {
+        function  checkNewMessages (response){
+            if (response.new_messages === undefined)
+                return;
+
+            if (response.new_messages.length < 1)
+                return;
+
+            for (var i in response.new_messages){
+                that.messagesList.appendChild( createElementsByHTML(response.new_messages[i])[0] );
+            }
+            that.goToTheDialogBottom();
+        }
+        function  checkIsTyping (response){
+            if (response.typing === undefined)
+                return;
+
+            that.typingDiv.innerHTML = "";
+            let separator = (response.typing.length > 1) ? ", " : " ";
+
+            for (var i in response.typing){
+                that.typingDiv.innerHTML += response.typing[i] + separator;
+            }
+
+            if (response.typing.length > 0)
+                that.typingDiv.innerHTML += " is typing...";
+
+            if (response.typing.length > 1)
+                that.typingDiv.innerHTML += " are typing...";
+
+
+        }
+
+        function  success (result) {
+            try{
+                var response = JSON.parse(result);
+                console.log(response);
+            } catch (e) {
+                console.log(result);
+                console.log(e);
+                return;
+            }
+
+            checkNewMessages(response);
+            checkIsTyping(response);
+        }
+        function  error   (result) {
+            console.log(result.status_text);
+        }
+
+        var that = this;
+        let messagesFromUsersInDialog = this.messagesList.getElementsByClassName('message-from');
+        let lastMessage = messagesFromUsersInDialog[messagesFromUsersInDialog.length - 1];
+        let last_m_id = lastMessage.parentNode.getAttribute('data-id');
+
+        let data = JSON.stringify({
+            "load_new_messages" : {
+                "last_message_id" : last_m_id,
+                "dialog-id"       : this.dialogId
+            },
+            "check_is_typing" : {
+                "dialog-id"       : this.dialogId
+            },
+            "set_typing" : {
+                "dialog-id"  : this.dialogId,
+                "is_typing" : this.isTyping
+            }
+        });
+
+        this.sendAjax("ajax", {"json_string" : data}, success, error, "POST")
+        /* .catch(function (e) {
+         console.log(e);
+         }); */
+    }
+
+    loadOldMessages () {
         function success(res) {
             let request = JSON.parse(res);
 
             if (request.old_messages === "") {
-                that.dialogBlock.removeEventListener('scroll', that.loadNewMessages);
+                that.dialogBlock.removeEventListener('scroll', that.eventListeners['dialogBlock']);
                 that.messagesList.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + that.messagesList.innerHTML;
             }
-            console.log(request.old_messages);
+
             let scrollBottom = that.dialogBlock.scrollHeight - that.dialogBlock.scrollTop;
             that.messagesList.innerHTML = request.old_messages + that.messagesList.innerHTML;
             that.dialogBlock.scrollTop = that.dialogBlock.scrollHeight - scrollBottom;
@@ -253,8 +250,6 @@ class Dialog {
         let firstMessageId = firstMessage.getAttribute('data-id');
         let dialogId = this.sendMessageButton.getAttribute('data-dialog_id');
 
-        let this_obj = this;
-
         let data = JSON.stringify({
             'load_old_messages': {
                 'dialog-id': dialogId,
@@ -262,15 +257,21 @@ class Dialog {
             },
         });
 
-        this.sendAjax('ajax', {"json_string" : data}, success, error, "POST");
+       this.sendAjax('ajax', {"json_string" : data}, success, error, "POST")
            /* .catch(function (e) {
                 console.log(e);
             }); */
+       this.isLoading = true;
     }
 
-    loadNewMessages() {
+    goToTheDialogBottom () {
+        this.dialogBlock.scrollTop = this.dialogBlock.scrollHeight;
+    }
 
+    resetIsTyping () {
+        this.isTyping = false;
+        this.typingDiv.innerHTML = '';
     }
 }
 
-new Dialog();
+var dialog = new Dialog();
