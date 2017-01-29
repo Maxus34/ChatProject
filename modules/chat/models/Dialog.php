@@ -21,18 +21,18 @@ class Dialog extends Model
     private  $dialog_record      = null;
     private  $dialog_references  =   [];
 
-    static public function getDialogInstance(int $dialog_id = null){
+    static function getDialogInstance(int $dialog_id = null){
         if (empty($dialog_id)){
             return (new static())->initDialog(null, \Yii::$app->user->getId());
         }
-        $dialog_record = DialogRecord::findOne($dialog_id);
-        if (empty($dialog_record))
-            throw new Exception("Диалог не существует");
+
+        if (empty($dialog_record = DialogRecord::findOne($dialog_id)))
+            throw new Exception("Error: Dialog don't exists. Please try later...");
 
         return (new static())->initDialog($dialog_record, \Yii::$app->user->getId());
     }
 
-    static public function getDialogInstances(int $offset = null, int $limit = null){
+    static function getDialogInstances(int $offset = null, int $limit = null){
 
         $query = DialogReferenceRecord::find()->where(['user_id' => \Yii::$app->user->getId()]);
 
@@ -66,7 +66,7 @@ class Dialog extends Model
     }
 
     public function getUsers(){
-        if (empty($this->dialog_references)){
+        if (count($this->dialog_references) <= 1){
             $this->findDialogReferences();
         }
         $users = [];
@@ -77,7 +77,7 @@ class Dialog extends Model
     }
 
     public function getTypingUsers(){
-        if (empty($this->dialog_references)){
+        if (count($this->dialog_references) <= 1){
             $this->findDialogReferences();
         }
 
@@ -106,11 +106,23 @@ class Dialog extends Model
         return $query->count();
     }
 
+
+    public function setDialogAttributes (){
+        //TODO Create Model DialogAttributes and method for setting them;
+    }
+
+    public function setSeenMessages (array $messages = null){
+        if (empty($messages))
+            throw new Exception("setSeenMessages => Empty messages array");
+
+        return Message::setSeenMessages($this->user_id, $this->getId(), $messages);
+    }
+
     public function setIsTyping($is_typing){
          if ( !isset($this->dialog_references[$this->user_id]) )
-             $reference = DialogReferenceRecord::findOne(['user_id' => \Yii::$app->user->getId(), 'dialog_id' => $this->getId()]);
+             $reference = DialogReferenceRecord::findOne(['user_id' => $this->user_id, 'dialog_id' => $this->getId()]);
          else
-             $reference = $this->dialog_references[$this->user_id];
+             $reference = $this -> dialog_references[$this->user_id];
 
          $reference -> is_typing = $is_typing ? 1 : 0;
          $reference -> save();
@@ -151,13 +163,19 @@ class Dialog extends Model
         }
 
         $this->user_id = $user_id;
+
+        $reference = DialogReferenceRecord::find()->where(['user_id' => $this->user_id, 'dialog_id' => $this->getId()])->one();
+        if (empty($reference))
+            throw new Exception("Error: You don't belong to this dialog");
+
+        $this->dialog_references[$reference->user_id] = $reference;
         return $this;
     }
 
     private function findDialogReferences(){
-        $dialog_ref = DialogReferenceRecord::find()->where(['dialog_id' => $this->getId()])->all();
-        foreach($dialog_ref as $key => $value){
-            $this->dialog_references[$key] = $value;
+        $dialog_references = DialogReferenceRecord::find()->where(['dialog_id' => $this->getId()])->all();
+        foreach($dialog_references as $reference){
+            $this->dialog_references[$reference->user_id] = $reference;
         }
     }
 

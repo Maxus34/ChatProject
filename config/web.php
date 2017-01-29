@@ -40,7 +40,6 @@ $config = [
         ],
         'authManager' => [
             'class' => '\yii\rbac\DbManager',
-            'defaultRoles' => ['user'],
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',

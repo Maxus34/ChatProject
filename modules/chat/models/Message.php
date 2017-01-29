@@ -56,6 +56,18 @@ class Message extends Model
         return $messages;
     }
 
+    static function setSeenMessages(int $user_id, int $dialog_id, array $messages){
+        $references = MessageReferenceRecord::find()->where(['dialog_id' => $dialog_id, 'message_id' => $messages])->all();
+        $success = [];
+        foreach ($references as $reference){
+            $reference -> is_new = 0;
+            if ($reference -> save()) {
+                $success[] = $reference -> message_id;
+            }
+        }
+
+        return $success;
+    }
 
 
     public function isAuthor(int $user_id){
@@ -75,8 +87,7 @@ class Message extends Model
     }
 
     public function isNew(){
-
-        return 'true';
+        return $this->message_references[$this->user_id]->is_new;
     }
 
     public function save(){
@@ -96,10 +107,18 @@ class Message extends Model
     private function initMessage(MessageRecord $message_rec = null) :Message{
         $this->message_record  = $message_rec;
         $this->user_id = \Yii::$app->user->getId();
+
+        $reference = MessageReferenceRecord::findOne(['message_id' => $this->getId(), 'user_id' => $this->user_id]);
+        if (empty($reference))
+            throw new Exception("Empty reference when initialize message");
+
+        $this->message_references[$reference->user_id] = $reference;
+
         return $this;
     }
 
     private function  initNewMessage (int $dialog_id, string $content, int $author, array $users) :Message{
+        //TODO Refactor this shit
         $this->message_record = new MessageRecord();
         $this->message_record->content = $content;
         $this->message_record->dialog_id = $dialog_id;
@@ -116,9 +135,18 @@ class Message extends Model
             $mrr -> is_new = true;
             $mrr -> save();
 
-            $this->message_references[] = $mrr;
+            $this->message_references[$user->id] = $mrr;
         }
 
+        $this->user_id = $author;
+
         return $this;
+    }
+
+    private function findMessageReferences(){
+        $message_references = MessageReferenceRecord::find()->where(['message_id' => $this->getId()])->all();
+        foreach($message_references as $reference){
+            $this->message_references[$reference->user_id] = $reference;
+        }
     }
 }

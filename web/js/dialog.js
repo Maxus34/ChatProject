@@ -12,7 +12,7 @@ var createElementsByHTML = (function(){
     };
 })();
 
-class Dialog {
+class DialogHandler {
 
     constructor () {
         this.dialogBlock = document.getElementById('dialog_block');
@@ -56,16 +56,15 @@ class Dialog {
         this.queryInterval = setInterval(function (e) {
             that.loadNews.apply(that);
         }, 1000);
-
         this.checkInterval = setInterval(function (e) {
             that.resetIsTyping.apply(that);
-        }, 5000);
+        }, 2000);
     }
 
-    sendAjax (url, data, success, error, type = "POST") {
+    sendJsonByAjax (data, success, error, type = "POST") {
         return $.ajax({
             type : type,
-            url  : url,
+            url  : "/chat/ajax",
             success : success,
             error   : error,
             data : data
@@ -114,6 +113,7 @@ class Dialog {
                 var response = JSON.parse(res);
             } catch (e) {
                 console.log(e);
+                console.log(res);
                 return;
             }
 
@@ -126,10 +126,14 @@ class Dialog {
 
         function error (res) {
             list_node.firstElementChild.innerHTML = "<h5 class='text-danger'>" + "Error: '" + res.statusText + "'</h5>";
+            console.log(res);
         }
 
         var that = this;
         let text = this.textArea.value;
+        if (text == ""){
+            return;
+        }
         let message = this.createMessage('<b>Sending...</b>');
         let list_node = document.createElement('li');
         list_node.append(message);
@@ -138,13 +142,15 @@ class Dialog {
         this.goToTheDialogBottom();
 
         let data = JSON.stringify({
-            "send_message" : {
+            "dialog" : {
                 "dialog-id" : this.dialogId,
+            },
+            "send_message" : {
                 "content"   : text
             },
         });
 
-        this.sendAjax("ajax", {"json_string" : data}, success, error, "POST")
+        this.sendJsonByAjax({"json_string" : data}, success, error, "POST")
         /* .catch(function (e) {
          console.log(e);
          }); */
@@ -167,26 +173,27 @@ class Dialog {
             if (response.typing === undefined)
                 return;
 
-            that.typingDiv.innerHTML = "";
+            let typingText = "";
+
             let separator = (response.typing.length > 1) ? ", " : " ";
 
             for (var i in response.typing){
-                that.typingDiv.innerHTML += response.typing[i] + separator;
+                typingText += response.typing[i] + separator;
             }
 
             if (response.typing.length > 0)
-                that.typingDiv.innerHTML += " is typing...";
+                typingText += " is typing...";
 
             if (response.typing.length > 1)
-                that.typingDiv.innerHTML += " are typing...";
+                typingText += " are typing...";
 
-
+            that.typingDiv.innerHTML = typingText;
         }
 
         function  success (result) {
             try{
                 var response = JSON.parse(result);
-                console.log(response);
+                // console.log(response);
             } catch (e) {
                 console.log(result);
                 console.log(e);
@@ -206,20 +213,20 @@ class Dialog {
         let last_m_id = lastMessage.parentNode.getAttribute('data-id');
 
         let data = JSON.stringify({
+            "dialog" : {
+                "dialog-id" : this.dialogId
+            },
             "load_new_messages" : {
                 "last_message_id" : last_m_id,
-                "dialog-id"       : this.dialogId
             },
-            "check_is_typing" : {
-                "dialog-id"       : this.dialogId
-            },
-            "set_typing" : {
-                "dialog-id"  : this.dialogId,
+            "check_is_typing" : true,
+
+            "set_is_typing" : {
                 "is_typing" : this.isTyping
             }
         });
 
-        this.sendAjax("ajax", {"json_string" : data}, success, error, "POST")
+        this.sendJsonByAjax({"json_string" : data}, success, error, "POST")
         /* .catch(function (e) {
          console.log(e);
          }); */
@@ -251,18 +258,94 @@ class Dialog {
         let dialogId = this.sendMessageButton.getAttribute('data-dialog_id');
 
         let data = JSON.stringify({
+            "dialog" : {
+                "dialog-id" : this.dialogId
+            },
             'load_old_messages': {
-                'dialog-id': dialogId,
                 'first_message-id': firstMessageId,
             },
         });
 
-       this.sendAjax('ajax', {"json_string" : data}, success, error, "POST")
+       this.sendJsonByAjax({"json_string" : data}, success, error, "POST")
            /* .catch(function (e) {
                 console.log(e);
             }); */
        this.isLoading = true;
     }
+
+    handleNewMessages() {
+        function scanNewMessages () {
+            // возвращает object{my_messages:[...], messages:[...]}
+            // my_messages - сообщения текущего пользователя, которые необходимо проверять на измененине is_new другими пользователими
+            // messages - сообщения, которые необходимо отправить для обозначения is_new = 0;
+
+            let messages_list = that.messagesList.getElementsByTagName('li');
+            let messages_array = [];
+            let my_messages_array = [];
+
+            for(var i = 0; i < messages_list.length; i++){
+                if ( (messages_list[i].dataset.new === "1") ){
+
+                    if (messages_list[i].getElementsByTagName('div')[0].classList.contains('message-to'))
+                        my_messages_array.push(messages_list[i].dataset.id);
+                    else
+                        messages_array.push(messages_list[i].dataset.id);
+                }
+            }
+
+            return messages_array;
+        }
+        function setMessagesSeen(messages) {
+            let need_to_change = [];
+            let selector = "";
+            for (var i =0; i < messages.length; i++){
+               selector += 'li[data-id="'+messages[i]+'"]';
+                if (i < messages.length-1)
+                    selector += ",";
+            }
+            need_to_change = that.messagesList.querySelectorAll(selector);
+            console.log(need_to_change);
+            for (var i = 0; i < need_to_change.length; i++){
+                need_to_change[i].dataset.new = "0";
+                need_to_change[i].getElementsByTagName('div')[0].classList.remove('message-new');
+            }
+        }
+
+        function success (result) {
+            try{
+                var response = JSON.parse(result);
+                setMessagesSeen(response.seen_messages);
+
+            } catch (e) {
+                console.log(result);
+                console.log(e);
+                return;
+            }
+        }
+        function error (result) {
+            console.log(result.status_text);
+        }
+
+        var that = this;
+
+        let new_messages = scanNewMessages();
+        let my_new_messages = scanNewMessages();
+
+        let data = JSON.stringify({
+            "dialog" : {
+                "dialog-id" : this.dialogId
+            },
+            "seen_messages" : {
+                "messages" : new_messages,
+            },
+        });
+
+        this.sendJsonByAjax({"json_string" : data}, success, error, "POST")
+        /* .catch(function (e) {
+         console.log(e);
+         }); */
+    }
+
 
     goToTheDialogBottom () {
         this.dialogBlock.scrollTop = this.dialogBlock.scrollHeight;
@@ -274,4 +357,4 @@ class Dialog {
     }
 }
 
-var dialog = new Dialog();
+var dialog_h = new DialogHandler();

@@ -49,6 +49,14 @@ div.message-to{
     background-color: rgba(174, 177, 234, 0.4);
 }
 
+.message-to.message-new{
+    box-shadow: #7876f2 -5px 1px 1px;
+}
+
+.message-from.message-new{
+    box-shadow: #7876f2 5px 1px 1px;
+}
+
 div.message-from{
     margin: 10px;
     margin-right:35%;
