@@ -48,7 +48,7 @@ class AjaxController extends Controller
         }
 
         if (isset($j_object['check_is_seen'])) {
-           // $response_arr['seen_messages'] = $this->setSeenMessages($dialog, $j_object);
+           $response_arr['check_is_seen'] = $this->getIsSeenMessages($dialog, $j_object);
         }
 
         if (isset($j_object['check_is_typing'])) {
@@ -102,12 +102,21 @@ class AjaxController extends Controller
         return $dialog->getTypingUsers();
     }
 
+    private function  getIsSeenMessages(Dialog $dialog, $j_object){
+        if (empty($messages = $j_object['check_is_seen']['check_is_seen']))
+            return;
+
+        return $dialog->getIsSeenMessages($messages);
+    }
+
     private function  setIsTyping(Dialog $dialog, $j_object){
         $dialog->setIsTyping($j_object['set_is_typing']['is_typing']);
     }
 
     private function  setSeenMessages(Dialog $dialog, $j_object) {
         $messages = $j_object['seen_messages']['messages'];
+        if (empty($messages))
+            return;
 
         return $dialog->setSeenMessages($messages);
     }

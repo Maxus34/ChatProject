@@ -106,6 +106,13 @@ class Dialog extends Model
         return $query->count();
     }
 
+    public function getIsSeenMessages(array $messages){
+        if (empty($messages))
+            throw new Exception("setSeenMessages => Empty messages array");
+
+        return Message::getIsSeenMessages($this->user_id, $this->getId(), $messages);
+    }
+
 
     public function setDialogAttributes (){
         //TODO Create Model DialogAttributes and method for setting them;
@@ -115,7 +122,7 @@ class Dialog extends Model
         if (empty($messages))
             throw new Exception("setSeenMessages => Empty messages array");
 
-        return Message::setSeenMessages($this->user_id, $this->getId(), $messages);
+        return Message::setSeenMessages($this->getId(), $messages);
     }
 
     public function setIsTyping($is_typing){

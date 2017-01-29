@@ -26,9 +26,10 @@ class DialogHandler {
         this.sendMessageButton  = document.getElementById('send_message');
         this.dialogId           = this.sendMessageButton.getAttribute('data-dialog_id');
 
-        this.eventListeners  = {};
-        this.isLoading       = false;
-        this.isTyping        = false;
+        this.monitored_messages = {my_messages : [], messages : []};
+        this.eventListeners     = {};
+        this.isLoading          = false;
+        this.isTyping           = false;
 
         this.goToTheDialogBottom();
         this.addEventListeners();
@@ -58,7 +59,8 @@ class DialogHandler {
         }, 1000);
         this.checkInterval = setInterval(function (e) {
             that.resetIsTyping.apply(that);
-        }, 2000);
+            that.handleNewMessages.apply(that);
+        }, 900);
     }
 
     sendJsonByAjax (data, success, error, type = "POST") {
@@ -167,6 +169,7 @@ class DialogHandler {
             for (var i in response.new_messages){
                 that.messagesList.appendChild( createElementsByHTML(response.new_messages[i])[0] );
             }
+
             that.goToTheDialogBottom();
         }
         function  checkIsTyping (response){
@@ -189,6 +192,33 @@ class DialogHandler {
 
             that.typingDiv.innerHTML = typingText;
         }
+        function  handleSeenMessages (response) {
+            if (response.seen_messages != undefined)
+                setMessagesSeen(response.seen_messages);
+
+            if (response.check_is_seen != undefined)
+                setMessagesSeen(response.check_is_seen);
+
+            that.resetMonitoredMessages.apply(that);
+        }
+        function  setMessagesSeen(messages){
+            if (messages.length == 0)
+                return;
+
+            let need_to_change = [];
+            let selector = "";
+            for (var i =0; i < messages.length; i++){
+                selector += 'li[data-id="'+messages[i]+'"]';
+                if (i < messages.length-1)
+                    selector += ",";
+            }
+            need_to_change = that.messagesList.querySelectorAll(selector);
+            console.log(need_to_change);
+            for (var i = 0; i < need_to_change.length; i++){
+                need_to_change[i].dataset.new = "0";
+                need_to_change[i].getElementsByTagName('div')[0].classList.remove('message-new');
+            }
+        }
 
         function  success (result) {
             try{
@@ -202,6 +232,7 @@ class DialogHandler {
 
             checkNewMessages(response);
             checkIsTyping(response);
+            handleSeenMessages(response);
         }
         function  error   (result) {
             console.log(result.status_text);
@@ -216,13 +247,19 @@ class DialogHandler {
             "dialog" : {
                 "dialog-id" : this.dialogId
             },
-            "load_new_messages" : {
+            "load_new_messages" : { // Поиск новых сообщений в диалоге
                 "last_message_id" : last_m_id,
             },
-            "check_is_typing" : true,
+            "check_is_typing" : true, // Проверка, кто из пользователей пишет в данный момент.
 
             "set_is_typing" : {
                 "is_typing" : this.isTyping
+            },
+            "seen_messages" : {  // Отметить сообщения просмотренными.
+                "messages" : this.monitored_messages.messages,
+            },
+            "check_is_seen" : {  // Проверить, не являются ли сообщения просмотренными.
+                "check_is_seen" : this.monitored_messages.my_messages,
             }
         });
 
@@ -293,57 +330,14 @@ class DialogHandler {
                 }
             }
 
-            return messages_array;
-        }
-        function setMessagesSeen(messages) {
-            let need_to_change = [];
-            let selector = "";
-            for (var i =0; i < messages.length; i++){
-               selector += 'li[data-id="'+messages[i]+'"]';
-                if (i < messages.length-1)
-                    selector += ",";
-            }
-            need_to_change = that.messagesList.querySelectorAll(selector);
-            console.log(need_to_change);
-            for (var i = 0; i < need_to_change.length; i++){
-                need_to_change[i].dataset.new = "0";
-                need_to_change[i].getElementsByTagName('div')[0].classList.remove('message-new');
-            }
-        }
-
-        function success (result) {
-            try{
-                var response = JSON.parse(result);
-                setMessagesSeen(response.seen_messages);
-
-            } catch (e) {
-                console.log(result);
-                console.log(e);
-                return;
-            }
-        }
-        function error (result) {
-            console.log(result.status_text);
+            return {
+                my_messages : my_messages_array,
+                   messages : messages_array
+            };
         }
 
         var that = this;
-
-        let new_messages = scanNewMessages();
-        let my_new_messages = scanNewMessages();
-
-        let data = JSON.stringify({
-            "dialog" : {
-                "dialog-id" : this.dialogId
-            },
-            "seen_messages" : {
-                "messages" : new_messages,
-            },
-        });
-
-        this.sendJsonByAjax({"json_string" : data}, success, error, "POST")
-        /* .catch(function (e) {
-         console.log(e);
-         }); */
+        this.monitored_messages = scanNewMessages();
     }
 
 
@@ -354,6 +348,10 @@ class DialogHandler {
     resetIsTyping () {
         this.isTyping = false;
         this.typingDiv.innerHTML = '';
+    }
+
+    resetMonitoredMessages(){
+        this.monitored_messages = {my_messages : [], messages : []};
     }
 }
 

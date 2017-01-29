@@ -13,15 +13,17 @@ use yii\base\Model;
 
 class Message extends Model
 {
+    //TODO Refactor this shit
+
     private  $user_id            = null;
     private  $message_record     = null;
     private  $message_references =   [];
 
-    static function createNewMessage(int $dialog_id, string $content, int $author, array $users){
+    static function  createNewMessage(int $dialog_id, string $content, int $author, array $users){
        return (new static())->initNewMessage($dialog_id, $content, $author, $users);
     }
 
-    static function getMessageInstance(int $message_id = null){
+    static function  getMessageInstance(int $message_id = null){
         $message_record = MessageRecord::findOne($message_id);
         if (empty($message_record))
             return null;
@@ -29,7 +31,7 @@ class Message extends Model
         return (new static())->initMessage($message_record);
     }
 
-    static function getMessagesInstances(int $user_id, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
+    static function  getMessagesInstances(int $user_id, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
 
         $query = MessageReferenceRecord::find()->where(['user_id' => $user_id, 'dialog_id' => $dialog_id]);
 
@@ -56,7 +58,20 @@ class Message extends Model
         return $messages;
     }
 
-    static function setSeenMessages(int $user_id, int $dialog_id, array $messages){
+    static function  getIsSeenMessages(int $user_id, int $dialog_id, array $messages){
+        $references = MessageReferenceRecord::find()->where(['dialog_id' => $dialog_id, 'message_id' => $messages, 'user_id' => $user_id])->all();
+
+        $seen = [];
+        foreach ($references as $reference){
+            if (!$reference -> is_new) {
+                $seen[] = $reference -> message_id;
+            }
+        }
+
+        return $seen;
+    }
+
+    static function  setSeenMessages(int $dialog_id, array $messages){
         $references = MessageReferenceRecord::find()->where(['dialog_id' => $dialog_id, 'message_id' => $messages])->all();
         $success = [];
         foreach ($references as $reference){
@@ -70,27 +85,27 @@ class Message extends Model
     }
 
 
-    public function isAuthor(int $user_id){
+    public function  isAuthor(int $user_id){
         return MessageReferenceRecord::findOne(['message_id' => $this->getId(), 'user_id' => $user_id])->is_author;
     }
 
-    public function getId(){
+    public function  getId(){
         return $this -> message_record -> id;
     }
 
-    public function getCreationDate(){
+    public function  getCreationDate(){
         return $this -> message_record -> created_at;
     }
 
-    public function getContent(){
+    public function  getContent(){
         return $this -> message_record -> content;
     }
 
-    public function isNew(){
+    public function  isNew(){
         return $this->message_references[$this->user_id]->is_new;
     }
 
-    public function save(){
+    public function  save(){
         //TODO Fix method Message::save();
         $this->message_record->save();
         foreach ($this->message_references as $ref){
@@ -98,7 +113,7 @@ class Message extends Model
         }
     }
 
-    public function delete(){
+    public function  delete(){
         //TODO Create method Message::delete();
     }
 
@@ -117,8 +132,7 @@ class Message extends Model
         return $this;
     }
 
-    private function  initNewMessage (int $dialog_id, string $content, int $author, array $users) :Message{
-        //TODO Refactor this shit
+    private function initNewMessage (int $dialog_id, string $content, int $author, array $users) :Message{
         $this->message_record = new MessageRecord();
         $this->message_record->content = $content;
         $this->message_record->dialog_id = $dialog_id;
