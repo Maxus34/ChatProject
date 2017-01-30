@@ -50,17 +50,16 @@ class DialogHandler {
             that.isTyping = true;
         }
 
-        this.sendMessageButton .addEventListener('click',  this.eventListeners['sendMessageButton']);
-        this.dialogBlock       .addEventListener('scroll', this.eventListeners['dialogBlock']);
+        this.sendMessageButton .addEventListener('click',   this.eventListeners['sendMessageButton']);
+        this.dialogBlock       .addEventListener('scroll',  this.eventListeners['dialogBlock']);
         this.textArea          .addEventListener('keydown', this.eventListeners['textArea']);
 
         this.queryInterval = setInterval(function (e) {
             that.loadNews.apply(that);
         }, 1000);
         this.checkInterval = setInterval(function (e) {
-            that.resetIsTyping.apply(that);
             that.handleNewMessages.apply(that);
-        }, 900);
+        }, 1900);
     }
 
     sendJsonByAjax (data, success, error, type = "POST") {
@@ -172,13 +171,14 @@ class DialogHandler {
 
             that.goToTheDialogBottom();
         }
-        function  checkIsTyping (response){
-            if (response.typing === undefined)
+        function  handleIsTyping (response){
+            if (response.typing.length == 0){
+                that.resetIsTyping.apply(that);
                 return;
+            }
 
             let typingText = "";
-
-            let separator = (response.typing.length > 1) ? ", " : " ";
+            let separator = (response.typing.length > 1) ? ", " : "";
 
             for (var i in response.typing){
                 typingText += response.typing[i] + separator;
@@ -190,7 +190,8 @@ class DialogHandler {
             if (response.typing.length > 1)
                 typingText += " are typing...";
 
-            that.typingDiv.innerHTML = typingText;
+            if (! that.typingDiv.innerHTML === typingText)
+                that.typingDiv.innerHTML = typingText;
         }
         function  handleSeenMessages (response) {
             if (response.seen_messages != undefined)
@@ -220,6 +221,7 @@ class DialogHandler {
             }
         }
 
+
         function  success (result) {
             try{
                 var response = JSON.parse(result);
@@ -231,7 +233,7 @@ class DialogHandler {
             }
 
             checkNewMessages(response);
-            checkIsTyping(response);
+            handleIsTyping(response);
             handleSeenMessages(response);
         }
         function  error   (result) {

@@ -9,6 +9,7 @@
 namespace app\modules\chat\models;
 
 use app\modules\chat\models\records\{ MessageRecord, MessageReferenceRecord};
+use yii\base\Exception;
 use yii\base\Model;
 
 class Message extends Model
@@ -19,16 +20,12 @@ class Message extends Model
     private  $message_record     = null;
     private  $message_references =   [];
 
-    static function  createNewMessage(int $dialog_id, string $content, int $author, array $users){
-       return (new static())->initNewMessage($dialog_id, $content, $author, $users);
-    }
-
     static function  getMessageInstance(int $message_id = null){
         $message_record = MessageRecord::findOne($message_id);
         if (empty($message_record))
-            return null;
+            throw new Exception("Empty message record id = $message_id");
 
-        return (new static())->initMessage($message_record);
+        return new static($message_record);
     }
 
     static function  getMessagesInstances(int $user_id, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
@@ -48,11 +45,11 @@ class Message extends Model
         if ( !empty( $limit) )
             $query =  $query -> limit($limit);
 
-        $message_reference_records = $query -> all();
+        $message_reference_records = $query -> with('message')-> all();
         $messages = [];
 
         foreach ($message_reference_records as $record){
-            $messages[] = static::getMessageInstance($record->message_id);
+            $messages[] = new static($record->message);
         }
 
         return $messages;
@@ -85,6 +82,30 @@ class Message extends Model
     }
 
 
+    public function __construct(MessageRecord $message_rec = null, Dialog $dialog = null, $content = null) // Only for creating new Records;
+    {
+        parent::init();
+
+        if (!empty($message_rec)){
+            $this->message_record = $message_rec;
+            $this->user_id = \Yii::$app->user->getId();
+
+            $reference = MessageReferenceRecord::findOne(['message_id' => $this->getId(), 'user_id' => $this->user_id]);
+            if (empty($reference))
+                throw new Exception("Empty reference when initialize message");
+
+            $this->message_references[$reference->user_id] = $reference;
+
+        } else {
+            $this->user_id = $dialog->getUserId();
+
+            $this->message_record  = new MessageRecord($dialog->getId(), $content);
+            $this->message_record -> save();
+
+            $this->createReferences($dialog->getUsers());
+        }
+    }
+
     public function  isAuthor(int $user_id){
         return MessageReferenceRecord::findOne(['message_id' => $this->getId(), 'user_id' => $user_id])->is_author;
     }
@@ -105,6 +126,7 @@ class Message extends Model
         return $this->message_references[$this->user_id]->is_new;
     }
 
+
     public function  save(){
         //TODO Fix method Message::save();
         $this->message_record->save();
@@ -118,43 +140,23 @@ class Message extends Model
     }
 
 
+    private function createReferences(array $users){
+        foreach ($users as $user){
 
-    private function initMessage(MessageRecord $message_rec = null) :Message{
-        $this->message_record  = $message_rec;
-        $this->user_id = \Yii::$app->user->getId();
+            $ref = new MessageReferenceRecord(
+                $this->message_record->dialog_id,
+                $this->message_record->id,
+                $user->id,
+                ($user->id == $this->user_id) ? 1 : 0
+            );
+            try{
+                $ref->save();
+            } catch (Exception $e){
 
-        $reference = MessageReferenceRecord::findOne(['message_id' => $this->getId(), 'user_id' => $this->user_id]);
-        if (empty($reference))
-            throw new Exception("Empty reference when initialize message");
-
-        $this->message_references[$reference->user_id] = $reference;
-
-        return $this;
-    }
-
-    private function initNewMessage (int $dialog_id, string $content, int $author, array $users) :Message{
-        $this->message_record = new MessageRecord();
-        $this->message_record->content = $content;
-        $this->message_record->dialog_id = $dialog_id;
-        $this->message_record->save();
-
-        foreach($users as $user){
-            $mrr = new MessageReferenceRecord();
-            $mrr -> dialog_id = $dialog_id;
-            $mrr -> user_id = $user->id;
-            $mrr -> message_id = $this->message_record->id;
-            if ($user->id === $author){
-                $mrr -> is_author = true;
             }
-            $mrr -> is_new = true;
-            $mrr -> save();
 
-            $this->message_references[$user->id] = $mrr;
+            $this->message_references[$user->id] = $ref;
         }
-
-        $this->user_id = $author;
-
-        return $this;
     }
 
     private function findMessageReferences(){

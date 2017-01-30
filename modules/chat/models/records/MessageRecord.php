@@ -8,6 +8,11 @@ use yii\behaviors\TimestampBehavior;
 
 class MessageRecord extends ActiveRecord
 {
+    static function tableName()
+    {
+        return 'message';
+    }
+
     public function behaviors()
     {
         return [
@@ -20,11 +25,15 @@ class MessageRecord extends ActiveRecord
         ];
     }
 
-
-    static function tableName()
+    public function __construct(int $dialog_id=null, string $content=null)
     {
-        return 'message';
+        parent::__construct();
+
+        if (!empty($dialog_id))
+            $this->dialog_id = $dialog_id;
+
+        if (!empty($content))
+            $this->content = $content;
+
     }
-
-
 }

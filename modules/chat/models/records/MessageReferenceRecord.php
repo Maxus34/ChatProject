@@ -19,4 +19,14 @@ class MessageReferenceRecord extends ActiveRecord
     public function getMessage(){
         return $this->hasOne(MessageRecord::className(), ['id' => 'message_id']);
     }
+
+    public function __construct(int $dialog_id=null, int $message_id=null, int $user_id=null, int $is_author=null)
+    {
+        parent::__construct();
+
+        $this-> dialog_id = $dialog_id;
+        $this-> message_id = $message_id;
+        $this-> user_id    = $user_id;
+        $this-> is_author  = $is_author;
+    }
 }

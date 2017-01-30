@@ -61,6 +61,10 @@ class Dialog extends Model
         return $this->dialog_record->id;
     }
 
+    public function getUserId(){
+        return $this->user_id;
+    }
+
     public function getTitle(){
         return $this->dialog_record->title;
     }
@@ -138,7 +142,8 @@ class Dialog extends Model
 
     public function addMessage($content){
         try{
-            $message = Message::createNewMessage($this->getId(), $content, $this->user_id, $this->getUsers());
+
+            $message = new Message(null, $this, $content);
             $message -> save();
 
         } catch (Exception $e){
