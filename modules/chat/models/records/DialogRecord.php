@@ -29,4 +29,15 @@ class DialogRecord extends ActiveRecord
     public static function tableName(){
         return 'dialog';
     }
+
+    public function __construct($title = null)
+    {
+        parent::__construct();
+
+        $this->title = $title;
+    }
+
+    public function getReferences(){
+        return $this->hasMany(DialogReferenceRecord::className(), ['dialog_id' => $this->id]);
+    }
 }

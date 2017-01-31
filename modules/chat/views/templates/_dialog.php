@@ -1,6 +1,6 @@
 <?php
     use yii\helpers\Url;
-    /* @var $model = \app\modules\chat\models\Dialog */
+    /* @var $model \app\modules\chat\models\Dialog */
 ?>
 
 <table class="table table-hover" style="background: #fef;">

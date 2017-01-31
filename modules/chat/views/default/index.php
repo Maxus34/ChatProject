@@ -11,6 +11,6 @@ echo \yii\widgets\ListView::widget([
         'class' => 'list-view',
         'id' => 'messages'
     ],
-    'itemView' => '_dialog',
+    'itemView' => '/templates/_dialog.php',
     'dataProvider' => $dataProvider,
 ]);

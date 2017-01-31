@@ -34,4 +34,14 @@ class DialogReferenceRecord extends ActiveRecord
     public function getUser(){
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
+
+    public function __construct(int $dialog_id = null, int $user_id = null, int $is_creator = null)
+    {
+        parent::__construct();
+
+        $this->dialog_id  =  $dialog_id;
+        $this->user_id    =  $user_id;
+        $this->is_creator =  $is_creator;
+        $this->is_typing  =  0;
+    }
 }

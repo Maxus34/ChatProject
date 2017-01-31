@@ -29,11 +29,16 @@ class MessageRecord extends ActiveRecord
     {
         parent::__construct();
 
-        if (!empty($dialog_id))
-            $this->dialog_id = $dialog_id;
+        $this->dialog_id = $dialog_id;
+        $this->content = $content;
+    }
 
-        if (!empty($content))
-            $this->content = $content;
+    public function getReferences($dialog_id = null){
+        if (!empty($dialog_id)){
+            return $this->hasMany(MessageReferenceRecord::className(), ['message_id' => $this->id, 'dialog_id' => $dialog_id]);
+        } else {
+            return $this->hasMany(MessageReferenceRecord::className(), ['message_id' => $this->id]);
+        }
 
     }
 }

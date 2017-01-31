@@ -98,9 +98,9 @@ class DialogHandler {
         let messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
         if (from == 1) {
-            messageDiv.classList.add('message-to');
+            messageDiv.classList.add('message-outgoing');
         } else if (from == 0) {
-            messageDiv.classList.add('message-from');
+            messageDiv.classList.add('message-incoming');
         } else {
             messageDiv.classList.add('message-error');
         }
@@ -172,7 +172,7 @@ class DialogHandler {
             that.goToTheDialogBottom();
         }
         function  handleIsTyping (response){
-            if (response.typing.length == 0){
+            if (response.typing.length === 0){
                 that.resetIsTyping.apply(that);
                 return;
             }
@@ -190,7 +190,7 @@ class DialogHandler {
             if (response.typing.length > 1)
                 typingText += " are typing...";
 
-            if (! that.typingDiv.innerHTML === typingText)
+            if (that.typingDiv.innerHTML !== typingText)
                 that.typingDiv.innerHTML = typingText;
         }
         function  handleSeenMessages (response) {
@@ -241,9 +241,15 @@ class DialogHandler {
         }
 
         var that = this;
-        let messagesFromUsersInDialog = this.messagesList.getElementsByClassName('message-from');
-        let lastMessage = messagesFromUsersInDialog[messagesFromUsersInDialog.length - 1];
-        let last_m_id = lastMessage.parentNode.getAttribute('data-id');
+        let incomingMessages = this.messagesList.getElementsByClassName('message-incoming');
+
+        if (incomingMessages.length > 0){
+            var last_m_id = incomingMessages[incomingMessages.length - 1].parentNode.getAttribute('data-id');
+
+        } else {
+            let outgoingMessages = this.messagesList.getElementsByClassName('message-outgoing');
+            var last_m_id = outgoingMessages[outgoingMessages.length-1].parentNode.getAttribute('data-id');
+        }
 
         let data = JSON.stringify({
             "dialog" : {
@@ -273,15 +279,18 @@ class DialogHandler {
 
     loadOldMessages () {
         function success(res) {
-            let request = JSON.parse(res);
+            let response = JSON.parse(res);
 
-            if (request.old_messages === "") {
+            if (response.old_messages.length == 0) {
                 that.dialogBlock.removeEventListener('scroll', that.eventListeners['dialogBlock']);
                 that.messagesList.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + that.messagesList.innerHTML;
             }
 
             let scrollBottom = that.dialogBlock.scrollHeight - that.dialogBlock.scrollTop;
-            that.messagesList.innerHTML = request.old_messages + that.messagesList.innerHTML;
+            for (var i = response.old_messages.length - 1; i >= 0; i--){
+                that.messagesList.insertBefore(createElementsByHTML(response.old_messages[i])[0], that.messagesList.firstElementChild);
+            }
+
             that.dialogBlock.scrollTop = that.dialogBlock.scrollHeight - scrollBottom;
             that.isLoading = false;
         }
@@ -325,7 +334,7 @@ class DialogHandler {
             for(var i = 0; i < messages_list.length; i++){
                 if ( (messages_list[i].dataset.new === "1") ){
 
-                    if (messages_list[i].getElementsByTagName('div')[0].classList.contains('message-to'))
+                    if (messages_list[i].getElementsByTagName('div')[0].classList.contains('message-outgoing'))
                         my_messages_array.push(messages_list[i].dataset.id);
                     else
                         messages_array.push(messages_list[i].dataset.id);

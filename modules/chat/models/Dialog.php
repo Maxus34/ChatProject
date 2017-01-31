@@ -22,14 +22,10 @@ class Dialog extends Model
     private  $dialog_references  =   [];
 
     static function getDialogInstance(int $dialog_id = null){
-        if (empty($dialog_id)){
-            return (new static())->initDialog(null, \Yii::$app->user->getId());
-        }
-
         if (empty($dialog_record = DialogRecord::findOne($dialog_id)))
             throw new Exception("Error: Dialog don't exists. Please try later...");
 
-        return (new static())->initDialog($dialog_record, \Yii::$app->user->getId());
+        return new static($dialog_record);
     }
 
     static function getDialogInstances(int $offset = null, int $limit = null){
@@ -46,16 +42,43 @@ class Dialog extends Model
         if ( !empty( $limit) )
             $query =  $query -> limit($limit);
 
-        $dialog_reference_records = $query -> all();
+        $dialog_reference_records = $query -> with('dialog') -> all();
         $dialogs = [];
 
-        foreach ($dialog_reference_records as $record){
-            $dialogs[] = static::getDialogInstance($record->dialog_id);
+        foreach ($dialog_reference_records as $reference){
+            $dialogs[] = new static($reference->dialog);
         }
 
         return $dialogs;
     }
 
+
+    public function __construct(DialogRecord $dr = null, string $title = null, array $users = null)
+    {
+        parent::__construct();
+        $this->user_id = \Yii::$app->user->getId();
+
+        if (empty($dr))
+        {
+            if (empty($title))
+                $title = 'Dialog_' . \Yii::$app->formatter->asDate(new \DateTime(), "php:d F");
+
+            $this->dialog_record  = new DialogRecord($title);
+            $this->dialog_record -> save();
+
+            $this->createDialogReferences($users);
+
+        } else {
+
+            $this->dialog_record = $dr;
+
+            $reference = DialogReferenceRecord::find()->where(['user_id' => $this->user_id, 'dialog_id' => $this->getId()])->one();
+            if (empty($reference))
+                throw new Exception("Error: You don't belong to this dialog");
+
+            $this->dialog_references[$reference->user_id] = $reference;
+        }
+    }
 
     public function getId(){
         return $this->dialog_record->id;
@@ -69,14 +92,19 @@ class Dialog extends Model
         return $this->dialog_record->title;
     }
 
-    public function getUsers(){
-        if (count($this->dialog_references) <= 1){
+    public function getUsers(bool $expect_me = false){
+        if (count($this->dialog_references) < 2){
             $this->findDialogReferences();
         }
         $users = [];
         foreach ($this->dialog_references as $reference) {
             $users[] = $reference->user;
         }
+
+        if ($expect_me){
+            unset($users[$this->user_id]);
+        }
+
         return $users;
     }
 
@@ -104,8 +132,8 @@ class Dialog extends Model
     public function getMessagesCount($new = false){
         $query = MessageReferenceRecord::find() -> where(['dialog_id' => $this->getId(), 'user_id' => $this->user_id]);
 
-        if (!$new)
-            $query = $query -> andWhere(['is_new' => 1]);
+        if ($new)
+            $query = $query -> andWhere(["is_new"  => 1, "is_author" => 0]);
 
         return $query->count();
     }
@@ -117,6 +145,19 @@ class Dialog extends Model
         return Message::getIsSeenMessages($this->user_id, $this->getId(), $messages);
     }
 
+    public function addMessage($content){
+        try{
+
+            $message = new Message(null, $this, $content);
+            $message -> save();
+
+        } catch (Exception $e){
+            debug ($e->getMessage());
+            die();
+        }
+
+        return $message;
+    }
 
     public function setDialogAttributes (){
         //TODO Create Model DialogAttributes and method for setting them;
@@ -140,20 +181,6 @@ class Dialog extends Model
     }
 
 
-    public function addMessage($content){
-        try{
-
-            $message = new Message(null, $this, $content);
-            $message -> save();
-
-        } catch (Exception $e){
-            debug ($e->getMessage());
-            die();
-        }
-
-        return $message;
-    }
-
     public function save(){
         //TODO create method Message::save();
     }
@@ -163,42 +190,30 @@ class Dialog extends Model
     }
 
 
-    private function initDialog(DialogRecord $dialog_rec = null, int $user_id) :Dialog{
-        if (empty($dialog_rec)){
-            $this-> dialog_record = new DialogRecord();
-            $this-> dialog_record-> title = 'Dialog_' . \Yii::$app->formatter->asDate(new \DateTime());
-            $this-> dialog_record-> save();
-            $this-> createDialogReference($user_id);
-
-        } else {
-            $this->dialog_record = $dialog_rec;
-        }
-
-        $this->user_id = $user_id;
-
-        $reference = DialogReferenceRecord::find()->where(['user_id' => $this->user_id, 'dialog_id' => $this->getId()])->one();
-        if (empty($reference))
-            throw new Exception("Error: You don't belong to this dialog");
-
-        $this->dialog_references[$reference->user_id] = $reference;
-        return $this;
-    }
-
     private function findDialogReferences(){
-        $dialog_references = DialogReferenceRecord::find()->where(['dialog_id' => $this->getId()])->all();
+        $dialog_references = DialogReferenceRecord::find()->where(['dialog_id' => $this->getId()])->with('user')->all();
+
         foreach($dialog_references as $reference){
             $this->dialog_references[$reference->user_id] = $reference;
         }
     }
 
-    private function createDialogReference($user_id){
-        $dr = new DialogReferenceRecord();
-        $dr -> user_id = $user_id;
-        $dr -> dialog_id = $this->getId();
-        if ($this->user_id == $user_id){
-            $dr -> is_creator = true;
+    private function createDialogReferences(array $users){
+        foreach ($users as $user){
+            $ref = new DialogReferenceRecord(
+                $this->getId(),
+                $user->id,
+                ($this->user_id == $user->id) ? 1 : 0
+            );
+
+            try{
+                $ref->save();
+            } catch (Exception $e){
+                // \Yii::warning("Error: {$e->getMessage()}", "message_reference");
+            }
+
+            $this->dialog_references[$ref->user_id] = $ref;
         }
-        $dr->save();
     }
 
 }

@@ -9,13 +9,10 @@
 namespace app\modules\chat\models;
 
 use app\modules\chat\models\records\{ MessageRecord, MessageReferenceRecord};
-use yii\base\Exception;
-use yii\base\Model;
+use yii\base\{ Exception, Model };
 
 class Message extends Model
 {
-    //TODO Refactor this shit
-
     private  $user_id            = null;
     private  $message_record     = null;
     private  $message_references =   [];
@@ -70,23 +67,30 @@ class Message extends Model
 
     static function  setSeenMessages(int $dialog_id, array $messages){
         $references = MessageReferenceRecord::find()->where(['dialog_id' => $dialog_id, 'message_id' => $messages])->all();
-        $success = [];
+        $seen = [];
         foreach ($references as $reference){
             $reference -> is_new = 0;
             if ($reference -> save()) {
-                $success[] = $reference -> message_id;
+                $seen[] = $reference -> message_id;
             }
         }
 
-        return $success;
+        return $seen;
     }
 
 
-    public function __construct(MessageRecord $message_rec = null, Dialog $dialog = null, $content = null) // Only for creating new Records;
-    {
-        parent::init();
+    public function __construct(MessageRecord $message_rec = null, Dialog $dialog = null, string $content = null){
+        parent::__construct();
 
-        if (!empty($message_rec)){
+        if (empty($message_rec)){
+            $this->user_id = \Yii::$app->user->getId();
+
+            $this->message_record  = new MessageRecord($dialog->getId(), $content);
+            $this->message_record -> save();
+
+            $this->createReferences($dialog->getUsers());
+
+        } else {
             $this->message_record = $message_rec;
             $this->user_id = \Yii::$app->user->getId();
 
@@ -95,34 +99,31 @@ class Message extends Model
                 throw new Exception("Empty reference when initialize message");
 
             $this->message_references[$reference->user_id] = $reference;
-
-        } else {
-            $this->user_id = $dialog->getUserId();
-
-            $this->message_record  = new MessageRecord($dialog->getId(), $content);
-            $this->message_record -> save();
-
-            $this->createReferences($dialog->getUsers());
         }
     }
 
-    public function  isAuthor(int $user_id){
+    public function  isAuthor(int $user_id)
+    {
         return MessageReferenceRecord::findOne(['message_id' => $this->getId(), 'user_id' => $user_id])->is_author;
     }
 
-    public function  getId(){
+    public function  getId()
+    {
         return $this -> message_record -> id;
     }
 
-    public function  getCreationDate(){
+    public function  getCreationDate()
+    {
         return $this -> message_record -> created_at;
     }
 
-    public function  getContent(){
+    public function  getContent()
+    {
         return $this -> message_record -> content;
     }
 
-    public function  isNew(){
+    public function  isNew()
+    {
         return $this->message_references[$this->user_id]->is_new;
     }
 
@@ -142,25 +143,27 @@ class Message extends Model
 
     private function createReferences(array $users){
         foreach ($users as $user){
+            if ( empty($this->message_references[$user->id]) ) {
+                $ref = new MessageReferenceRecord(
+                    $this->message_record->dialog_id,
+                    $this->message_record->id,
+                    $user->id,
+                    ($user->id == $this->user_id) ? 1 : 0
+                );
 
-            $ref = new MessageReferenceRecord(
-                $this->message_record->dialog_id,
-                $this->message_record->id,
-                $user->id,
-                ($user->id == $this->user_id) ? 1 : 0
-            );
-            try{
-                $ref->save();
-            } catch (Exception $e){
+                try{
+                    $ref->save();
+                } catch (Exception $e){
+                   // \Yii::warning("Error: {$e->getMessage()}", "message_reference");
+                }
 
+                $this->message_references[$ref->user_id] = $ref;
             }
-
-            $this->message_references[$user->id] = $ref;
         }
     }
 
-    private function findMessageReferences(){
-        $message_references = MessageReferenceRecord::find()->where(['message_id' => $this->getId()])->all();
+    private function findReferences(){
+        $message_references = $this->message_record->getReferences();
         foreach($message_references as $reference){
             $this->message_references[$reference->user_id] = $reference;
         }

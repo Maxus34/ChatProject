@@ -1,7 +1,7 @@
 <li data-id = "<?= $message->getId() ?>"
     data-new="<?= $message->isNew()?>">
     <div class="message
-        <?php echo $message->isAuthor(\Yii::$app->user->getId()) ?  "message-to" : "message-from"; ?>
+        <?php echo $message->isAuthor(\Yii::$app->user->getId()) ?  "message-outgoing" : "message-incoming"; ?>
         <?php echo $message->isNew() ?  "message-new" : ""; ?>
     ">
         <p><?= $message->getContent() ?></p>

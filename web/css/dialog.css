@@ -39,25 +39,25 @@ div.message h6{
     font-weight:100;
 }
 
-div.message-to h6{
+div.message-outgoing h6{
     text-align: right;
 }
 
-div.message-to{
+div.message-outgoing{
     margin: 10px;
     margin-left:35%;
     background-color: rgba(174, 177, 234, 0.4);
 }
 
-.message-to.message-new{
+.message-outgoing.message-new{
     box-shadow: #7876f2 -5px 1px 1px;
 }
 
-.message-from.message-new{
+.message-incoming.message-new{
     box-shadow: #7876f2 5px 1px 1px;
 }
 
-div.message-from{
+div.message-incoming{
     margin: 10px;
     margin-right:35%;
     background-color: rgba(181, 247, 222, 0.4);

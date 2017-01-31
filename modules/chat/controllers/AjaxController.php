@@ -62,17 +62,13 @@ class AjaxController extends Controller
         return Json::encode($response_arr);
     }
 
+
     private function  loadOldMessagesAjax(Dialog $dialog, $j_object)
     {
         $last_message_id = $j_object['load_old_messages']['first_message-id'];
         $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "message_id", $last_message_id]]);
 
-        $messages_html = "";
-        foreach ($messages as $message) {
-            $messages_html .= $this->render('_message', ['message' => $message]);
-        }
-
-        return $messages_html;
+        return $this->renderMessages($messages);
     }
 
     private function  sendMessage(Dialog $dialog, $j_object)
@@ -80,7 +76,7 @@ class AjaxController extends Controller
         $content = $j_object ['send_message']['content'];
         $message = $dialog->addMessage($content);
 
-        return $this->render('_message', ['message' => $message]);
+        return $this->render('/templates/_message.php', ['message' => $message]);
     }
 
     private function  loadNewMessagesAjax(Dialog $dialog, $j_object)
@@ -90,12 +86,7 @@ class AjaxController extends Controller
 
         $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["=", "is_author", 0]]);
 
-        $messages_arr = [];
-        foreach ($messages as $message) {
-            $messages_arr[] = $this->render("_message", ['message' => $message]);
-        }
-
-        return $messages_arr;
+        return $this->renderMessages($messages);
     }
 
     private function  getTypingUsers(Dialog $dialog, $j_object){
@@ -119,5 +110,14 @@ class AjaxController extends Controller
             return;
 
         return $dialog->setSeenMessages($messages);
+    }
+
+    private function  renderMessages(array $messages) :array{
+        $messages_arr = [];
+        foreach ($messages as $message) {
+            $messages_arr[] = $this->render("/templates/_message.php", ['message' => $message]);
+        }
+
+        return $messages_arr;
     }
 }
