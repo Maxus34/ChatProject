@@ -89,15 +89,12 @@ textarea.dialog {
     resize: none;
 }
 
-
-
 li.dialog-list{
     border: 1px solid black;
     width: 100%;
     margin: 15px 0px 5px 0px;
     padding: 20px 10px 20px 10px;
 }
-
 
 button.three-dots {
     border: none;
@@ -107,4 +104,8 @@ button.three-dots {
 }
 button.three-dots:hover{
     background: #f2f5f7;
+}
+
+div.modal-header{
+    padding:3px 7px 3px 7px;
 }

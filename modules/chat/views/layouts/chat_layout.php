@@ -25,7 +25,6 @@ ie9AppAsset::register($this);
 
 <body>
 <?php $this->beginBody() ?>
-<!-- Fixed navbar -->
 <div class="navbar navbar-inverse" >
     <div class="container">
         <div class="navbar-header">
@@ -47,8 +46,7 @@ ie9AppAsset::register($this);
             </ul>
         </div><!--/.nav-collapse -->
     </div>
-</div>
-<!-- /.navbar -->
+</div><!-- /.navbar -->
 
 <div class="container">
     <br>
@@ -67,6 +65,15 @@ ie9AppAsset::register($this);
 
     <?= $content ?>
 </div>
+
+<?php
+\yii\bootstrap\Modal::begin([
+    'id' => 'chat_modal',
+    'size' => 'modal_lg',
+]);
+
+\yii\bootstrap\Modal::end();
+?><!--Modal Window -->
 
 <?php $this->endBody() ?>
 </body>

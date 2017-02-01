@@ -35,10 +35,10 @@ class AjaxController extends Controller
 
         $response_arr = [];
         if (isset($j_object['load_new_messages'])) {
-            $response_arr['new_messages'] = $this->loadNewMessagesAjax($dialog, $j_object);
+            $response_arr['new_messages'] = $this->loadNewMessages($dialog, $j_object);
         }
         if (isset($j_object['load_old_messages'])) {
-            $response_arr['old_messages'] = $this->loadOldMessagesAjax($dialog, $j_object);
+            $response_arr['old_messages'] = $this->loadOldMessages($dialog, $j_object);
         }
         if (isset($j_object['send_message'])) {
             $response_arr['message'] = $this->sendMessage($dialog, $j_object);
@@ -58,15 +58,40 @@ class AjaxController extends Controller
             $this->setIsTyping($dialog, $j_object);
         }
 
+        if (isset($j_object['dialog_properties'])){
+            $response_arr['form'] = $this->getDialogPropertiesForm($dialog, $j_object);
+        }
 
         return Json::encode($response_arr);
     }
 
+    public function  actionForm(){
+        $post = \Yii::$app->request->post();
 
-    private function  loadOldMessagesAjax(Dialog $dialog, $j_object)
+        $dialog = Dialog::getDialogInstance($post['DialogProp']['id']);
+        try{
+            $res = $dialog -> setDialogAttributes($post['DialogProp']);
+        } catch (Exception $e){
+            return $e->getMessages();
+        }
+
+        return $this->redirect(['default/view', 'id' => $dialog->id]);
+    }
+
+
+
+    private function  loadOldMessages(Dialog $dialog, $j_object)
     {
         $last_message_id = $j_object['load_old_messages']['first_message-id'];
         $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "message_id", $last_message_id]]);
+
+        return $this->renderMessages($messages);
+    }
+
+    private function  loadNewMessages(Dialog $dialog, $j_object)
+    {
+        $last_message_id = $j_object['load_new_messages']['last_message_id'];
+        $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["=", "is_author", 0]]);
 
         return $this->renderMessages($messages);
     }
@@ -77,16 +102,6 @@ class AjaxController extends Controller
         $message = $dialog->addMessage($content);
 
         return $this->render('/templates/_message.php', ['message' => $message]);
-    }
-
-    private function  loadNewMessagesAjax(Dialog $dialog, $j_object)
-    {
-
-        $last_message_id = $j_object['load_new_messages']['last_message_id'];
-
-        $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["=", "is_author", 0]]);
-
-        return $this->renderMessages($messages);
     }
 
     private function  getTypingUsers(Dialog $dialog, $j_object){
@@ -110,6 +125,10 @@ class AjaxController extends Controller
             return;
 
         return $dialog->setSeenMessages($messages);
+    }
+
+    private function  getDialogPropertiesForm(Dialog $dialog, $j_object){
+        return $this->renderAjax('_dialog_properties_form', compact('dialog'));
     }
 
     private function  renderMessages(array $messages) :array{

@@ -20,10 +20,12 @@ class DialogHandler {
             return;
         }
 
-        this.messagesList       = document.getElementById('messages_list');
-        this.textArea           = document.getElementById('textarea');
-        this.typingDiv          = document.getElementById('typing');
+        this.dialogPropertiesLi = document.getElementById('dialog_properties');
         this.sendMessageButton  = document.getElementById('send_message');
+        this.messagesList       = document.getElementById('messages_list');
+        this.typingDiv          = document.getElementById('typing');
+        this.textArea           = document.getElementById('textarea');
+
         this.dialogId           = this.sendMessageButton.getAttribute('data-dialog_id');
 
         this.monitored_messages = {my_messages : [], messages : []};
@@ -38,21 +40,28 @@ class DialogHandler {
     addEventListeners () {
         let that = this;
 
-        this.eventListeners['sendMessageButton'] =  function (e) {
+        this.eventListeners['dialogPropertiesLi'] =  function (e) {
+            that.showDialogProperties.apply(that);
+        }
+        this.eventListeners['sendMessageButton']  =  function (e) {
             that.sendMessage.apply(that);
         }
-        this.eventListeners['dialogBlock']       =  function (e) {
+        this.eventListeners['dialogBlock']        =  function (e) {
             if (e.target.scrollTop < 1) {
                 that.loadOldMessages.apply(that);
             }
         }
-        this.eventListeners['textArea']          =  function (e) {
+        this.eventListeners['textArea']           =  function (e) {
             that.isTyping = true;
         }
 
-        this.sendMessageButton .addEventListener('click',   this.eventListeners['sendMessageButton']);
-        this.dialogBlock       .addEventListener('scroll',  this.eventListeners['dialogBlock']);
-        this.textArea          .addEventListener('keydown', this.eventListeners['textArea']);
+
+        this.dialogPropertiesLi .addEventListener('click',   this.eventListeners['dialogPropertiesLi']);
+        this.sendMessageButton  .addEventListener('click',   this.eventListeners['sendMessageButton']);
+        this.dialogBlock        .addEventListener('scroll',  this.eventListeners['dialogBlock']);
+        this.textArea           .addEventListener('keydown', this.eventListeners['textArea']);
+
+
 
         this.queryInterval = setInterval(function (e) {
             that.loadNews.apply(that);
@@ -241,14 +250,16 @@ class DialogHandler {
         }
 
         var that = this;
-        let incomingMessages = this.messagesList.getElementsByClassName('message-incoming');
+        let messages = this.messagesList.getElementsByClassName('message-incoming');
+        let last_m_id = null;
 
-        if (incomingMessages.length > 0){
-            var last_m_id = incomingMessages[incomingMessages.length - 1].parentNode.getAttribute('data-id');
-
+        if (messages.length > 0){
+            last_m_id = messages[messages.length - 1].parentNode.getAttribute('data-id');
         } else {
-            let outgoingMessages = this.messagesList.getElementsByClassName('message-outgoing');
-            var last_m_id = outgoingMessages[outgoingMessages.length-1].parentNode.getAttribute('data-id');
+            messages = this.messagesList.getElementsByClassName('message-outgoing');
+            if (messages.length > 0){
+                last_m_id = messages[messages.length-1].parentNode.getAttribute('data-id');
+            }
         }
 
         let data = JSON.stringify({
@@ -351,6 +362,36 @@ class DialogHandler {
         this.monitored_messages = scanNewMessages();
     }
 
+    showDialogProperties(){
+        function success(res) {
+            try{
+                var response = JSON.parse(res);
+            } catch (e){
+                console.log(res);
+                console.log(e);
+                return;
+            }
+
+            $("#chat_modal .modal-body").html(response.form);
+            $("#chat_modal").modal();
+        }
+
+        function error(res){
+            console.log(res);
+        }
+
+        var that = this;
+
+        let data = JSON.stringify({
+            'dialog' : {
+                'dialog-id' : this.dialogId
+            },
+            'dialog_properties' : true
+        });
+
+        this.sendJsonByAjax({"json_string" : data}, success, error, "POST");
+    }
+
 
     goToTheDialogBottom () {
         this.dialogBlock.scrollTop = this.dialogBlock.scrollHeight;
@@ -367,3 +408,7 @@ class DialogHandler {
 }
 
 var dialog_h = new DialogHandler();
+
+function showModal(){
+    $("#chat_modal").modal();
+}

@@ -23,7 +23,7 @@ class Dialog extends Model
 
     static function getDialogInstance(int $dialog_id = null){
         if (empty($dialog_record = DialogRecord::findOne($dialog_id)))
-            throw new Exception("Error: Dialog don't exists. Please try later...");
+            throw new Exception("Error: Dialog don't exists.");
 
         return new static($dialog_record);
     }
@@ -96,9 +96,10 @@ class Dialog extends Model
         if (count($this->dialog_references) < 2){
             $this->findDialogReferences();
         }
+
         $users = [];
         foreach ($this->dialog_references as $reference) {
-            $users[] = $reference->user;
+            $users[$reference->user->id] = $reference->user;
         }
 
         if ($expect_me){
@@ -159,8 +160,13 @@ class Dialog extends Model
         return $message;
     }
 
-    public function setDialogAttributes (){
-        //TODO Create Model DialogAttributes and method for setting them;
+    public function setDialogAttributes ($model){
+        if(!empty($model['title']))
+            $this->dialog_record->title = \yii\helpers\Html::encode($model['title']);
+        if(!empty($model['users']))
+            return $this->updateDialogReferences($model['users']);
+
+        $this->save();
     }
 
     public function setSeenMessages (array $messages = null){
@@ -182,7 +188,10 @@ class Dialog extends Model
 
 
     public function save(){
-        //TODO create method Message::save();
+        $this->dialog_record->save();
+        foreach($this->dialog_references as $reference){
+            $reference->save();
+        }
     }
 
     public function delete(){
@@ -190,12 +199,13 @@ class Dialog extends Model
     }
 
 
-    private function findDialogReferences(){
+    private function findDialogReferences() :array{
         $dialog_references = DialogReferenceRecord::find()->where(['dialog_id' => $this->getId()])->with('user')->all();
 
         foreach($dialog_references as $reference){
             $this->dialog_references[$reference->user_id] = $reference;
         }
+        return $this->dialog_references;
     }
 
     private function createDialogReferences(array $users){
@@ -214,6 +224,32 @@ class Dialog extends Model
 
             $this->dialog_references[$ref->user_id] = $ref;
         }
+    }
+
+    private function updateDialogReferences(array $add){
+        $delete = $this->findDialogReferences();
+        unset($delete[$this->getUserId()]);
+
+        if (count($add) > 0){
+            foreach ($delete as $key => $value){
+                for ($i = 0; $i < count($add); $i++){
+                    if ($key == $add[$i]){
+                        unset($delete[$key]);
+                        unset($add[$i]);
+                    }
+                }
+            }
+        }
+
+        foreach($delete as $del){
+            $del->delete();
+        }
+
+        $add_users = [];
+        foreach ($add as $item){
+            $add_users[] = \Yii::$app->user->identity->findIdentity($item);
+        }
+        $this->createDialogReferences($add_users);
     }
 
 }
