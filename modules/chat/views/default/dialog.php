@@ -5,7 +5,7 @@ $this->title = "Dialog";
 <div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
     <div>
         <div class="col-md-1 col-sm-1">
-            <button type="button" class="btn-info btn-xs" onclick="history.go(-1)">Назад</button>
+            <a class="btn-sm btn-primary" href="<?=\yii\helpers\Url::to(['/chat/default']) ?>">Back</a>
         </div>
         <div class="col-md-3 col-sm-3 col-sm-offset-1 ">
             <span class="text-left">#<?= $dialog->getId() . " | " . $dialog->getTitle()?></span>

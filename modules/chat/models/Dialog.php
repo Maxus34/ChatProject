@@ -195,7 +195,15 @@ class Dialog extends Model
     }
 
     public function delete(){
-        //TODO create method Message::delete();
+        $this->findDialogReferences();
+        if (count($this->dialog_references) > 1){
+            $this->dialog_references[$this->user_id]->delete();
+            //TODO delete message_records for deleted dialog_user (?);
+        } else {
+            $this->dialog_references[$this->user_id]->delete();
+            $this->dialod_record->delete();
+            //TODO delete messages for this dialog (!);
+        }
     }
 
 
