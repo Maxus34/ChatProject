@@ -134,7 +134,7 @@ class Dialog extends Model
         $query = MessageReferenceRecord::find() -> where(['dialog_id' => $this->getId(), 'user_id' => $this->user_id]);
 
         if ($new)
-            $query = $query -> andWhere(["is_new"  => 1, "is_author" => 0]);
+            $query = $query -> andWhere(["is_new"  => 1]) -> andWhere(['!=', 'created_by', $this->user_id]);
 
         return $query->count();
     }
@@ -160,11 +160,12 @@ class Dialog extends Model
         return $message;
     }
 
+
     public function setDialogAttributes ($model){
         if(!empty($model['title']))
-            $this->dialog_record->title = \yii\helpers\Html::encode($model['title']);
-        if(!empty($model['users']))
-            return $this->updateDialogReferences($model['users']);
+            $this->dialog_record->title = $model['title'];
+
+        $this->updateDialogReferences($model['users'] ?? []);
 
         $this->save();
     }
@@ -220,8 +221,7 @@ class Dialog extends Model
         foreach ($users as $user){
             $ref = new DialogReferenceRecord(
                 $this->getId(),
-                $user->id,
-                ($this->user_id == $user->id) ? 1 : 0
+                $user->id
             );
 
             try{
@@ -250,13 +250,19 @@ class Dialog extends Model
         }
 
         foreach($delete as $del){
-            $del->delete();
+            if (!$del->delete()){
+                throw new Exception(debug($del->getErrors()));
+            } else {
+                unset($this->dialog_references[$del->user_id]);
+            }
         }
 
         $add_users = [];
         foreach ($add as $item){
             $add_users[] = \Yii::$app->user->identity->findIdentity($item);
         }
+
+
         $this->createDialogReferences($add_users);
     }
 

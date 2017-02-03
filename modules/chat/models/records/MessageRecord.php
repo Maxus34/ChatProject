@@ -4,7 +4,7 @@ namespace app\modules\chat\models\records;
 
 
 use yii\db\ActiveRecord;
-use yii\behaviors\TimestampBehavior;
+use yii\behaviors\{TimestampBehavior, BlameableBehavior};
 
 class MessageRecord extends ActiveRecord
 {
@@ -20,6 +20,12 @@ class MessageRecord extends ActiveRecord
                 'class' => TimestampBehavior::className(),
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+                ],
+            ],
+            'blame' => [
+                'class' => BlameableBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_by']
                 ]
             ]
         ];

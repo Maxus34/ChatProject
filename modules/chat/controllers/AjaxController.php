@@ -70,9 +70,9 @@ class AjaxController extends Controller
 
         $dialog = Dialog::getDialogInstance($post['DialogProp']['id']);
         try{
-            $res = $dialog -> setDialogAttributes($post['DialogProp']);
+            $dialog -> setDialogAttributes($post['DialogProp']);
         } catch (Exception $e){
-            return $e->getMessages();
+            return $e->getMessage();
         }
 
         return $this->redirect(['default/view', 'id' => $dialog->id]);
@@ -91,7 +91,7 @@ class AjaxController extends Controller
     private function  loadNewMessages(Dialog $dialog, $j_object)
     {
         $last_message_id = $j_object['load_new_messages']['last_message_id'];
-        $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["=", "is_author", 0]]);
+        $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["!=", "created_by", \Yii::$app->user->getId() ]]);
 
         return $this->renderMessages($messages);
     }

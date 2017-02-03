@@ -36,8 +36,8 @@
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav pull-right">
                 <li class="active"><a href="<?=Url::home()?>">Home</a></li>
+                <li><a href="<?=Url::to(['/chat/default'])?>">Chat</a></li>
                 <li><a href="<?=Url::to(['/admin'])?>">Admin Panel</a></li>
-                <li><a href="<?=Url::to(['/site/about'])?>">About</a></li>
                 <li><a href="<?=Url::to(['/site/contact'])?>">Contact</a></li>
                 <?php if (\Yii::$app->user->isGuest): ?>
                     <li><a class="btn" href="<?=Url::to(['/user/login']) ?>">LOGIN</a></li>

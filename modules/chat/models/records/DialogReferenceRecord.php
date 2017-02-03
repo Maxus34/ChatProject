@@ -9,16 +9,34 @@
 namespace app\modules\chat\models\records;
 
 use app\models\User;
-use yii\behaviors\TimestampBehavior;
+use yii\behaviors\{ TimestampBehavior, BlameableBehavior };
 use yii\db\ActiveRecord;
 
 class DialogReferenceRecord extends ActiveRecord
 {
-
-    public static function tableName()
+    static function tableName()
     {
         return 'dialog_ref';
     }
+
+    public function behaviors()
+    {
+        return [
+            'timestamp' => [
+                'class' => TimestampBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+                ],
+            ],
+            'blame' => [
+                'class' => BlameableBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_by']
+                ]
+            ]
+        ];
+    }
+
 
     public function rules(){
         return [
@@ -35,13 +53,12 @@ class DialogReferenceRecord extends ActiveRecord
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
 
-    public function __construct(int $dialog_id = null, int $user_id = null, int $is_creator = null)
+    public function __construct(int $dialog_id = null, int $user_id = null)
     {
         parent::__construct();
 
         $this->dialog_id  =  $dialog_id;
         $this->user_id    =  $user_id;
-        $this->is_creator =  $is_creator;
         $this->is_typing  =  0;
     }
 }

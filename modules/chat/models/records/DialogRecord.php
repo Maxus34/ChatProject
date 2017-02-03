@@ -10,7 +10,10 @@ namespace app\modules\chat\models\records;
 
 
 use yii\db\ActiveRecord;
-use yii\behaviors\TimestampBehavior;
+use yii\behaviors\{
+    BlameableBehavior, TimestampBehavior
+};
+
 class DialogRecord extends ActiveRecord
 {
     public function behaviors()
@@ -21,12 +24,19 @@ class DialogRecord extends ActiveRecord
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
                 ],
+            ],
+            'blame' => [
+                'class' => BlameableBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_by']
+                ]
             ]
         ];
     }
 
 
-    public static function tableName(){
+    public static function tableName()
+    {
         return 'dialog';
     }
 
@@ -37,7 +47,8 @@ class DialogRecord extends ActiveRecord
         $this->title = $title;
     }
 
-    public function getReferences(){
+    public function getReferences()
+    {
         return $this->hasMany(DialogReferenceRecord::className(), ['dialog_id' => $this->id]);
     }
 }

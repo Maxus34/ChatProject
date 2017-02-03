@@ -104,7 +104,7 @@ class Message extends Model
 
     public function  isAuthor(int $user_id)
     {
-        return MessageReferenceRecord::findOne(['message_id' => $this->getId(), 'user_id' => $user_id])->is_author;
+        return  ($this->message_references[$this->user_id]->created_by === $this->user_id);
     }
 
     public function  getId()
@@ -147,8 +147,7 @@ class Message extends Model
                 $ref = new MessageReferenceRecord(
                     $this->message_record->dialog_id,
                     $this->message_record->id,
-                    $user->id,
-                    ($user->id == $this->user_id) ? 1 : 0
+                    $user->id
                 );
 
                 try{
