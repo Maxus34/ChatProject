@@ -75,6 +75,7 @@ class AjaxController extends Controller
             return $e->getMessage();
         }
 
+        \Yii::$app->session->setFlash('success', "A Dialog properties were been changed");
         return $this->redirect(['default/view', 'id' => $dialog->id]);
     }
 

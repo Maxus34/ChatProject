@@ -26,6 +26,7 @@ class DefaultController extends \yii\web\Controller
     }
 
     public function  actionIndex (){
+        $this->view->title = "Chat";
         $dialogs = Dialog::getDialogInstances(null, static::DIALOGS_PER_PAGE);
         $dataProvider = $this->wrapIntoDataProvider($dialogs);
         return $this->render('index', compact('dataProvider'));
@@ -39,6 +40,7 @@ class DefaultController extends \yii\web\Controller
             return $this->redirect('index');
         }
 
+        $this->view->title = "Dialog | " . $dialog->getTitle();
         $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null);
         return $this->render('dialog', compact('dialog', 'messages'));
     }

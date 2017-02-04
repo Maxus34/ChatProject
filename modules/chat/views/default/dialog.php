@@ -1,6 +1,5 @@
 <?php
 /* @var $dialog app\modules\chat\models\Dialog; */
-$this->title = "Dialog";
 ?>
 <div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
     <div>

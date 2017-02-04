@@ -14,8 +14,9 @@ use Yii;
 
 class UserSelectWidget extends Widget
 {
-    public $current_models;
-    public $available_models;
+    public $references;
+    public $current_users;
+    public $available_users;
     public $html;
 
     public function init()
@@ -29,8 +30,9 @@ class UserSelectWidget extends Widget
 
         return $this->render('@app/modules/chat/components/user_select/widget_tpl.php',
             [
-                'current_models' => $this->current_models,
-                'available_models' => $this->available_models,
+                'current_references' => $this->references,
+                'current_users'      => $this->current_users,
+                'available_users'    => $this->available_users,
             ]
         );
     }
@@ -38,10 +40,10 @@ class UserSelectWidget extends Widget
     private function getAvailableModels()
     {
         $array = [];
-        foreach ($this->current_models as $model) {
-            $array[] = $model->id;
+        foreach ($this->references as $reference) {
+            $array[] = $reference->user_id;
         }
-        $this->available_models = User::find()
+        $this->available_users = User::find()
                                     ->where(['NOT IN', 'id', $array])
                                     ->andWhere(['!=', 'id', \Yii::$app->user->getId()])
                                     ->all();

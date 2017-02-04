@@ -109,6 +109,19 @@ class Dialog extends Model
         return $users;
     }
 
+    public function getReferences(bool $expect_me = false){
+        if (count($this->dialog_references) < 2){
+            $this->findDialogReferences();
+        }
+        $references = $this->dialog_references;
+
+        if ($expect_me){
+            unset($references[$this->user_id]);
+        }
+
+        return $references;
+    }
+
     public function getTypingUsers(){
         if (count($this->dialog_references) <= 1){
             $this->findDialogReferences();
@@ -240,10 +253,10 @@ class Dialog extends Model
 
         if (count($add) > 0){
             foreach ($delete as $key => $value){
-                for ($i = 0; $i < count($add); $i++){
-                    if ($key == $add[$i]){
+                foreach ($add as $key1 => $add_item){
+                    if ($key == $add_item){
                         unset($delete[$key]);
-                        unset($add[$i]);
+                        unset($add[$key1]);
                     }
                 }
             }

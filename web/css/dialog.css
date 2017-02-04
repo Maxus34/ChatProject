@@ -96,6 +96,7 @@ li.dialog-list{
     padding: 20px 10px 20px 10px;
 }
 
+
 button.three-dots {
     border: none;
     background: none;
@@ -106,6 +107,73 @@ button.three-dots:hover{
     background: #f2f5f7;
 }
 
+
+
+
+
+/* Modal window Styles*/
 div.modal-header{
-    padding:3px 7px 3px 7px;
+    padding: 5px 5px 5px 10px;
 }
+
+
+
+
+/* UserSelect - Widget Styles */
+label.user-checkbox{
+	position: relative;
+    width: 100%;
+    padding: 5px 15px 5px 15px;
+    border-radius: 3px;
+    background: rgba(43, 84, 255, 0.53);
+    color: #fff;
+    font-weight: 500;
+}
+label.user-checkbox.deleted{
+    background: #faa;
+}
+
+
+.user-checkbox span{
+	font-weight: 700;
+	font-size: 16px;
+	color: #fff;
+	font-family: Consolas;
+}
+.user-checkbox p{
+    width: 50%;
+    text-align: center;
+    margin: 0px 25% 0px 25%;
+    color:#f2f5f7;
+    font-size:12px;
+}
+.user-checkbox input{
+	display: none;
+}
+
+
+.btn-delete, .btn-restore {
+    position: absolute;
+    right: .7rem;
+    top: .3rem;
+    outline: none;
+    border: none;
+    background-color: transparent;
+    color: #fff;
+    font-size: 1.2em;
+}
+.btn-delete:hover { 
+    color: #ff0f0f;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-restore {
+   display:none;
+}
+.btn-restore:hover{
+    color: #2eff2b;
+    text-decoration: none;
+    cursor: pointer;
+}
+

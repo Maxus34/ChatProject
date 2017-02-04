@@ -7,7 +7,7 @@ use yii\helpers\Html;
 use app\modules\chat\components\UserSelectWidget;
 
 echo Html:: csrfMetaTags();
-$this->registerJsFile('@web/js/dialog-modal.js', ['position' => yii\web\view::POS_END]);
+
 ?>
 
 
@@ -22,7 +22,7 @@ $this->registerJsFile('@web/js/dialog-modal.js', ['position' => yii\web\view::PO
         <input class="form-control" id="title-input" name="DialogProp[title]" value="<?= $dialog->getTitle() ?>">
     </div>
 
-    <?=UserSelectWidget::widget(['current_models' => $dialog->getUsers(true)]) ?>
+    <?=UserSelectWidget::widget(['references' => $dialog->getReferences(true)]) ?>
 
     <?php echo Html::submitButton('Submit', ['class' => 'btn btn-success']) ?>
 </form>
