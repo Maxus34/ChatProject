@@ -69,11 +69,11 @@ class DialogProperties {
 
         let a_delete = document.createElement('a');
         a_delete.classList.add('btn-delete');
-        a_delete.innerHTML = `<i class="fa fa-times-circle" aria-hidden="true"></i>`;
+        a_delete.innerHTML = `<i class="fa fa-times" aria-hidden="true"></i>`;
 
         let a_restore = document.createElement('a');
         a_restore.classList.add('btn-restore');
-        a_restore.innerHTML = `<i class="fa fa-plus-circle" aria-hidden="true">`;
+        a_restore.innerHTML = `<i class="fa fa-undo" aria-hidden="true">`;
 
         let span = document.createElement('span');
         span.innerHTML = username;

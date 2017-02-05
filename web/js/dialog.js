@@ -25,7 +25,7 @@ class DialogHandler {
         this.messagesList       = document.getElementById('messages_list');
         this.typingDiv          = document.getElementById('typing');
         this.textArea           = document.getElementById('textarea');
-
+        this.body               = document.getElementsByTagName('body')[0];
         this.dialogId           = this.sendMessageButton.getAttribute('data-dialog_id');
 
         this.monitored_messages = {my_messages : [], messages : []};
@@ -33,8 +33,9 @@ class DialogHandler {
         this.isLoading          = false;
         this.isTyping           = false;
 
-        this.goToTheDialogBottom();
         this.addEventListeners();
+        this.goToTheDialogBottom();
+        this.goToTheDialogBottom();//странно, но работает только со второго раза)
     }
 
     addEventListeners () {
@@ -46,8 +47,8 @@ class DialogHandler {
         this.eventListeners['sendMessageButton']  =  function (e) {
             that.sendMessage.apply(that);
         }
-        this.eventListeners['dialogBlock']        =  function (e) {
-            if (e.target.scrollTop < 1) {
+        this.eventListeners['bodyScroll']         =  function (e) {
+            if (e.target.body.scrollTop < 1) {
                 that.loadOldMessages.apply(that);
             }
         }
@@ -58,9 +59,8 @@ class DialogHandler {
 
         this.dialogPropertiesLi .addEventListener('click',   this.eventListeners['dialogPropertiesLi']);
         this.sendMessageButton  .addEventListener('click',   this.eventListeners['sendMessageButton']);
-        this.dialogBlock        .addEventListener('scroll',  this.eventListeners['dialogBlock']);
+        document                .addEventListener('scroll',  this.eventListeners['bodyScroll']);
         this.textArea           .addEventListener('keydown', this.eventListeners['textArea']);
-
 
 
         this.queryInterval = setInterval(function (e) {
@@ -114,7 +114,9 @@ class DialogHandler {
             messageDiv.classList.add('message-error');
         }
         messageDiv.innerHTML = message;
-        return messageDiv;
+        let list_node = document.createElement('li');
+        list_node.appendChild(messageDiv);
+        return list_node;
     }
 
     sendMessage () {
@@ -127,10 +129,11 @@ class DialogHandler {
                 return;
             }
 
-            that.messagesList.removeChild(list_node);
+            that.messagesList.removeChild(message);
             that.messagesList.innerHTML += response.message;
 
             that.textArea.value = '';
+            that.goToTheDialogBottom();
             that.goToTheDialogBottom();
         }
 
@@ -141,14 +144,11 @@ class DialogHandler {
 
         var that = this;
         let text = this.textArea.value;
-        if (text == ""){
+        if (text == "")
             return;
-        }
-        let message = this.createMessage('<b>Sending...</b>');
-        let list_node = document.createElement('li');
-        list_node.append(message);
 
-        this.messagesList.appendChild(list_node);
+        var message = this.createMessage('<i>Sending...</i>');
+        this.messagesList.appendChild(message);
         this.goToTheDialogBottom();
 
         let data = JSON.stringify({
@@ -223,7 +223,6 @@ class DialogHandler {
                     selector += ",";
             }
             need_to_change = that.messagesList.querySelectorAll(selector);
-            console.log(need_to_change);
             for (var i = 0; i < need_to_change.length; i++){
                 need_to_change[i].dataset.new = "0";
                 need_to_change[i].getElementsByTagName('div')[0].classList.remove('message-new');
@@ -259,6 +258,8 @@ class DialogHandler {
             messages = this.messagesList.getElementsByClassName('message-outgoing');
             if (messages.length > 0){
                 last_m_id = messages[messages.length-1].parentNode.getAttribute('data-id');
+            } else {
+                return;
             }
         }
 
@@ -293,23 +294,25 @@ class DialogHandler {
             let response = JSON.parse(res);
 
             if (response.old_messages.length == 0) {
-                that.dialogBlock.removeEventListener('scroll', that.eventListeners['dialogBlock']);
+               document.removeEventListener('scroll', that.eventListeners['bodyScroll']);
                 that.messagesList.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + that.messagesList.innerHTML;
             }
 
-            let scrollBottom = that.dialogBlock.scrollHeight - that.dialogBlock.scrollTop;
+            let scrollBottom = that.body.scrollHeight - that.body.scrollTop;
             for (var i = response.old_messages.length - 1; i >= 0; i--){
                 that.messagesList.insertBefore(createElementsByHTML(response.old_messages[i])[0], that.messagesList.firstElementChild);
             }
 
-            that.dialogBlock.scrollTop = that.dialogBlock.scrollHeight - scrollBottom;
+            that.body.scrollTop = that.body.scrollHeight - scrollBottom;
             that.isLoading = false;
         }
-
         function error(res) {
             console.log(res);
             that.isLoading = false;
         }
+
+        if (this.isLoading)
+            return;
 
         var that = this;
         let firstMessage = this.messagesList.firstElementChild;
@@ -394,7 +397,8 @@ class DialogHandler {
 
 
     goToTheDialogBottom () {
-        this.dialogBlock.scrollTop = this.dialogBlock.scrollHeight;
+        let newScrollTop = this.body.scrollHeight - this.body.clientHeight;
+        this.body.scrollTop = newScrollTop;
     }
 
     resetIsTyping () {

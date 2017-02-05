@@ -3,10 +3,8 @@ div.dialog{
     -webkit-border-radius:3px;
     -moz-border-radius:3px;
     border-radius:1px;
-    min-height:500px;
-    max-height:520px;
-    padding-top: 25px;
-    overflow: auto;
+    padding: 10px 0px 120px 0px;
+
 }
 
 ul.dialog{
@@ -107,16 +105,39 @@ button.three-dots:hover{
     background: #f2f5f7;
 }
 
+.prop-block{
+    padding: 7px 10px 7px 10px;
+}
 
-
+/* Chat Layout*/
+body{
+    overflow: auto;
+}
+div.fixed-top{
+    position: fixed;
+    top: 0px;
+    width:  100%;
+    background: #f9fafc;
+    z-index: 5;
+}
+div.fixed-bottom{
+    position: fixed;
+    bottom: 0%;
+    width: 100%;
+    background: #f9fafc;
+    z-index: 5;
+}
+div.under-fixed{
+    position: relative;
+    top: 12%;
+    z-index: 0;
+}
 
 
 /* Modal window Styles*/
 div.modal-header{
     padding: 5px 5px 5px 10px;
 }
-
-
 
 
 /* UserSelect - Widget Styles */
@@ -132,7 +153,6 @@ label.user-checkbox{
 label.user-checkbox.deleted{
     background: #faa;
 }
-
 
 .user-checkbox span{
 	font-weight: 700;
@@ -151,7 +171,6 @@ label.user-checkbox.deleted{
 	display: none;
 }
 
-
 .btn-delete, .btn-restore {
     position: absolute;
     right: .7rem;
@@ -162,8 +181,8 @@ label.user-checkbox.deleted{
     color: #fff;
     font-size: 1.2em;
 }
-.btn-delete:hover { 
-    color: #ff0f0f;
+.btn-delete:hover {
+    color: #ffbbbb;
     text-decoration: none;
     cursor: pointer;
 }
@@ -172,7 +191,7 @@ label.user-checkbox.deleted{
    display:none;
 }
 .btn-restore:hover{
-    color: #2eff2b;
+    color: #bbffbb;
     text-decoration: none;
     cursor: pointer;
 }

@@ -18,7 +18,7 @@ use yii\helpers\Json;
 class DefaultController extends \yii\web\Controller
 {
     const DIALOGS_PER_PAGE = 10;
-    const MESSAGES_PER_PAGE = 7;
+    const MESSAGES_PER_PAGE = 12;
 
     public function  behaviors ()
     {

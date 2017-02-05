@@ -18,8 +18,8 @@
                 <input type="checkbox" name="DialogProp[users][]" id="checkbox-<?= $reference->user_id ?>" value="<?= $reference->user_id ?>" checked>
                 <span><?= $reference->user->username;?></span>
                 <p> Added by <?= User::findOne($reference->created_by)->username ?> on <?= \Yii::$app->formatter->asDate($reference->created_at); ?> </p>
-				<a class="btn-delete"  > <i class="fa fa-times-circle" aria-hidden="true"> </i></a>
-                <a class="btn-restore" > <i class="fa fa-plus-circle"  aria-hidden="true"> </i></a>
+				<a class="btn-delete"  > <i class="fa fa-times" aria-hidden="true"> </i></a>
+                <a class="btn-restore" > <i class="fa fa-undo"  aria-hidden="true"> </i></a>
             </label>
         <?php endforeach; ?>
 
