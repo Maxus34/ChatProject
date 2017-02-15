@@ -10,6 +10,7 @@ namespace app\modules\chat\controllers;
 
 
 use app\modules\chat\models\Dialog;
+use app\modules\chat\models\DialogProperties;
 use yii\base\Exception;
 use yii\data\ArrayDataProvider;
 use yii\filters\AccessControl;
@@ -27,14 +28,13 @@ class DefaultController extends \yii\web\Controller
 
     public function  actionIndex (){
         $this->view->title = "Chat";
-        $dialogs = Dialog::getDialogInstances(null, static::DIALOGS_PER_PAGE);
-        $dataProvider = $this->wrapIntoDataProvider($dialogs);
-        return $this->render('index', compact('dataProvider'));
+        $dialogs = Dialog::getInstances(null, static::DIALOGS_PER_PAGE, null);
+        return $this->render('index', compact('dialogs'));
     }
 
     public function  actionView ($id){
         try{
-            $dialog = Dialog::getDialogInstance($id);
+            $dialog = Dialog::getInstance($id);
         } catch (Exception $e){
             \Yii::$app->session->setFlash('error', $e->getMessage());
             return $this->redirect('index');
@@ -42,14 +42,29 @@ class DefaultController extends \yii\web\Controller
 
         $this->view->title = "Dialog | " . $dialog->getTitle();
         $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null);
-        return $this->render('dialog', compact('dialog', 'messages'));
+        return $this->render('view', compact('dialog', 'messages'));
     }
 
+    public function  actionSetProperties(){
+        $post = \Yii::$app->request->post();
+        $model = new DialogProperties();
+        $dialog = Dialog::getInstance($post['DialogProp']['id']);
 
-    private function  wrapIntoDataProvider ($data){
-        return new ArrayDataProvider([
-            'allModels' => $data,
-            'pagination' => false,
-        ]);
+        if ($model -> load($post)){
+            if ($model -> validate()){
+
+                $dialog -> applyProperties($model);
+
+                \Yii::$app->session->setFlash('success', "A Dialog properties were been changed");
+                return $this->redirect(['default/view', 'id' => $dialog->id]);
+
+            } else {
+                \Yii::$app->session->setFlash('error', "A Dialog properties were been changed");
+
+            }
+        }
+
+        return $this->redirect(['default/view', 'id' => $dialog->id]);
     }
+
 }

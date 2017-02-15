@@ -50,12 +50,34 @@ ie9AppAsset::register($this);
         </div>
     </div><!-- /.navbar -->
     <?php if (isset($this->blocks['fixed-top'])): ?>
+	<div class="container">
             <?= $this->blocks['fixed-top'] ?>
+			
+			<div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
+			<?php if (Yii::$app->session->hasFlash('success')): ?>
+				<div class="alert alert-success alert-dismissible" role="alert">
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+							aria-hidden="true">&times;</span></button>
+					<?php echo Yii::$app->session->getFlash('success'); ?>
+				</div>
+			<?php endif; ?>
+			<?php if (Yii::$app->session->hasFlash('error')): ?>
+				<div class="alert alert-danger alert-dismissible" role="alert">
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+							aria-hidden="true">&times;</span></button>
+					<?php echo Yii::$app->session->getFlash('error'); ?>
+				</div>
+			<?php endif; ?>
+			</div>
+	</div>
     <?php endif; ?>
 </div> <!--Fixed Layer-->
+
 <div class="fixed-bottom">
     <?php if (isset($this->blocks['fixed-bottom'])): ?>
-        <?= $this->blocks['fixed-bottom'] ?>
+		<div class="container">
+			<?= $this->blocks['fixed-bottom'] ?>
+		</div>
     <?php endif; ?>
 </div><!--Fixed Layer-->
 

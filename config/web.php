@@ -40,6 +40,7 @@ $config = [
         ],
         'authManager' => [
             'class' => '\yii\rbac\DbManager',
+            'defaultRoles' => ['guest']
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
@@ -63,6 +64,8 @@ $config = [
             'showScriptName' => false,
             'rules' => [
 
+                'chat/<id:\d+>' => '/chat/default/view',
+                'chat' => '/chat/default',
             ],
         ],
     ],

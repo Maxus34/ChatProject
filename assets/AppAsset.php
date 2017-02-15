@@ -23,7 +23,7 @@ class AppAsset extends AssetBundle
         'css/dialog.css',
     ];
     public $js = [
-        'js/dialog.js',
+        'js/main.js'
     ];
     public $depends = [
         'yii\web\YiiAsset',

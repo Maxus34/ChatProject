@@ -46,16 +46,16 @@ class RegistrationForm extends Model
 
         } else {
             $user = $this->createNewUser();
-            $this->assingUserRole('user', $user);
+            $this->assignUserRole('user', $user);
             return true;
         }
     }
 
     protected function createNewUser(){
-        $user = new User();
-        $user->username = $this->username;
-        $user->email    = $this->email;
-        $user->password =  Yii::$app->getSecurity()->generatePasswordHash($this->password);
+        $user                 = new User();
+        $user->username       = $this->username;
+        $user->email          = $this->email;
+        $user->password       = Yii::$app->getSecurity()->generatePasswordHash($this->password);
         $user->activation_key = Yii::$app->security->generateRandomString();
         $user->save();
 
@@ -63,7 +63,10 @@ class RegistrationForm extends Model
     }
 
     protected function assignUserRole($role, $user){
-        $userRole = Yii::$app->authManager->getRole('user');
+        $userRole = Yii::$app->authManager->getRole($role);
         Yii::$app->authManager->assign($userRole, $user->getId());
+    }
+
+    protected function sendEmail(){
     }
 }

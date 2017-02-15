@@ -8,14 +8,10 @@
 
 namespace app\controllers;
 
-use app\models\RegistrationForm;
 use Yii;
-use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
-use app\models\User;
+use yii\filters\{ VerbFilter, AccessControl };
+use app\models\{ LoginForm, User, RegistrationForm };
 
 class UserController extends Controller
 {
@@ -49,10 +45,6 @@ class UserController extends Controller
             'error' => [
                 'class' => 'yii\web\ErrorAction',
             ],
-            'captcha' => [
-                'class' => 'yii\captcha\CaptchaAction',
-                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
-            ],
         ];
     }
 
@@ -60,12 +52,17 @@ class UserController extends Controller
     public function actionRegister(){
         $model = new RegistrationForm();
 
-        if($model->load(Yii::$app->request->post()) && $model->register()){
-            Yii::$app->session->setFlash('success', "Регистрация успешна
-            <br>На ваш email выслано письмо для подтверждения регистрации");
-            return $this->refresh();
-        } else {
-            Yii::$app->session->setFlash('error',  print_r($model->getErrors()));
+        if($model->load(Yii::$app->request->post())){
+
+            if ($model->register()){
+                $model->sendEmail();
+                Yii::$app->session->setFlash('success', "Registration success"
+                                                         . "<br>A message with instructions to confirm registration has been sent to your email");
+                return $this->goHome();
+            } else {
+                Yii::$app->session->setFlash('error',  print_r($model->getErrors()));
+            }
+
         }
 
         return $this->render('register', [
@@ -100,24 +97,26 @@ class UserController extends Controller
 
     public function actionConfirmRegistration($id = null, $hash = null){
         if(empty($id) || empty($hash)){
-            Yii::$app->session->setFlash('error', "Ошибка подтверждения");
+            Yii::$app->session->setFlash('error', "Error has been occured <br> Please try later.");
             return $this->goHome();
         }
+
         $user = User::findIdentity($id);
         if (empty($user)){
-            Yii::$app->session->setFlash('error', "Ошибка: пользователь не существует");
+            Yii::$app->session->setFlash('error', "Error: invalid id");
             return $this->redirect(['login']);
         }
 
         if ($hash == $user->activation_key){
             $user->active = 1;
             $user->save();
-            Yii::$app->session->setFlash('success', "Аккаунт успешно активирован");
+            Yii::$app->session->setFlash('success', "Your account has been successfully activated.");
+
             return $this->redirect(['login']);
         } else {
             echo $user->activation_key;
             echo "<br>" . $hash;
-            Yii::$app->session->setFlash('error', "Ошибка: ключ подтвеждения неверный");
+            Yii::$app->session->setFlash('error', "Error: invalid hash");
             return $this->redirect(['login']);
         }
     }

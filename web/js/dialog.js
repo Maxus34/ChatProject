@@ -193,13 +193,12 @@ class DialogHandler {
                 typingText += response.typing[i] + separator;
             }
 
-            if (response.typing.length > 0)
-                typingText += " is typing...";
+            if (response.typing.length < 2)
+                typingText += " is typing now...";
+            else
+                typingText += " are typing now...";
 
-            if (response.typing.length > 1)
-                typingText += " are typing...";
-
-            if (that.typingDiv.innerHTML !== typingText)
+            if (that.typingDiv.innerHTML != typingText)
                 that.typingDiv.innerHTML = typingText;
         }
         function  handleSeenMessages (response) {
@@ -412,7 +411,3 @@ class DialogHandler {
 }
 
 var dialog_h = new DialogHandler();
-
-function showModal(){
-    $("#chat_modal").modal();
-}

@@ -62,7 +62,10 @@ class DialogProperties {
     createUserElement(id, username){
         let input = document.createElement('input');
         input.type  = "checkbox";
-        input.name  = "DialogProp[users][]";
+        //input.name  = "DialogProperties[users][]";
+        // modelName - global Variable
+        // attributeName - global variable
+        input.name  = modelName + "["+ attributeName + "][]";
         input.value = id;
         input.id    = 'checkbox-' + id;
         input.setAttribute('checked', true);

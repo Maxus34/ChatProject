@@ -6,6 +6,7 @@
 
     //$this->registerCssFile('@web/css/user_select-widget.css', ['position' => yii\web\view::POS_HEAD])
     $this->registerJsFile('@web/js/user_select-widget.js', ['position' => yii\web\view::POS_END]);
+    echo "<script> var modelName = '{$model}'; var attributeName = '{$attribute}'; </script>";
 ?>
 
 <div class="panel panel-primary">
@@ -15,7 +16,7 @@
 
         <?php foreach ($current_references as $reference): ?>
             <label class="user-checkbox">
-                <input type="checkbox" name="DialogProp[users][]" id="checkbox-<?= $reference->user_id ?>" value="<?= $reference->user_id ?>" checked>
+                <input type="checkbox" name="<?=$model?>[<?=$attribute?>][]" id="checkbox-<?= $reference->user_id ?>" value="<?= $reference->user_id ?>" checked>
                 <span><?= $reference->user->username;?></span>
                 <p> Added by <?= User::findOne($reference->created_by)->username ?> on <?= \Yii::$app->formatter->asDate($reference->created_at); ?> </p>
 				<a class="btn-delete"  > <i class="fa fa-times" aria-hidden="true"> </i></a>
@@ -38,3 +39,6 @@
 
     </div> <!-- Users Select -->
 </div>
+
+
+

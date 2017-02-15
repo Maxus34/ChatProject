@@ -17,8 +17,8 @@ class m170203_143343_init_chat_tables extends Migration
             'id'         => $this->primaryKey(11)->unsigned(),
             'user_id'    => $this->integer(11)->unsigned()->notNull(),
             'dialog_id'  => $this->integer(11)->unsigned()->notNull(),
-            'created_by' => $this->integer(11)->unsigned()->notNull(),
             'created_at' => $this->integer(11)->unsigned()->notNull(),
+			'created_by' => $this->integer(11)->unsigned()->notNull(),
             'is_typing'  => $this->boolean()
         ]);
 
@@ -69,7 +69,7 @@ class m170203_143343_init_chat_tables extends Migration
 
 
         $this->addForeignKey(
-            'fk-dialog-dialog_user-id',
+            'fk-dialog_ref-dialog-id',
             'dialog_ref',
             'dialog_id',
             'dialog',
@@ -77,7 +77,7 @@ class m170203_143343_init_chat_tables extends Migration
             'CASCADE', 'CASCADE'
         ); // `dialog_ref`.`dialog_id`   ==> `dialog`.`id` CASCADE
         $this->addForeignKey(
-            'fk-message-message_ref-id',
+            'fk-message-dialog-id',
             'message',
             'dialog_id',
             'dialog',
@@ -85,7 +85,7 @@ class m170203_143343_init_chat_tables extends Migration
             'CASCADE', 'CASCADE'
         ); // `message`.`dialog_id`      ==> `dialog`.`id` CASCADE
         $this->addForeignKey(
-            'fk-message-message_ref-id',
+            'fk-message_ref-message-id',
             'message_ref',
             'message_id',
             'message',
@@ -93,7 +93,7 @@ class m170203_143343_init_chat_tables extends Migration
             'CASCADE', 'CASCADE'
         ); // `message_ref`.`message_id` ==> `message`.`id` CASCADE
         $this->addForeignKey(
-            'fk-message-message_ref-id',
+            'fk-dialog_ref-user_id',
             'dialog_ref',
             'user_id',
             'user',
@@ -101,7 +101,7 @@ class m170203_143343_init_chat_tables extends Migration
             'CASCADE', 'CASCADE'
         ); // `dialog_ref`.`user_id`     ==> `user`.`id` CASCADE
         $this->addForeignKey(
-            'fk-message-message_ref-id',
+            'fk-message_ref-user-id',
             'message_ref',
             'user_id',
             'user',

@@ -9,7 +9,7 @@
 namespace app\modules\chat\controllers;
 
 use yii\web\Controller;
-use app\modules\chat\models\Dialog;
+use app\modules\chat\models\{ Dialog, DialogProperties };
 use yii\base\Exception;
 use yii\filters\{ VerbFilter, AccessControl};
 use yii\helpers\Json;
@@ -28,7 +28,7 @@ class AjaxController extends Controller
         unset($json_string);
 
         try {
-            $dialog = Dialog::getDialogInstance($j_object['dialog']['dialog-id']);
+            $dialog = Dialog::getInstance($j_object['dialog']['dialog-id']);
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -59,29 +59,20 @@ class AjaxController extends Controller
         }
 
         if (isset($j_object['dialog_properties'])){
-            $response_arr['form'] = $this->getDialogPropertiesForm($dialog, $j_object);
+            $response_arr['form'] = $this->getDialogPropertiesForm($dialog);
         }
 
         return Json::encode($response_arr);
     }
 
-    public function  actionForm(){
-        $post = \Yii::$app->request->post();
 
-        $dialog = Dialog::getDialogInstance($post['DialogProp']['id']);
-        try{
-            $dialog -> setDialogAttributes($post['DialogProp']);
-        } catch (Exception $e){
-            return $e->getMessage();
-        }
-
-        \Yii::$app->session->setFlash('success', "A Dialog properties were been changed");
-        return $this->redirect(['default/view', 'id' => $dialog->id]);
+    protected function  getDialogPropertiesForm(Dialog $dialog){
+        $model = $dialog->getProperties();
+        return $this->renderAjax('/forms/_dialog_properties_form', compact('dialog', 'model'));
     }
 
 
-
-    private function  loadOldMessages(Dialog $dialog, $j_object)
+    protected function  loadOldMessages(Dialog $dialog, $j_object)
     {
         $last_message_id = $j_object['load_old_messages']['first_message-id'];
         $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "message_id", $last_message_id]]);
@@ -89,7 +80,7 @@ class AjaxController extends Controller
         return $this->renderMessages($messages);
     }
 
-    private function  loadNewMessages(Dialog $dialog, $j_object)
+    protected function  loadNewMessages(Dialog $dialog, $j_object)
     {
         $last_message_id = $j_object['load_new_messages']['last_message_id'];
         $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["!=", "created_by", \Yii::$app->user->getId() ]]);
@@ -97,7 +88,7 @@ class AjaxController extends Controller
         return $this->renderMessages($messages);
     }
 
-    private function  sendMessage(Dialog $dialog, $j_object)
+    protected function  sendMessage(Dialog $dialog, $j_object)
     {
         $content = $j_object ['send_message']['content'];
         $message = $dialog->addMessage($content);
@@ -105,22 +96,22 @@ class AjaxController extends Controller
         return $this->render('/templates/_message.php', ['message' => $message]);
     }
 
-    private function  getTypingUsers(Dialog $dialog, $j_object){
+    protected function  getTypingUsers(Dialog $dialog, $j_object){
         return $dialog->getTypingUsers();
     }
 
-    private function  getIsSeenMessages(Dialog $dialog, $j_object){
+    protected function  getIsSeenMessages(Dialog $dialog, $j_object){
         if (empty($messages = $j_object['check_is_seen']['check_is_seen']))
             return;
 
         return $dialog->getIsSeenMessages($messages);
     }
 
-    private function  setIsTyping(Dialog $dialog, $j_object){
+    protected function  setIsTyping(Dialog $dialog, $j_object){
         $dialog->setIsTyping($j_object['set_is_typing']['is_typing']);
     }
 
-    private function  setSeenMessages(Dialog $dialog, $j_object) {
+    protected function  setSeenMessages(Dialog $dialog, $j_object) {
         $messages = $j_object['seen_messages']['messages'];
         if (empty($messages))
             return;
@@ -128,11 +119,8 @@ class AjaxController extends Controller
         return $dialog->setSeenMessages($messages);
     }
 
-    private function  getDialogPropertiesForm(Dialog $dialog, $j_object){
-        return $this->renderAjax('_dialog_properties_form', compact('dialog'));
-    }
 
-    private function  renderMessages(array $messages) :array{
+    protected function  renderMessages(array $messages) :array{
         $messages_arr = [];
         foreach ($messages as $message) {
             $messages_arr[] = $this->render("/templates/_message.php", ['message' => $message]);

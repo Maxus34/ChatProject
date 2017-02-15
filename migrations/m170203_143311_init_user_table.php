@@ -12,7 +12,7 @@ class m170203_143311_init_user_table extends Migration
             'email'    => $this->string(100)->notNull(),
             'password' => $this->string(100)->notNull(),
             'auth_key' => $this->string(255),
-            'active'   => $this->binary(),
+            'active'   => $this->boolean(),
             'activation_key' => $this->string(40),
             'created_at' => $this->integer(11)->unsigned()->notNull(),
         ]);

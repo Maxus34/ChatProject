@@ -11,6 +11,7 @@ namespace app\modules\chat\models\records;
 use app\models\User;
 use yii\behaviors\{ TimestampBehavior, BlameableBehavior };
 use yii\db\ActiveRecord;
+use yii\filters\AccessControl;
 
 class DialogReferenceRecord extends ActiveRecord
 {
@@ -26,6 +27,7 @@ class DialogReferenceRecord extends ActiveRecord
                 'class' => TimestampBehavior::className(),
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+                    ActiveRecord::EVENT_BEFORE_UPDATE  => ['updated_at'],
                 ],
             ],
             'blame' => [

@@ -34,9 +34,9 @@ class LoginForm extends Model
     public function attributeLabels()
     {
         return [
-            'username' => 'Логин',
-            'password' => 'Пароль',
-            'rememberMe' => 'Запомнить меня',
+            'username' => 'Login',
+            'password' => 'Password',
+            'rememberMe' => 'Remember me',
         ];
     }
 
@@ -79,6 +79,5 @@ class LoginForm extends Model
     public function isActive(){
         return $this->getUser()->active == 1 ? true : false;
     }
-
 
 }

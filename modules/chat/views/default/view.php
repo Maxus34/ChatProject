@@ -1,10 +1,10 @@
 <?php
 /* @var $dialog app\modules\chat\models\Dialog; */
 /* @var $this yii\web\view */
+    $this->registerJsFile("@web/js/dialog.js");
 ?>
 
 <?php $this->beginBlock('fixed-top') ?>
-    <div class="container">
         <div class=" prop-block col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
                     <div>
                         <div class="col-md-1 col-sm-1">
@@ -21,22 +21,15 @@
                             </p>
                         </div>
 
-                        <div class="btn-group col-md-1 col-sm-1">
-                            <button data-toggle="dropdown" class="three-dots dropdown-toggle pull-right"><i class="fa fa-ellipsis-h"
-                                                                                                            aria-hidden="true"
-                                                                                                            style="text-size: 15px;"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a id="dialog_properties" href="#">Options</a></li>
-                            </ul>
+                        <div class="col-md-1 col-sm-1" data-toggle="tooltip" title="Options" data-placement="bottom" >
+                            <a id="dialog_properties" style="cursor:pointer;"><i class="fa fa-ellipsis-h" aria-hidden="true" style="font-size: 20px;"></i></a>
                         </div>
                     </div>
-                </div> <!--Шапка диалога | Настройки -->
-    </div>
+        </div> <!--Шапка диалога | Настройки -->
 <?php $this->endBlock() ?>
 
 <?php $this->beginBlock('fixed-bottom') ?>
-    <div class="container">
+    
             <div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
                 <div class="typing" id="typing">
 
@@ -50,24 +43,11 @@
                 </div>
 
             </div>
-        </div>
+			
 <?php $this->endBlock() ?>
 
 
-<?php if (Yii::$app->session->hasFlash('success')): ?>
-    <div class="alert alert-success alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-                aria-hidden="true">&times;</span></button>
-        <?php echo Yii::$app->session->getFlash('success'); ?>
-    </div>
-<?php endif; ?>
-<?php if (Yii::$app->session->hasFlash('error')): ?>
-    <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-                aria-hidden="true">&times;</span></button>
-        <?php echo Yii::$app->session->getFlash('error'); ?>
-    </div>
-<?php endif; ?>
+
 <div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
     <div class="dialog" id="dialog_block">
         <ul class="dialog" id="messages_list">

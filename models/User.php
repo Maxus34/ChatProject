@@ -30,7 +30,7 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
             [
                 'class' => TimestampBehavior::className(),
                 'attributes' => [
-                    ActiveRecord :: EVENT_BEFORE_INSERT => ['reg_date'],
+                    ActiveRecord :: EVENT_BEFORE_INSERT => ['created_at'],
                 ],
             ],
         ];
@@ -49,7 +49,7 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
 
     public function scenarios()
     {
-        $scenarios =  parent::scenarios();
+        $scenarios = parent::scenarios();
         $scenarios[self::SCENARIO_UPDATE] = ['username', 'email', 'active'];
 
         return $scenarios;

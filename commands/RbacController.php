@@ -7,21 +7,43 @@
  */
 
 namespace app\commands;
+use Ratchet\Wamp\Exception;
 use Yii;
 use yii\console\Controller;
 
 class RbacController extends Controller
 {
     public function actionInit(){
-        $auth = Yii::$app->authManager;
+        $authManager = Yii::$app->authManager;
 
-        $moderator = $auth->getRole('moderator');
+        $guest  = $authManager->createRole('guest');
+        $user   = $authManager->createRole('user');
+        $moder  = $authManager->createRole('moder');
+        $admin  = $authManager->createRole('admin');
 
-        $user = $auth->getRole('user');
+        $login   = $authManager->createPermission('login');
+        $logout  = $authManager->createPermission('logout');
+        $sign_up = $authManager->createPermission('sign-up');
 
+        try{
+            $authManager->add($admin);
+            $authManager->add($moder);
+            $authManager->add($user);
+            $authManager->add($guest);
 
-        $auth->addChild($moderator, $user);
+            $authManager->add($login);
+            $authManager->add($logout);
+            $authManager->add($sign_up);
 
-        return 'success';
+            $authManager->addChild($admin, $moder);
+            $authManager->addChild($moder, $user);
+            $authManager->addChild($user, $guest);
+
+        } catch (Exception $e){
+            echo $e->getMessage();
+            return;
+        }
+
+        echo "Success\n";
     }
 }
