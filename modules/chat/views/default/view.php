@@ -1,11 +1,11 @@
 <?php
 /* @var $dialog app\modules\chat\models\Dialog; */
 /* @var $this yii\web\view */
-    $this->registerJsFile("@web/js/dialog.js");
+    $this->registerJsFile("@web/js/chat/dialog.js");
 ?>
 
 <?php $this->beginBlock('fixed-top') ?>
-        <div class=" prop-block col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
+        <div id="dialog_header_1" class="prop-block col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
                     <div>
                         <div class="col-md-1 col-sm-1">
                             <a class="btn-sm btn-primary" href="<?= \yii\helpers\Url::to(['/chat/default']) ?>">Back</a>
@@ -25,7 +25,20 @@
                             <a id="dialog_properties" style="cursor:pointer;"><i class="fa fa-ellipsis-h" aria-hidden="true" style="font-size: 20px;"></i></a>
                         </div>
                     </div>
-        </div> <!--Шапка диалога | Настройки -->
+        </div>
+
+        <div id="dialog_header_2" class="prop-block col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1" style="display: none;">
+            <div>
+                <div class="col-md-1 col-sm-1">
+                    <a class="btn-sm btn-primary" href="<?= \yii\helpers\Url::to(['/chat/default']) ?>">Back</a>
+                </div>
+                <div id="delete_messages" class="col-md-9 col-sm-9 col-sm-offset-1 ">
+                </div>
+                <div class="col-md-1 col-sm-1" data-toggle="tooltip" title="Options" data-placement="bottom" >
+                    <a id="dialog_properties" style="cursor:pointer;"><i class="fa fa-ellipsis-h" aria-hidden="true" style="font-size: 20px;"></i></a>
+                </div>
+            </div>
+        </div><!--Шапка диалога | Настройки -->
 <?php $this->endBlock() ?>
 
 <?php $this->beginBlock('fixed-bottom') ?>

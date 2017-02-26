@@ -73,12 +73,15 @@ class DialogBase extends Component
 
         $this->_user_id = \Yii::$app->user->getId();
 
+        // Creating new Dialog from new DialogProperties
         if (!empty($properties) && empty($dialog_rec)) {
             $this->applyProperties($properties);
-            $this->save();
+            //$this->save();
+        }
 
-        } else
-            if (!empty($dialog_rec) && empty($properties)) {
+        else
+        // Getting existing Dialog
+        if (empty($properties) && !empty($dialog_rec)) {
                 $this->_dialog_record = $dialog_rec;
                 $reference = DialogReferenceRecord::findOne(['user_id' => $this->_user_id, 'dialog_id' => $this->getId()]);
 
@@ -137,8 +140,22 @@ class DialogBase extends Component
 
     public function applyProperties(DialogProperties $model)
     {
-        $this->_dialog_record->title = $model['title'];
-        $this->updateDialogReferences($model['users']);
+        if (empty($this->_dialog_record)){
+            $this->_dialog_record = new DialogRecord($model -> title);
+            $this->_dialog_record -> save();
+            $reference = new DialogReferenceRecord($this->getId(), \Yii::$app->user->getId());
+            $reference -> save();
+            $this->_dialog_references[] = $reference;
+
+        } else {
+            $this->_dialog_record->title = $model -> title;
+            $this->_dialog_record -> save();
+        }
+
+
+        $this->updateDialogReferences($model -> users);
+
+        //debug($this); die;
 
         $this->save();
     }
@@ -214,7 +231,7 @@ class DialogBase extends Component
         $delete = $this->findDialogReferences();
         unset($delete[$this->getUserId()]);
 
-        if (count($add) > 0) {
+        if (count($add) > 0 && !empty($delete)) {
             foreach ($delete as $key => $value) {
                 foreach ($add as $key1 => $add_item) {
                     if ($key == $add_item) {
@@ -225,11 +242,13 @@ class DialogBase extends Component
             }
         }
 
-        foreach ($delete as $del) {
-            if (!$del->delete()) {
-                throw new Exception(debug($del->getErrors()));
-            } else {
-                unset($this->_dialog_references[$del->user_id]);
+        if (!empty($delete)){
+            foreach ($delete as $del) {
+                if (!$del->delete()) {
+                    throw new Exception(debug($del->getErrors()));
+                } else {
+                    unset($this->_dialog_references[$del->user_id]);
+                }
             }
         }
 

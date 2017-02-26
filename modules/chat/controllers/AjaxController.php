@@ -10,6 +10,7 @@ namespace app\modules\chat\controllers;
 
 use yii\web\Controller;
 use app\modules\chat\models\{ Dialog, DialogProperties };
+use app\modules\chat\components\DialogPropertiesForm\DialogPropertiesForm;
 use yii\base\Exception;
 use yii\filters\{ VerbFilter, AccessControl};
 use yii\helpers\Json;
@@ -65,12 +66,26 @@ class AjaxController extends Controller
         return Json::encode($response_arr);
     }
 
+    public function  actionGetCreateDialogForm(){
+        $d_p = new DialogProperties();
 
+        return $this->renderAjax('/forms/_new_dialog_pr_form', [
+            'create_new' => true,
+            'model' => $d_p,
+            'attribute' => 'users',
+        ]);
+
+    }
     protected function  getDialogPropertiesForm(Dialog $dialog){
         $model = $dialog->getProperties();
-        return $this->renderAjax('/forms/_dialog_properties_form', compact('dialog', 'model'));
+        return $this->renderAjax('/forms/_new_dialog_pr_form', [
+            'create_new' => false,
+            'model'      => $model,
+            'attribute'  => 'users',
+            'dialog'     => $dialog,
+        ]);
+        //return $this->renderAjax('/forms/_dialog_properties_form', compact('dialog', 'model'));
     }
-
 
     protected function  loadOldMessages(Dialog $dialog, $j_object)
     {

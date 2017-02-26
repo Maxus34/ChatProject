@@ -20,27 +20,29 @@ class DialogHandler {
             return;
         }
 
+
         this.dialogPropertiesLi = document.getElementById('dialog_properties');
         this.sendMessageButton  = document.getElementById('send_message');
-        this.messagesList       = document.getElementById('messages_list');
+        this.messagesList       = document.getElementById('messages_list'); // ul
         this.typingDiv          = document.getElementById('typing');
         this.textArea           = document.getElementById('textarea');
-        this.body               = document.getElementsByTagName('body')[0];
-        this.dialogId           = this.sendMessageButton.getAttribute('data-dialog_id');
 
+
+        this.dialogId           = this.sendMessageButton.getAttribute('data-dialog_id');
         this.monitored_messages = {my_messages : [], messages : []};
         this.eventListeners     = {};
         this.isLoading          = false;
         this.isTyping           = false;
 
+
         this.addEventListeners();
         this.goToTheDialogBottom();
-        this.goToTheDialogBottom();//странно, но работает только со второго раза)
     }
 
     addEventListeners () {
         let that = this;
 
+        // Event listeners declaration
         this.eventListeners['dialogPropertiesLi'] =  function (e) {
             that.showDialogProperties.apply(that);
         }
@@ -55,19 +57,28 @@ class DialogHandler {
         this.eventListeners['textArea']           =  function (e) {
             that.isTyping = true;
         }
+        this.eventListeners['messagesList']       =  function (e) {
+            let li = e.target.closest('li');
+            if (!li)
+                return;
+            that.selectMessage.apply(that, [li]);
+        }
 
 
+        //Event listeners adding.
         this.dialogPropertiesLi .addEventListener('click',   this.eventListeners['dialogPropertiesLi']);
         this.sendMessageButton  .addEventListener('click',   this.eventListeners['sendMessageButton']);
         document                .addEventListener('scroll',  this.eventListeners['bodyScroll']);
         this.textArea           .addEventListener('keydown', this.eventListeners['textArea']);
+        this.messagesList       .addEventListener('click',   this.eventListeners['messagesList']);
 
 
+        // intervals
         this.queryInterval = setInterval(function (e) {
-            that.loadNews.apply(that);
+            that.tick.apply(that);
         }, 1000);
         this.checkInterval = setInterval(function (e) {
-            that.handleNewMessages.apply(that);
+            that.check.apply(that);
         }, 1900);
     }
 
@@ -103,16 +114,20 @@ class DialogHandler {
         }); */
     }
 
-    createMessage (message, from = 1) {
+    createMessage (message, type = 0) {
         let messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
-        if (from == 1) {
-            messageDiv.classList.add('message-outgoing');
-        } else if (from == 0) {
-            messageDiv.classList.add('message-incoming');
-        } else {
-            messageDiv.classList.add('message-error');
+
+        switch(type){
+            case 0 : messageDiv.classList.add('message-incoming');
+                break;
+            case 1 : messageDiv.classList.add('message-outgoing');
+                break;
+            case 2 : messageDiv.classList.add('message-error');
+                break;
+            default : messageDiv.classList.add('message-info');
         }
+
         messageDiv.innerHTML = message;
         let list_node = document.createElement('li');
         list_node.appendChild(messageDiv);
@@ -138,7 +153,7 @@ class DialogHandler {
         }
 
         function error (res) {
-            list_node.firstElementChild.innerHTML = "<h5 class='text-danger'>" + "Error: '" + res.statusText + "'</h5>";
+            message.innerHTML = this.createMessage("Error: '" + res.statusText, 2);
             console.log(res);
         }
 
@@ -147,7 +162,7 @@ class DialogHandler {
         if (text == "")
             return;
 
-        var message = this.createMessage('<i>Sending...</i>');
+        var message = this.createMessage('Sending...', 1);
         this.messagesList.appendChild(message);
         this.goToTheDialogBottom();
 
@@ -166,7 +181,7 @@ class DialogHandler {
          }); */
     }
 
-    loadNews () {
+    tick () {
         function  checkNewMessages (response){
             if (response.new_messages === undefined)
                 return;
@@ -288,6 +303,36 @@ class DialogHandler {
          }); */
     }
 
+    check() {
+        function scanNewMessages () {
+            // возвращает object{my_messages:[...], messages:[...]}
+            // my_messages - сообщения текущего пользователя, которые необходимо проверять на измененине is_new другими пользователими
+            // messages - сообщения, которые необходимо отправить для обозначения is_new = 0;
+
+            let messages_list = that.messagesList.getElementsByTagName('li');
+            let messages_array = [];
+            let my_messages_array = [];
+
+            for(var i = 0; i < messages_list.length; i++){
+                if ( (messages_list[i].dataset.new === "1") ){
+
+                    if (messages_list[i].getElementsByTagName('div')[0].classList.contains('message-outgoing'))
+                        my_messages_array.push(messages_list[i].dataset.id);
+                    else
+                        messages_array.push(messages_list[i].dataset.id);
+                }
+            }
+
+            return {
+                my_messages : my_messages_array,
+                messages : messages_array
+            };
+        }
+
+        var that = this;
+        this.monitored_messages = scanNewMessages();
+    }
+
     loadOldMessages () {
         function success(res) {
             let response = JSON.parse(res);
@@ -297,12 +342,12 @@ class DialogHandler {
                 that.messagesList.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + that.messagesList.innerHTML;
             }
 
-            let scrollBottom = that.body.scrollHeight - that.body.scrollTop;
+            let scrollBottom = document.body.scrollHeight - document.body.scrollTop;
             for (var i = response.old_messages.length - 1; i >= 0; i--){
                 that.messagesList.insertBefore(createElementsByHTML(response.old_messages[i])[0], that.messagesList.firstElementChild);
             }
 
-            that.body.scrollTop = that.body.scrollHeight - scrollBottom;
+            document.body.scrollTop = document.body.scrollHeight - scrollBottom;
             that.isLoading = false;
         }
         function error(res) {
@@ -334,34 +379,62 @@ class DialogHandler {
        this.isLoading = true;
     }
 
-    handleNewMessages() {
-        function scanNewMessages () {
-            // возвращает object{my_messages:[...], messages:[...]}
-            // my_messages - сообщения текущего пользователя, которые необходимо проверять на измененине is_new другими пользователими
-            // messages - сообщения, которые необходимо отправить для обозначения is_new = 0;
 
-            let messages_list = that.messagesList.getElementsByTagName('li');
-            let messages_array = [];
-            let my_messages_array = [];
+    selectMessage (li) {
+        if (this.selectedMessages == undefined)
+            this.selectedMessages = {};
 
-            for(var i = 0; i < messages_list.length; i++){
-                if ( (messages_list[i].dataset.new === "1") ){
-
-                    if (messages_list[i].getElementsByTagName('div')[0].classList.contains('message-outgoing'))
-                        my_messages_array.push(messages_list[i].dataset.id);
-                    else
-                        messages_array.push(messages_list[i].dataset.id);
-                }
-            }
-
-            return {
-                my_messages : my_messages_array,
-                   messages : messages_array
-            };
+        let id = li.getAttribute('data-id');
+        if (!this.selectedMessages[id]){
+            this.selectedMessages[id] = true;
+            li.classList.add('message-selected');
+        } else
+        if (this.selectedMessages[id] == true){
+            delete this.selectedMessages[id];
+            li.classList.remove('message-selected');
         }
 
-        var that = this;
-        this.monitored_messages = scanNewMessages();
+
+        let div1 = document.getElementById('dialog_header_1');
+        let div2 = document.getElementById('dialog_header_2');
+        let div3 = document.getElementById('delete_messages');
+
+        if (Object.keys(this.selectedMessages).length > 0){
+            div1.style.display = 'none';
+            div2.style.display = 'block';
+            div3.innerHTML = "<center><a class='btn-sm btn-warning'>" + "Delete " + Object.keys(this.selectedMessages).length + " messages" + "</a></center>";
+        } else {
+            div3.innerHTML = "";
+            div1.style.display = 'block';
+            div2.style.display =  'none';
+        }
+
+
+        console.log(this.selectedMessages);
+        console.log(Object.keys(this.selectedMessages).length);
+    }
+
+    deleteMessages () {
+        function success (res) {
+            try{
+                var response = JSON.parse(res);
+            } catch (e) {
+                console.log(res);
+                console.log(e);
+                return;
+            }
+
+
+
+        }
+
+        function error (res) {
+
+        }
+
+        if (Object.keys(this.selectedMessages).length > 0) {
+
+        }
     }
 
     showDialogProperties(){
@@ -394,10 +467,9 @@ class DialogHandler {
         this.sendJsonByAjax({"json_string" : data}, success, error, "POST");
     }
 
-
     goToTheDialogBottom () {
-        let newScrollTop = this.body.scrollHeight - this.body.clientHeight;
-        this.body.scrollTop = newScrollTop;
+        let newScrollTop = document.body.scrollHeight - document.body.clientHeight;
+        document.body.scrollTop = newScrollTop;
     }
 
     resetIsTyping () {

@@ -18,8 +18,6 @@ use app\modules\chat\models\records\DialogReferenceRecord;
 class Dialog extends DialogBase
 {
 
-
-
     public function getTypingUsers(){
 
         if (count($this->_dialog_references) <= 1)

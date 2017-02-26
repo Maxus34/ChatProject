@@ -1,7 +1,8 @@
+console.log(123);
 class DialogProperties {
     constructor() {
         this.form               = document.getElementById('dialog-properties');
-        this.users_selected_div  = document.getElementById('selected_users');
+        this.users_selected_div = document.getElementById('selected_users');
         this.users_select       = document.getElementById('users-select');
 		this.addUserButton      = document.getElementById('add-user');
         this.addEventListeners();

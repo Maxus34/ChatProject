@@ -88,13 +88,9 @@ textarea.dialog {
     resize: none;
 }
 
-li.dialog-list{
-    border: 1px solid black;
-    width: 100%;
-    margin: 15px 0px 5px 0px;
-    padding: 20px 10px 20px 10px;
+li.message-selected{
+    background-color: rgba(255, 0, 5, 0.12);
 }
-
 
 
 /* Chat Index Page */

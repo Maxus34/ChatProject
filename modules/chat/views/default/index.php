@@ -2,6 +2,8 @@
 /*
  *  @var $dialogs = \app\models\Dialog;
  */
+
+    $this->registerJsFile('@web/js/chat/index.js');
 ?>
 
 <?php $this->beginBlock('fixed-top') ?>
@@ -11,7 +13,7 @@
             <a class="btn-sm btn-primary" onclick="history.back()">Back</a>
         </div>
         <div style="cursor:pointer; position:absolute; top:24%; right:3%;">
-           <a data-toggle="tooltip" title="Create" data-placement="bottom" ><i class="fa fa-plus" aria-hidden="true" style="font-size: 15px;"></i></a>
+           <a id="create_dialog" data-toggle="tooltip" title="Create" data-placement="bottom" ><i class="fa fa-plus" aria-hidden="true" style="font-size: 15px;"></i></a>
         </div>
     </div> <!--Шапка диалога | Настройки -->
 </div>

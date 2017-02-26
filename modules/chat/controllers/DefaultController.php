@@ -9,12 +9,9 @@
 namespace app\modules\chat\controllers;
 
 
-use app\modules\chat\models\Dialog;
-use app\modules\chat\models\DialogProperties;
+use app\modules\chat\models\{ Dialog, DialogProperties};
 use yii\base\Exception;
-use yii\data\ArrayDataProvider;
-use yii\filters\AccessControl;
-use yii\helpers\Json;
+use yii\filters\VerbFilter;
 
 class DefaultController extends \yii\web\Controller
 {
@@ -23,7 +20,15 @@ class DefaultController extends \yii\web\Controller
 
     public function  behaviors ()
     {
-        return parent::behaviors();
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'create-dialog' => ['post'],
+                    'set-dialog-properties' => ['post'],
+                ],
+            ],
+        ];
     }
 
     public function  actionIndex (){
@@ -45,7 +50,25 @@ class DefaultController extends \yii\web\Controller
         return $this->render('view', compact('dialog', 'messages'));
     }
 
-    public function  actionSetProperties(){
+    public function actionCreateDialog () {
+        $model = new DialogProperties();
+        $post = \Yii::$app->request->post();
+
+        if ($model -> load($post)){
+            if ($model -> validate()){
+                $dialog = new Dialog(null, $model);
+                $dialog -> save();
+                return $this->redirect(['default/view', 'id' => $dialog->id]);
+
+            } else {
+                \Yii::$app->session->setFlash('error', "Errors: " . $model->getErrors());
+            }
+        }
+
+        return $this->redirect(['default/index']);
+    }
+
+    public function actionSetDialogProperties(){
         $post = \Yii::$app->request->post();
         $model = new DialogProperties();
         $dialog = Dialog::getInstance($post['DialogProp']['id']);
@@ -59,12 +82,17 @@ class DefaultController extends \yii\web\Controller
                 return $this->redirect(['default/view', 'id' => $dialog->id]);
 
             } else {
-                \Yii::$app->session->setFlash('error', "A Dialog properties were been changed");
+                \Yii::$app->session->setFlash('error', "Errors: " . $model->getErrors());
 
             }
         }
 
         return $this->redirect(['default/view', 'id' => $dialog->id]);
+    }
+
+    public function actionTest(){
+        echo \Yii::getAlias("@chat");
+        die;
     }
 
 }

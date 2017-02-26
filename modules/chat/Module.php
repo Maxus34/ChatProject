@@ -29,5 +29,7 @@ class Module extends \yii\base\Module
     public function init()
     {
         parent::init();
+
+        \Yii::setAlias("@chat", __DIR__);
     }
 }
