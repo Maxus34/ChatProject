@@ -19,9 +19,9 @@ use yii\helpers\Url;
         </td>
         <td>
             <?php
-            foreach ($dialog->getUsers() as $user) {
-                echo $user->username . "&nbsp;&nbsp;";
-            }
+                foreach ($dialog->getUsers(true) as $user) {
+                    echo $user->username . "&nbsp;";
+                }
             ?>
         </td>
         <td><?= $dialog->getMessagesCount(true) ?></td>

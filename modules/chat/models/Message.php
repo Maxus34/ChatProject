@@ -137,7 +137,17 @@ class Message extends Model
     }
 
     public function  delete(){
-        //TODO Create method Message::delete();
+
+        $this->findReferences();
+
+        $this->message_references[$this->user_id]->delete();
+        if (count($this->message_references) > 1){
+
+        } else {
+            $this->message_record->delete();
+        }
+
+        return $this->message_record->id;
     }
 
 
@@ -162,7 +172,9 @@ class Message extends Model
     }
 
     private function findReferences(){
-        $message_references = $this->message_record->getReferences();
+
+        $message_references = MessageReferenceRecord::find()->where(['message_id' => $this->message_record->id])->all();
+
         foreach($message_references as $reference){
             $this->message_references[$reference->user_id] = $reference;
         }

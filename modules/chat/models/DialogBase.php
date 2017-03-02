@@ -49,8 +49,6 @@ class DialogBase extends Component
 
         $dialog_references = $query->all();
 
-        //debug($dialog_references); die;
-
         $dialogs = [];
         foreach ($dialog_references as $reference) {
             try {
@@ -76,12 +74,11 @@ class DialogBase extends Component
         // Creating new Dialog from new DialogProperties
         if (!empty($properties) && empty($dialog_rec)) {
             $this->applyProperties($properties);
-            //$this->save();
-        }
 
-        else
-        // Getting existing Dialog
-        if (empty($properties) && !empty($dialog_rec)) {
+        } else
+
+            // Getting existing Dialog
+            if (empty($properties) && !empty($dialog_rec)) {
                 $this->_dialog_record = $dialog_rec;
                 $reference = DialogReferenceRecord::findOne(['user_id' => $this->_user_id, 'dialog_id' => $this->getId()]);
 
@@ -120,8 +117,9 @@ class DialogBase extends Component
         return $references;
     }
 
-    public function getUsers(bool $expect_me = false){
-        if (count($this->_dialog_references) < 2){
+    public function getUsers(bool $exclude_me = false)
+    {
+        if (count($this->_dialog_references) < 2) {
             $this->findDialogReferences();
         }
 
@@ -130,37 +128,45 @@ class DialogBase extends Component
             $users[$reference->user->id] = $reference->user;
         }
 
-        if ($expect_me){
+        if ($exclude_me) {
             unset($users[$this->_user_id]);
         }
 
         return $users;
     }
 
+    public function isActive(){
+        return $this->_dialog_references[$this->getUserId()] -> is_active;
+    }
+
+    public function isCreator ($user_id){
+        return $this->_dialog_record->created_by == $user_id;
+    }
+
+
 
     public function applyProperties(DialogProperties $model)
     {
-        if (empty($this->_dialog_record)){
-            $this->_dialog_record = new DialogRecord($model -> title);
-            $this->_dialog_record -> save();
+        if (empty($this->_dialog_record)) {
+            $this->_dialog_record = new DialogRecord($model->title);
+            $this->_dialog_record->save();
             $reference = new DialogReferenceRecord($this->getId(), \Yii::$app->user->getId());
-            $reference -> save();
+            $reference->save();
             $this->_dialog_references[] = $reference;
 
         } else {
-            $this->_dialog_record->title = $model -> title;
-            $this->_dialog_record -> save();
+            $this->_dialog_record->title = $model->title;
+            $this->_dialog_record->save();
         }
 
 
-        $this->updateDialogReferences($model -> users);
-
-        //debug($this); die;
+        $this->updateDialogReferences($model->users);
 
         $this->save();
     }
 
-    public function getProperties(){
+    public function getProperties()
+    {
         $model = new DialogProperties();
         $model->title = $this->getTitle();
         $model->users = $this->getUsers(true);
@@ -198,10 +204,9 @@ class DialogBase extends Component
     }
 
 
-
     protected function findDialogReferences()
     {
-        $dialog_references = DialogReferenceRecord::findAll(['dialog_id' => $this->getId()]);
+        $dialog_references = DialogReferenceRecord::findAll(['dialog_id' => $this->getId(), 'is_active' => 1]);
         foreach ($dialog_references as $reference) {
             $this->_dialog_references[$reference->user_id] = $reference;
         }
@@ -211,55 +216,74 @@ class DialogBase extends Component
     protected function createDialogReferences(array $users)
     {
         foreach ($users as $user) {
-            $reference = new DialogReferenceRecord(
-                $this->getId(),
-                $user->id
-            );
 
-            try {
+            $reference = DialogReferenceRecord::find()->where([
+                'dialog_id' => $this->getId(),
+                'user_id' => $user->id,
+                'is_active' => 0
+            ])->one();
+
+
+            if (!empty($reference)) {
+                $reference->is_active = 1;
                 $reference->save();
-            } catch (Exception $e) {
-                // \Yii::warning("Error: {$e->getMessage()}", "message_reference");
+
+            } else {
+                $reference = new DialogReferenceRecord(
+                    $this->getId(),
+                    $user->id
+                );
+
+
+                $reference->save();
             }
 
             $this->_dialog_references[$reference->user_id] = $reference;
         }
     }
 
-    protected function updateDialogReferences(array $add)
+    protected function updateDialogReferences(array $users_persist)
     {
         $delete = $this->findDialogReferences();
         unset($delete[$this->getUserId()]);
 
-        if (count($add) > 0 && !empty($delete)) {
-            foreach ($delete as $key => $value) {
-                foreach ($add as $key1 => $add_item) {
-                    if ($key == $add_item) {
-                        unset($delete[$key]);
-                        unset($add[$key1]);
+        if (count($users_persist) > 0 && !empty($delete)) {
+            foreach ($delete as  $dkey => $value) {
+                foreach ($users_persist as  $akey => $add_item) {
+                    if ($dkey == $add_item) {
+                        unset($delete[$dkey]);
+                        unset($users_persist[$akey]);
                     }
                 }
             }
         }
 
-        if (!empty($delete)){
-            foreach ($delete as $del) {
-                if (!$del->delete()) {
-                    throw new Exception(debug($del->getErrors()));
-                } else {
-                    unset($this->_dialog_references[$del->user_id]);
-                }
-            }
+
+        if (!empty($delete)) {
+            $this->deactivateReferences($delete);
         }
+
 
         $add_users = [];
-        foreach ($add as $item) {
-            $add_users[] = \Yii::$app->user->identity->findIdentity($item);
+        foreach ($users_persist as $id) {
+            $add_users[] = \Yii::$app->user->identity->findIdentity($id);
         }
-
 
         $this->createDialogReferences($add_users);
     }
 
+    protected function deactivateReferences(array $references)
+    {
 
+        foreach ($references as $ref) {
+
+            if ($ref->created_by == $this->getUserId()
+                || $this->isCreator($this->getUserId()))
+            {
+                $ref->is_active = 0;
+                $ref->save();
+                unset($this->_dialog_references[$ref->user_id]);
+            }
+        }
+    }
 }

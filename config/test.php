@@ -7,8 +7,25 @@ $dbParams = require(__DIR__ . '/test_db.php');
  */
 return [
     'id' => 'basic-tests',
-    'basePath' => dirname(__DIR__),    
+    'basePath' => dirname(__DIR__),
     'language' => 'en-US',
+    'modules' => [
+        'admin' => [
+            'class' => 'app\modules\admin\Module',
+        ],
+        'chat' => [
+            'class' => 'app\modules\chat\Module',
+            'defaultRoute' => 'default/index',
+            'layout' => 'chat_layout',
+        ],
+        'permit' => [
+            'class' => 'developeruz\db_rbac\Yii2DbRbac',
+            'params' => [
+                'userClass' => 'app\models\User',
+                'accessRoles' => ['admin'],
+            ],
+        ],
+    ],
     'components' => [
         'db' => $dbParams,
         'mailer' => [
@@ -19,7 +36,7 @@ return [
         ],
         'user' => [
             'identityClass' => 'app\models\User',
-        ],        
+        ],
         'request' => [
             'cookieValidationKey' => 'test',
             'enableCsrfValidation' => false,
@@ -29,7 +46,7 @@ return [
                 'domain' => 'localhost',
             ],
             */
-        ],        
+        ],
     ],
     'params' => $params,
 ];

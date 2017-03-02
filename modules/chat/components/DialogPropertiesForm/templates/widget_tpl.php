@@ -49,8 +49,16 @@ use yii\bootstrap\{ ActiveForm, Html };
                 <input type="checkbox" name="<?=$modelClassName?>[<?=$attribute?>][]" id="checkbox-<?= $reference->user_id ?>" value="<?= $reference->user_id ?>" checked>
                 <span><?= $reference->user->username;?></span>
                 <p> Added by <?= User::findOne($reference->created_by)->username ?> on <?= \Yii::$app->formatter->asDate($reference->created_at); ?> </p>
-                <a class="btn-delete"  > <i class="fa fa-times" aria-hidden="true"> </i></a>
-                <a class="btn-restore" > <i class="fa fa-undo"  aria-hidden="true"> </i></a>
+
+                <?php
+                    if (   $reference->created_by == $dialog->getUserId()
+                        || $dialog -> isCreator( $dialog->getUserId()) ){
+                        echo "<a class=\"btn-delete\"  > <i class=\"fa fa-times\" aria-hidden=\"true\"> </i></a>";
+                        echo "<a class=\"btn-restore\" > <i class=\"fa fa-undo\"  aria-hidden=\"true\"> </i></a>";
+                    }
+                ?>
+
+
             </label>
         <?php endforeach; ?>
 

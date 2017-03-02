@@ -31,12 +31,12 @@ class MessageRecord extends ActiveRecord
         ];
     }
 
-    public function __construct(int $dialog_id=null, string $content=null)
+    public function __construct(int $dialog_id = null, string $content = null)
     {
         parent::__construct();
 
         $this->dialog_id = $dialog_id;
-        $this->content = $content;
+        $this->content   = $content;
     }
 
     public function getReferences($dialog_id = null){

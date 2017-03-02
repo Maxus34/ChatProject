@@ -1,8 +1,14 @@
 <?php
-use yii\helpers\{Html, Url};
-use yii\bootstrap\{Nav, NavBar};
+use yii\helpers\{
+    Html, Url
+};
+use yii\bootstrap\{
+    Nav, NavBar
+};
 use yii\widgets\Breadcrumbs;
-use app\assets\{AppAsset, ie9AppAsset};
+use app\assets\{
+    AppAsset, ie9AppAsset
+};
 
 AppAsset::register($this);
 ie9AppAsset::register($this);
@@ -27,60 +33,72 @@ ie9AppAsset::register($this);
 <?php $this->beginBody() ?>
 
 <div class="fixed-top">
-    <div class="navbar navbar-inverse" >
+    <div class="navbar navbar-inverse">
         <div class="container">
             <div class="navbar-header">
                 <!-- Button for smallest screens -->
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"><span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button>
-                <a class="navbar-brand" href="<?=Url::home()?>"><?=Html::img('/images/logo.png', ['alt' => 'Progressus HTML5 template'])?></a>
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"><span
+                        class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
+                <a class="navbar-brand"
+                   href="<?= Url::home() ?>"><?= Html::img('/images/logo.png', ['alt' => 'Progressus HTML5 template']) ?></a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav pull-right">
-                    <li><a href="<?=Url::home()?>">Home</a></li>
-                    <li class="active"><a href="<?=Url::to(['/chat/default'])?>">Chat</a></li>
-                    <li><a href="<?=Url::to(['/admin'])?>">Admin Panel</a></li>
-                    <li><a href="<?=Url::to(['/site/contact'])?>">Contact</a></li>
+                    <li><a href="<?= Url::home() ?>">Home</a></li>
+                    <li class="active"><a href="<?= Url::to(['/chat/default']) ?>">Chat</a></li>
+                    <li><a href="<?= Url::to(['/admin']) ?>">Admin Panel</a></li>
+                    <li><a href="<?= Url::to(['/site/contact']) ?>">Contact</a></li>
                     <?php if (\Yii::$app->user->isGuest): ?>
-                        <li><a class="btn" href="<?=Url::to(['/user/login']) ?>">LOGIN</a></li>
+                        <li><a class="btn" href="<?= Url::to(['/user/login']) ?>">LOGIN</a></li>
                     <?php else: ?>
-                        <li><a class="btn" href="<?=Url::to(['/user/logout'])?>">Logout<b>(<?=Yii::$app->user->identity->username ?>)</b></a></li>
+                        <li><a class="btn"
+                               href="<?= Url::to(['/user/logout']) ?>">Logout<b>(<?= Yii::$app->user->identity->username ?>
+                                    )</b></a></li>
                     <?php endif; ?>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
     </div><!-- /.navbar -->
     <?php if (isset($this->blocks['fixed-top'])): ?>
-	<div class="container">
+        <div class="container">
             <?= $this->blocks['fixed-top'] ?>
-			
-			<div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
-			<?php if (Yii::$app->session->hasFlash('success')): ?>
-				<div class="alert alert-success alert-dismissible" role="alert">
-					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-					<?php echo Yii::$app->session->getFlash('success'); ?>
-				</div>
-			<?php endif; ?>
-			<?php if (Yii::$app->session->hasFlash('error')): ?>
-				<div class="alert alert-danger alert-dismissible" role="alert">
-					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-					<?php echo Yii::$app->session->getFlash('error'); ?>
-				</div>
-			<?php endif; ?>
-			</div>
-	</div>
+
+            <div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
+                <?php if (Yii::$app->session->hasFlash('success')): ?>
+                    <div class="alert alert-success alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <?php echo Yii::$app->session->getFlash('success'); ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (Yii::$app->session->hasFlash('error')): ?>
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <?php echo Yii::$app->session->getFlash('error'); ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (Yii::$app->session->hasFlash('warning')): ?>
+                    <div class="alert alert-warning alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <?php echo Yii::$app->session->getFlash('warning'); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
     <?php endif; ?>
 </div> <!--Fixed Layer-->
 
 <div class="fixed-bottom">
     <?php if (isset($this->blocks['fixed-bottom'])): ?>
-		<div class="container">
-			<?= $this->blocks['fixed-bottom'] ?>
-		</div>
+        <div class="container">
+            <?= $this->blocks['fixed-bottom'] ?>
+        </div>
     <?php endif; ?>
 </div><!--Fixed Layer-->
-
 
 
 <div class="container under-fixed" id="container">
@@ -91,7 +109,7 @@ ie9AppAsset::register($this);
 \yii\bootstrap\Modal::begin([
     'id' => 'chat_modal',
     'size' => 'modal_lg',
-    ]);
+]);
 
 \yii\bootstrap\Modal::end(); ?>
 <!--Modal Window -->

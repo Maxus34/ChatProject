@@ -8,12 +8,12 @@
 
 namespace app\modules\chat\models;
 
-use app\models\User;
 use app\modules\chat\models\records\MessageReferenceRecord;
 use yii\base\Exception;
-use yii\base\Model;
-use app\modules\chat\models\records\DialogRecord;
+use yii\web\HttpException;
+
 use app\modules\chat\models\records\DialogReferenceRecord;
+
 
 class Dialog extends DialogBase
 {
@@ -66,19 +66,35 @@ class Dialog extends DialogBase
     }
 
     public function addMessage($content){
-        try{
+        if ($this->isActive()){
+            try{
 
-            $message = new Message(null, $this, $content);
-            $message -> save();
+                $message = new Message(null, $this, $content);
+                $message -> save();
 
-        } catch (Exception $e){
-            debug ($e->getMessage());
-            die();
+            } catch (Exception $e){
+                debug ($e->getMessage());
+                die();
+            }
+
+            return $message;
+        } else {
+            throw new HttpException(403, 'Inactive user ' . $this->getUserId() . ' is trying to send message');
         }
 
-        return $message;
     }
 
+    public function deleteMessages(array $messages_id){
+
+        $messages = $this->getMessages(null, null, [['message_id' => $messages_id]]);
+        $success = [];
+
+        foreach ($messages as $message){
+            $success[] = $message->delete();
+        }
+
+        return $success;
+    }
 
     public function setSeenMessages (array $messages = null){
         if (empty($messages))

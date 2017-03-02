@@ -20,13 +20,15 @@ class DialogHandler {
             return;
         }
 
+        // activeUser - variable from view.php
+        this.isActiveUser = activeUser || 0;
 
         this.dialogPropertiesLi = document.getElementById('dialog_properties');
         this.sendMessageButton  = document.getElementById('send_message');
         this.messagesList       = document.getElementById('messages_list'); // ul
         this.typingDiv          = document.getElementById('typing');
         this.textArea           = document.getElementById('textarea');
-
+        this.delMessagesButton  = document.getElementById('delete_messages');
 
         this.dialogId           = this.sendMessageButton.getAttribute('data-dialog_id');
         this.monitored_messages = {my_messages : [], messages : []};
@@ -63,15 +65,20 @@ class DialogHandler {
                 return;
             that.selectMessage.apply(that, [li]);
         }
+        this.eventListeners['delMessagesButton']  =  function (e) {
+            that.deleteMessages.apply(that);
+        }
 
-
-        //Event listeners adding.
-        this.dialogPropertiesLi .addEventListener('click',   this.eventListeners['dialogPropertiesLi']);
-        this.sendMessageButton  .addEventListener('click',   this.eventListeners['sendMessageButton']);
+        //Event listeners adding
         document                .addEventListener('scroll',  this.eventListeners['bodyScroll']);
-        this.textArea           .addEventListener('keydown', this.eventListeners['textArea']);
-        this.messagesList       .addEventListener('click',   this.eventListeners['messagesList']);
 
+        if (this.isActiveUser){
+            this.dialogPropertiesLi .addEventListener('click',   this.eventListeners['dialogPropertiesLi']);
+            this.sendMessageButton  .addEventListener('click',   this.eventListeners['sendMessageButton']);
+            this.textArea           .addEventListener('keydown', this.eventListeners['textArea']);
+            this.messagesList       .addEventListener('click',   this.eventListeners['messagesList']);
+            this.delMessagesButton  .addEventListener('click',   this.eventListeners['delMessagesButton']);
+        }
 
         // intervals
         this.queryInterval = setInterval(function (e) {
@@ -175,10 +182,8 @@ class DialogHandler {
             },
         });
 
-        this.sendJsonByAjax({"json_string" : data}, success, error, "POST")
-        /* .catch(function (e) {
-         console.log(e);
-         }); */
+        this.sendJsonByAjax({"json_string" : data}, success, error, "POST");
+
     }
 
     tick () {
@@ -424,16 +429,52 @@ class DialogHandler {
                 return;
             }
 
+            if (response.deleted_messages){
+                console.log(response.deleted_messages);
+            }
 
+            that.selectedMessages = {};
 
+            let selector = "";
+            for (var i =0; i < response.deleted_messages.length; i++){
+                selector += 'li[data-id="'+response.deleted_messages[i]+'"]';
+                if (i < response.deleted_messages.length-1)
+                    selector += ",";
+            }
+
+            let messages = that.messagesList.querySelectorAll(selector);
+
+            for (var i = 0; i < messages.length; i++){
+                that.messagesList.removeChild(messages[i]);
+            }
+
+            let div1 = document.getElementById('dialog_header_1');
+            let div2 = document.getElementById('dialog_header_2');
+            div1.style.display = 'block';
+            div2.style.display = 'none';
         }
 
         function error (res) {
 
         }
 
-        if (Object.keys(this.selectedMessages).length > 0) {
+        var that = this;
 
+        if (Object.keys(this.selectedMessages).length > 0) {
+            let messages = [];
+            for (var i in this.selectedMessages){
+                messages.push(i);
+            }
+            let data = JSON.stringify({
+                "dialog" : {
+                    "dialog-id" : this.dialogId,
+                },
+                "delete_messages" : {
+                    "messages"   : messages
+                },
+            });
+
+            this.sendJsonByAjax({"json_string" : data}, success, error, "POST");
         }
     }
 

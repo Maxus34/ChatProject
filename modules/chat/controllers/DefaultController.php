@@ -45,6 +45,10 @@ class DefaultController extends \yii\web\Controller
             return $this->redirect('index');
         }
 
+        if (!$dialog->isActive()){
+            \Yii::$app->session->setFlash('warning', "You were been excluded from current dialog");
+        }
+
         $this->view->title = "Dialog | " . $dialog->getTitle();
         $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null);
         return $this->render('view', compact('dialog', 'messages'));

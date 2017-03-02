@@ -20,6 +20,16 @@ class AjaxController extends Controller
 
     const MESSAGES_PER_PAGE = 10;
 
+    const LOAD_NEW_MESSAGES = "load_new_messages";
+    const LOAD_OLD_MESSAGES = "load_old_messages";
+    const SEND_MESSAGE      = "send_message";
+    const SEEN_MESSAGE      = "seen_message";
+    const DELETE_MESSAGES   = "delete_messages";
+    const CHECK_IS_SEEN     = "check_is_seen";
+    const CHECK_IS_TYPING   = "check_is_typing";
+    const SET_IS_TYPING     = "set_is_typing";
+    const DIALOG_PROPERTIES = "dialog_properties";
+
     public function  actionIndex()
     {
         $this->layout = false;
@@ -35,31 +45,38 @@ class AjaxController extends Controller
         }
 
         $response_arr = [];
-        if (isset($j_object['load_new_messages'])) {
-            $response_arr['new_messages'] = $this->loadNewMessages($dialog, $j_object);
-        }
-        if (isset($j_object['load_old_messages'])) {
+        if (isset($j_object[static::LOAD_OLD_MESSAGES])) {
             $response_arr['old_messages'] = $this->loadOldMessages($dialog, $j_object);
         }
-        if (isset($j_object['send_message'])) {
+
+        if (!$dialog->isActive())
+            return Json::encode($response_arr);
+
+        if (isset($j_object[static::LOAD_NEW_MESSAGES])) {
+            $response_arr['new_messages'] = $this->loadNewMessages($dialog, $j_object);
+        }
+        if (isset($j_object[static::SEND_MESSAGE])) {
             $response_arr['message'] = $this->sendMessage($dialog, $j_object);
         }
-        if (isset($j_object['seen_messages'])) {
+        if (isset($j_object[static::SEEN_MESSAGE])) {
             $response_arr['seen_messages'] = $this->setSeenMessages($dialog, $j_object);
         }
+        if (isset($j_object[static::DELETE_MESSAGES])){
+            $response_arr['deleted_messages'] = $this->deleteMessages($dialog, $j_object);
+        }
 
-        if (isset($j_object['check_is_seen'])) {
+        if (isset($j_object[static::CHECK_IS_SEEN])) {
            $response_arr['check_is_seen'] = $this->getIsSeenMessages($dialog, $j_object);
         }
 
-        if (isset($j_object['check_is_typing'])) {
+        if (isset($j_object[static::CHECK_IS_TYPING])) {
             $response_arr['typing'] = $this->getTypingUsers($dialog, $j_object);
         }
-        if (isset($j_object['set_is_typing'])) {
+        if (isset($j_object[static::SET_IS_TYPING])) {
             $this->setIsTyping($dialog, $j_object);
         }
 
-        if (isset($j_object['dialog_properties'])){
+        if (isset($j_object[static::DIALOG_PROPERTIES])){
             $response_arr['form'] = $this->getDialogPropertiesForm($dialog);
         }
 
@@ -76,6 +93,7 @@ class AjaxController extends Controller
         ]);
 
     }
+
     protected function  getDialogPropertiesForm(Dialog $dialog){
         $model = $dialog->getProperties();
         return $this->renderAjax('/forms/_new_dialog_pr_form', [
@@ -132,6 +150,12 @@ class AjaxController extends Controller
             return;
 
         return $dialog->setSeenMessages($messages);
+    }
+
+    protected function  deleteMessages(Dialog $dialog, $j_object){
+         $messages = $j_object['delete_messages']['messages'];
+
+         return $dialog->deleteMessages($messages);
     }
 
 
