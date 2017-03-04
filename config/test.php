@@ -36,6 +36,8 @@ return [
         ],
         'user' => [
             'identityClass' => 'app\models\User',
+            'enableAutoLogin' => true,
+            'loginUrl' => ['user/login'],
         ],
         'request' => [
             'cookieValidationKey' => 'test',

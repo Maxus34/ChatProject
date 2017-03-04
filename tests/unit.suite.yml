@@ -4,8 +4,8 @@
 
 class_name: UnitTester
 modules:
-    enabled:
-        - Asserts
-        - Yii2:
-            configFile: 'config/test.php'
-            part: ini
+    enabled: [Asserts]
+        -Db:
+          dsn: 'mysql:host=localhost;dbname=chat_db',
+          username: 'root',
+          password: 'root',

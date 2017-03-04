@@ -54,6 +54,19 @@ class DefaultController extends \yii\web\Controller
         return $this->render('view', compact('dialog', 'messages'));
     }
 
+    public function  actionDeleteDialog($id){
+        try{
+            $dialog = Dialog::getInstance($id);
+        } catch (Exception $e){
+            \Yii::$app->session->setFlash('error', $e->getMessage());
+            return $this->redirect('index');
+        }
+
+        $dialog->delete();
+        \Yii::$app->session->setFlash('success', "Dialog " . $dialog->getTitle() . " has been deleted.");
+        return $this->redirect('index');
+    }
+
     public function actionCreateDialog () {
         $model = new DialogProperties();
         $post = \Yii::$app->request->post();

@@ -22,8 +22,10 @@ class AjaxController extends Controller
 
     const LOAD_NEW_MESSAGES = "load_new_messages";
     const LOAD_OLD_MESSAGES = "load_old_messages";
+    const MESSAGES_FOR_SEND = "messages_for_send";
     const SEND_MESSAGE      = "send_message";
-    const SEEN_MESSAGE      = "seen_message";
+
+    const SEEN_MESSAGES     = "seen_messages";
     const DELETE_MESSAGES   = "delete_messages";
     const CHECK_IS_SEEN     = "check_is_seen";
     const CHECK_IS_TYPING   = "check_is_typing";
@@ -36,7 +38,6 @@ class AjaxController extends Controller
 
         $json_string = \Yii::$app->request->post('json_string');
         $j_object = Json::decode($json_string);
-        unset($json_string);
 
         try {
             $dialog = Dialog::getInstance($j_object['dialog']['dialog-id']);
@@ -44,37 +45,43 @@ class AjaxController extends Controller
             return $e->getMessage();
         }
 
+
         $response_arr = [];
         if (isset($j_object[static::LOAD_OLD_MESSAGES])) {
-            $response_arr['old_messages'] = $this->loadOldMessages($dialog, $j_object);
+            $response_arr[static::LOAD_OLD_MESSAGES] = $this->loadOldMessages($dialog, $j_object);
+        }
+
+        if (isset($j_object[static::DELETE_MESSAGES])){
+            $response_arr['deleted_messages'] = $this->deleteMessages($dialog, $j_object);
         }
 
         if (!$dialog->isActive())
             return Json::encode($response_arr);
 
+
         if (isset($j_object[static::LOAD_NEW_MESSAGES])) {
-            $response_arr['new_messages'] = $this->loadNewMessages($dialog, $j_object);
+            $response_arr[static::LOAD_NEW_MESSAGES] = $this->loadNewMessages($dialog, $j_object);
         }
         if (isset($j_object[static::SEND_MESSAGE])) {
             $response_arr['message'] = $this->sendMessage($dialog, $j_object);
         }
-        if (isset($j_object[static::SEEN_MESSAGE])) {
-            $response_arr['seen_messages'] = $this->setSeenMessages($dialog, $j_object);
-        }
-        if (isset($j_object[static::DELETE_MESSAGES])){
-            $response_arr['deleted_messages'] = $this->deleteMessages($dialog, $j_object);
+        if (isset($j_object[static::MESSAGES_FOR_SEND])){
+            $response_arr[static::MESSAGES_FOR_SEND] = $this->sendMessages($dialog, $j_object);
         }
 
+        if (isset($j_object[static::SEEN_MESSAGES])) {
+            $response_arr[static::SEEN_MESSAGES] = $this->setSeenMessages($dialog, $j_object);
+        }
         if (isset($j_object[static::CHECK_IS_SEEN])) {
-           $response_arr['check_is_seen'] = $this->getIsSeenMessages($dialog, $j_object);
+           $response_arr[static::CHECK_IS_SEEN] = $this->checkIsSeenMessages($dialog, $j_object);
         }
-
         if (isset($j_object[static::CHECK_IS_TYPING])) {
             $response_arr['typing'] = $this->getTypingUsers($dialog, $j_object);
         }
         if (isset($j_object[static::SET_IS_TYPING])) {
             $this->setIsTyping($dialog, $j_object);
         }
+
 
         if (isset($j_object[static::DIALOG_PROPERTIES])){
             $response_arr['form'] = $this->getDialogPropertiesForm($dialog);
@@ -94,6 +101,8 @@ class AjaxController extends Controller
 
     }
 
+
+
     protected function  getDialogPropertiesForm(Dialog $dialog){
         $model = $dialog->getProperties();
         return $this->renderAjax('/forms/_new_dialog_pr_form', [
@@ -107,18 +116,41 @@ class AjaxController extends Controller
 
     protected function  loadOldMessages(Dialog $dialog, $j_object)
     {
-        $last_message_id = $j_object['load_old_messages']['first_message-id'];
-        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "message_id", $last_message_id]]);
+        $first_message_id = $j_object['load_old_messages']['first_message-id'];
+        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "message_id", $first_message_id]]);
 
         return $this->renderMessages($messages);
     }
 
     protected function  loadNewMessages(Dialog $dialog, $j_object)
     {
-        $last_message_id = $j_object['load_new_messages']['last_message_id'];
+        $last_message_id = $j_object['load_new_messages']['first_message-id'];
         $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["!=", "created_by", \Yii::$app->user->getId() ]]);
 
         return $this->renderMessages($messages);
+    }
+
+    protected function  sendMessages(Dialog $dialog, $j_object){
+        $success = [];
+        foreach ($j_object['messages_for_send'] as $item){
+            $result = true;
+            $error  = "ok";
+            try {
+                $message = $dialog->addMessage($item['text']);
+            } catch (Exception $e) {
+                $result = false;
+                $error = $e -> getMessage();
+            }
+
+            $success[] = [
+                'pseudo_id' => $item['pseudo_id'],
+                'message'   => $this->render('/templates/_message.php', ['message' => $message]),
+                'success'   => $result,
+                'error'     => $error
+            ];
+        }
+
+        return $success;
     }
 
     protected function  sendMessage(Dialog $dialog, $j_object)
@@ -133,9 +165,9 @@ class AjaxController extends Controller
         return $dialog->getTypingUsers();
     }
 
-    protected function  getIsSeenMessages(Dialog $dialog, $j_object){
-        if (empty($messages = $j_object['check_is_seen']['check_is_seen']))
-            return;
+    protected function  checkIsSeenMessages(Dialog $dialog, $j_object){
+        if (empty($messages = $j_object[static::CHECK_IS_SEEN]['messages']))
+            return [];
 
         return $dialog->getIsSeenMessages($messages);
     }
@@ -147,7 +179,7 @@ class AjaxController extends Controller
     protected function  setSeenMessages(Dialog $dialog, $j_object) {
         $messages = $j_object['seen_messages']['messages'];
         if (empty($messages))
-            return;
+            return [];
 
         return $dialog->setSeenMessages($messages);
     }

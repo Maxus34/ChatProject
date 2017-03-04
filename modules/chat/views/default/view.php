@@ -1,7 +1,7 @@
 <?php
 /* @var $dialog app\modules\chat\models\Dialog; */
 /* @var $this yii\web\view */
-$this->registerJsFile("@web/js/chat/dialog.js");
+$this->registerJsFile("@web/js/chat/dialog_.js");
 
 
 echo "<script>"

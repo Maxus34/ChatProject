@@ -11,6 +11,7 @@ use yii\helpers\Url;
         <td style="width:55%;"><b>title</b></td>
         <td style="width:30%;"><b>users</b></td>
         <td><b>new </b></td>
+        <td></td>
     </tr>
     </thead>
     <tbody>
@@ -25,6 +26,7 @@ use yii\helpers\Url;
             ?>
         </td>
         <td><?= $dialog->getMessagesCount(true) ?></td>
+        <td><a href="<?= Url::to(['delete-dialog', 'id' => $dialog->id]) ?>" data-toggle="tooltip" title="Delete" data-placement="bottom" style="color:#e74c3c"><i class="fa fa-times"></i></a></td>
     </tr>
     </tbody>
 </table>
