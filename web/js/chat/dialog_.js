@@ -174,7 +174,17 @@ class MessagesHandler {
                 if (result.messages_for_send[i].success){
                     that.messages_list.removeChild(is_sending_message);
 
-                    that.messages_list.innerHTML += result.messages_for_send[i].message;
+                    let message = createElementsByHTML(result.messages_for_send[i].message)[0];
+
+                    if (message.getAttribute('data-user_id') != that.messages_list.lastElementChild.getAttribute('data-user_id')){
+                        let user_block = document.createElement('h5');
+                        user_block.classList.add('message-author');
+                        user_block.classList.add('message-outgoing');
+                        user_block.innerHTML = users[message.getAttribute('data-user_id')];
+                        message.insertBefore(user_block, message.firstElementChild);
+                    }
+
+                    that.messages_list.appendChild(message);
                 }
 
                 that.text_area.value = '';
@@ -218,6 +228,44 @@ class MessagesHandler {
 
     loadOldMessages () {
         function callback_lo(result){
+            function appendMessages (list, messages_html) {
+                let messages = [];
+                for (let i = messages_html.length -1 ; i >= 0; i--){
+                    messages.push(createElementsByHTML(messages_html[i])[0]);
+                }
+
+                for (let i =  messages.length-1; i >=0 ; i--){
+                    if (i === messages.length-1){
+                        let user_block = document.createElement('h5');
+                        user_block.classList.add('message-author');
+                        if (messages[i].classList.contains('message-outgoing')){
+                            user_block.classList.add('message-outgoing');
+                        } else {
+                            user_block.classList.add('message-incoming');
+                        }
+
+                        user_block.innerHTML = users[messages[i].getAttribute('data-user_id')];
+                        messages[i].insertBefore(user_block, messages[i].firstElementChild);
+                    } else {
+                        if (messages[i].getAttribute('data-user_id') != messages[i+1].getAttribute('data-user_id')){
+                            let user_block = document.createElement('h5');
+                            user_block.classList.add('message-author');
+                            if (messages[i].firstElementChild.classList.contains('message-outgoing')){
+                                user_block.classList.add('message-outgoing');
+                            } else {
+                                user_block.classList.add('message-incoming');
+                            }
+
+                            user_block.innerHTML = users[messages[i].getAttribute('data-user_id')];
+                            messages[i].insertBefore(user_block, messages[i].firstElementChild);
+                        }
+                    }
+                }
+
+                for (let i = 0; i < messages.length; i++)
+                    list.insertBefore(messages[i], list.firstElementChild);
+            }
+
             that.is_loading_old = false;
 
             if (typeof result.load_old_messages == "undefined")
@@ -229,9 +277,8 @@ class MessagesHandler {
             }
 
             let scrollBottom = document.body.scrollHeight - document.body.scrollTop;
-            for (var i = result.load_old_messages.length - 1; i >= 0; i--){
-                that.messages_list.insertBefore(createElementsByHTML(result.load_old_messages[i])[0], that.messages_list.firstElementChild);
-            }
+
+            appendMessages(that.messages_list, result.load_old_messages);
 
             document.body.scrollTop = document.body.scrollHeight - scrollBottom;
         }
@@ -404,7 +451,17 @@ class MessagesHandler {
                 return;
 
             for (var i in result.load_new_messages){
-                that.messages_list.appendChild( createElementsByHTML(result.load_new_messages[i])[0] );
+                let message = createElementsByHTML(result.load_new_messages[i])[0];
+
+                if (message.getAttribute('data-user_id') != that.messages_list.lastElementChild.getAttribute('data-user_id')){
+                    let user_block = document.createElement('h5');
+                    user_block.classList.add('message-author');
+                    user_block.classList.add('message-incoming');
+                    user_block.innerHTML = users[message.getAttribute('data-user_id')];
+                    message.insertBefore(user_block, message.firstElementChild);
+                }
+
+                that.messages_list.appendChild(message);
             }
 
             DialogHandler.goToTheDialogBottom();

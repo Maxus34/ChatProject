@@ -16,7 +16,7 @@ use yii\filters\VerbFilter;
 class DefaultController extends \yii\web\Controller
 {
     const DIALOGS_PER_PAGE = 10;
-    const MESSAGES_PER_PAGE = 12;
+    const MESSAGES_PER_PAGE = 15;
 
     public function  behaviors ()
     {

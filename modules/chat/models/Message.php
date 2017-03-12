@@ -9,11 +9,13 @@
 namespace app\modules\chat\models;
 
 use app\modules\chat\models\records\{ MessageRecord, MessageReferenceRecord};
+use app\models\User;
 use yii\base\{ Exception, Model };
 
 class Message extends Model
 {
     private  $user_id            = null;
+    private  $author             = null;
     private  $message_record     = null;
     private  $message_references =   [];
 
@@ -110,6 +112,18 @@ class Message extends Model
     public function  getId()
     {
         return $this -> message_record -> id;
+    }
+
+    public function getUserId() {
+        return $this->user_id;
+    }
+
+    public function getAuthor(){
+        if (empty($this->author)){
+            $this->author = User::findOne(['id' => $this->message_record->created_by]);
+        }
+
+        return $this->author;
     }
 
     public function  getCreationDate()

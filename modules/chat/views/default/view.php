@@ -7,8 +7,8 @@ $this->registerJsFile("@web/js/chat/dialog_.js");
 echo "<script>"
     . "var activeUser = {$dialog -> isActive()};"
     . "var users = {";
-        foreach ($dialog->getUsers(true) as $user){
-            echo $user->id . " : '" . $user->username . "'";
+        foreach ($dialog->getUsers() as $user){
+            echo $user->id . " : '" . $user->username . "', ";
         }
 echo "}"
      . "</script>";
@@ -62,8 +62,9 @@ echo "}"
 
     <div class="message-input">
         <textarea class="dialog" id="textarea"></textarea>
-        <button id="send_message" class="btn" data-dialog_id="<?= $dialog->getId() ?>"
-                data-user_id="<?= \Yii::$app->user->getId() ?>">Send
+        <button id="send_message" class="send-message" data-dialog_id="<?= $dialog->getId() ?>"
+                data-user_id="<?= \Yii::$app->user->getId() ?>">
+            <i class="fa fa-chevron-right" aria-hidden="true"></i>
         </button>
     </div>
 
@@ -75,13 +76,15 @@ echo "}"
 <div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
     <div class="dialog" id="dialog_block">
         <ul class="dialog" id="messages_list">
-            <?php if (!empty($messages)): ?>
-                <?php foreach ($messages as $message)
-                    echo $this->render('/templates/_message', compact('message'));
-                ?>
-            <?php else: ?>
-                <h4 class="text-danger text-center">You have not any messages in this dialog</h4>
-            <?php endif; ?>
+            <?php
+            if (!empty($messages)){
+                $prev_message = false;
+                foreach ($messages as $message){
+                    echo $this->render('/templates/_message', compact('message', 'prev_message'));
+                    $prev_message = $message;
+                }
+            }
+            ?>
         </ul>
 
     </div>
