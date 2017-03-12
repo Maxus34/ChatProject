@@ -107,9 +107,4 @@ class DefaultController extends \yii\web\Controller
         return $this->redirect(['default/view', 'id' => $dialog->id]);
     }
 
-    public function actionTest(){
-        echo \Yii::getAlias("@chat");
-        die;
-    }
-
 }

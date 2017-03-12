@@ -556,6 +556,9 @@ class DialogHandler {
         function callback_is_t(result){
             that.is_loading_is_t = false;
 
+            if (!result.typing)
+                return;
+
             if (result.typing.length === 0){
                 that.resetIsTyping.apply(that);
                 return;

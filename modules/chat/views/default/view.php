@@ -5,8 +5,13 @@ $this->registerJsFile("@web/js/chat/dialog_.js");
 
 
 echo "<script>"
-    . "var activeUser = {$dialog -> isActive()}"
-    . "</script>";
+    . "var activeUser = {$dialog -> isActive()};"
+    . "var users = {";
+        foreach ($dialog->getUsers(true) as $user){
+            echo $user->id . " : '" . $user->username . "'";
+        }
+echo "}"
+     . "</script>";
 ?>
 
 <?php $this->beginBlock('fixed-top') ?>

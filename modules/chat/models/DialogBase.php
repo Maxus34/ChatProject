@@ -150,9 +150,12 @@ class DialogBase extends Component
         if (empty($this->_dialog_record)) {
             $this->_dialog_record = new DialogRecord($model->title);
             $this->_dialog_record->save();
+
+            // Creating a reference for current user
             $reference = new DialogReferenceRecord($this->getId(), \Yii::$app->user->getId());
+            $reference -> is_active = 1;
             $reference->save();
-            $this->_dialog_references[] = $reference;
+            $this->_dialog_references[\Yii::$app->user->getId()] = $reference;
 
         } else {
             $this->_dialog_record->title = $model->title;
@@ -185,7 +188,8 @@ class DialogBase extends Component
 
     public function delete()
     {
-        $references = $this->getReferences();
+        $this->getReferences();
+
         if (count($this->_dialog_references) > 1) {
             $this->_dialog_references[$this->_user_id]->delete();
             $message_references = MessageReferenceRecord::findAll(['dialog_id' => $this->getId(), 'user_id' => $this->getUserId()]);
@@ -194,8 +198,8 @@ class DialogBase extends Component
             }
 
         } else {
-            $this->_dialog_references[$this->user_id]->delete();
-            $this->_dialod_record->delete();
+            $this->_dialog_references[$this->_user_id]->delete();
+            $this->_dialog_record->delete();
             $messages = MessageRecord::findAll(['dialog_id' => $this->getId()]);
             foreach ($messages as $message) {
                 $message->delete();
