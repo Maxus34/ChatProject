@@ -1,6 +1,6 @@
 <?php
 /* @var $dialog app\modules\chat\models\Dialog; */
-/* @var $this yii\web\view */
+/* @var $this yii\web\View */
 $this->registerJsFile("@web/js/chat/dialog_.js");
 
 
@@ -76,11 +76,20 @@ echo "}"
     <div class="dialog" id="dialog_block">
         <ul class="dialog" id="messages_list">
             <?php if (!empty($messages)): ?>
-                <?php foreach ($messages as $message)
-                    echo $this->render('/templates/_message', compact('message'));
+                <?php
+                    $users = $dialog->getUsers();
                 ?>
-            <?php else: ?>
-                <h4 class="text-danger text-center">You have not any messages in this dialog</h4>
+
+                <?php
+                    foreach($messages as $i => $message){
+                        $user_image = $users[$messages[$i]->getAuthorId()]->getMainImage()->getUrl([100,100]);
+                        echo $this->render('/templates/_message',[
+                            'message' => $messages[$i],
+                            'user_image' => $user_image,
+                        ]);
+                    }
+                ?>
+
             <?php endif; ?>
         </ul>
 

@@ -9,6 +9,7 @@
 namespace app\modules\chat\controllers;
 
 use yii\web\Controller;
+use app\models\User;
 use app\modules\chat\models\{ Dialog, DialogProperties };
 use app\modules\chat\components\DialogPropertiesForm\DialogPropertiesForm;
 use yii\base\Exception;
@@ -23,7 +24,6 @@ class AjaxController extends Controller
     const LOAD_NEW_MESSAGES = "load_new_messages";
     const LOAD_OLD_MESSAGES = "load_old_messages";
     const MESSAGES_FOR_SEND = "messages_for_send";
-    const SEND_MESSAGE      = "send_message";
 
     const SEEN_MESSAGES     = "seen_messages";
     const DELETE_MESSAGES   = "delete_messages";
@@ -61,9 +61,6 @@ class AjaxController extends Controller
 
         if (isset($j_object[static::LOAD_NEW_MESSAGES])) {
             $response_arr[static::LOAD_NEW_MESSAGES] = $this->loadNewMessages($dialog, $j_object);
-        }
-        if (isset($j_object[static::SEND_MESSAGE])) {
-            $response_arr['message'] = $this->sendMessage($dialog, $j_object);
         }
         if (isset($j_object[static::MESSAGES_FOR_SEND])){
             $response_arr[static::MESSAGES_FOR_SEND] = $this->sendMessages($dialog, $j_object);
@@ -114,6 +111,7 @@ class AjaxController extends Controller
         //return $this->renderAjax('/forms/_dialog_properties_form', compact('dialog', 'model'));
     }
 
+
     protected function  loadOldMessages(Dialog $dialog, $j_object)
     {
         $first_message_id = $j_object['load_old_messages']['first_message-id'];
@@ -121,6 +119,7 @@ class AjaxController extends Controller
 
         return $this->renderMessages($messages);
     }
+
 
     protected function  loadNewMessages(Dialog $dialog, $j_object)
     {
@@ -132,9 +131,11 @@ class AjaxController extends Controller
 
     protected function  sendMessages(Dialog $dialog, $j_object){
         $success = [];
+
+
         foreach ($j_object['messages_for_send'] as $item){
             $result = true;
-            $error  = "ok";
+            $error  = false;
             try {
                 $message = $dialog->addMessage($item['text']);
             } catch (Exception $e) {
@@ -142,9 +143,11 @@ class AjaxController extends Controller
                 $error = $e -> getMessage();
             }
 
+            $user = User::findOne($message->getAuthorId());
+            $user_image = $user->getMainImage()->getUrl([100, 100]);
             $success[] = [
                 'pseudo_id' => $item['pseudo_id'],
-                'message'   => $this->render('/templates/_message.php', ['message' => $message]),
+                'message'   => $this->render('/templates/_message.php', ['message' => $message, 'user_image' => $user_image]),
                 'success'   => $result,
                 'error'     => $error
             ];
@@ -153,17 +156,13 @@ class AjaxController extends Controller
         return $success;
     }
 
-    protected function  sendMessage(Dialog $dialog, $j_object)
-    {
-        $content = $j_object ['send_message']['content'];
-        $message = $dialog->addMessage($content);
 
-        return $this->render('/templates/_message.php', ['message' => $message]);
-    }
 
     protected function  getTypingUsers(Dialog $dialog, $j_object){
         return $dialog->getTypingUsers();
     }
+
+
 
     protected function  checkIsSeenMessages(Dialog $dialog, $j_object){
         if (empty($messages = $j_object[static::CHECK_IS_SEEN]['messages']))
@@ -172,9 +171,13 @@ class AjaxController extends Controller
         return $dialog->getIsSeenMessages($messages);
     }
 
+
+
     protected function  setIsTyping(Dialog $dialog, $j_object){
         $dialog->setIsTyping($j_object['set_is_typing']['is_typing']);
     }
+
+
 
     protected function  setSeenMessages(Dialog $dialog, $j_object) {
         $messages = $j_object['seen_messages']['messages'];
@@ -183,6 +186,8 @@ class AjaxController extends Controller
 
         return $dialog->setSeenMessages($messages);
     }
+
+
 
     protected function  deleteMessages(Dialog $dialog, $j_object){
          $messages = $j_object['delete_messages']['messages'];

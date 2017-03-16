@@ -17,13 +17,13 @@ class MessageRecord extends ActiveRecord
     {
         return [
             'timestamp' => [
-                'class' => TimestampBehavior::className(),
+                'class' => TimestampBehavior::class,
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
                 ],
             ],
             'blame' => [
-                'class' => BlameableBehavior::className(),
+                'class' => BlameableBehavior::class,
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_by']
                 ]

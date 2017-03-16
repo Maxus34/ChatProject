@@ -107,6 +107,12 @@ class Message extends Model
         return  ($this->message_references[$this->user_id]->created_by === $this->user_id);
     }
 
+    public function getAuthorId(){
+        $this->findReferences();
+
+        return $this->message_record->created_by;
+    }
+
     public function  getId()
     {
         return $this -> message_record -> id;

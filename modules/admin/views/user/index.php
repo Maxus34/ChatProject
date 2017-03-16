@@ -20,9 +20,10 @@
             'username',
             'email',
             [
-                'attribute' => 'reg_date',
+                'attribute' => 'created_at',
+                'label'     => 'Registration date',
                 'value' => function ($data) {
-                    return Yii::$app->formatter->asDate($data->reg_date);
+                    return Yii::$app->formatter->asDate($data->created_at, "d.m.Y  h:i");
                 }
             ],
             [

@@ -24,6 +24,7 @@ class JsonDataHandler {
 
         this.disposable_callbacks = [];
         this.permanent_callbacks  = [];
+        this.error_callbacks      = [];
 
         var that      = this;
         this.interval = setInterval(function (e) {
@@ -42,6 +43,10 @@ class JsonDataHandler {
         } else {
             this.disposable_callbacks.push(callback);
         }
+    }
+
+    addErrorCallback(callback){
+        this.error_callbacks.push(callback);
     }
 
     sendData () {
@@ -70,8 +75,17 @@ class JsonDataHandler {
         }
 
         function error (response) {
+            console.log("Error");
             console.log(response);
             that.waiting_for_response = false;
+
+            for (var i in that.error_callbacks){
+                that.error_callbacks[i](response);
+            }
+
+            that.error_callbacks = [];
+            that.disposable_callbacks = [];
+            that.data = {};
         }
 
         if (this.waiting_for_response){
@@ -92,13 +106,18 @@ class JsonDataHandler {
 
         var that = this;
 
-       $.ajax({
-            type : "POST",
-            url : this.url,
-            success : success,
-            error : error,
-            data : data
-        });
+        try{
+            $.ajax({
+                type : "POST",
+                url : this.url,
+                success : success,
+                error : error,
+                data : data
+            });
+        } catch (e) {
+            console.log(e);
+        }
+
 
         this.waiting_for_response = true;
     }
@@ -160,7 +179,7 @@ class MessagesHandler {
     }
 
     sendMessages() {
-        function callback_sm (result) {
+        function callback_sendMessages_success (result) {
             that.is_sending_m = false;
 
             if (!result.messages_for_send)
@@ -184,17 +203,29 @@ class MessagesHandler {
             }
         }
 
+        function callback_sendMessages_error(result){
+            let messages = data.messages_for_send;
+            console.log("Send Messages Error");
+
+            for (var i in messages){
+                let is_sending_message = that.messages_list.querySelectorAll("li[data-id='" + messages[i].pseudo_id + "']")[0];
+                console.log(is_sending_message);
+                is_sending_message.innerHTML = "Error. Please try later";
+            }
+
+        }
+
         if (this.is_sending_m)
             return;
 
         var that = this;
-
-        let data = {
+        var data = {
             "messages_for_send" : this.messages_for_send
         }
 
         this.dataHandler.addData(data);
-        this.dataHandler.addCallback(callback_sm, false);
+        this.dataHandler.addCallback(callback_sendMessages_success, false);
+        this.dataHandler.addErrorCallback(callback_sendMessages_error)
         this.is_sending_m = true;
     }
 
@@ -204,7 +235,7 @@ class MessagesHandler {
         if (text == "")
             return;
 
-        var message   = this.createMessage('Sending...', 1);
+        var message   = this.createMessage('<i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i><span class="sr-only">Loading...</span>Sending...', 1);
         var pseudo_id = "@" + Math.round(Math.random() * 10000);
             message.setAttribute('data-id', pseudo_id);
         this.messages_list.appendChild(message);
@@ -217,7 +248,7 @@ class MessagesHandler {
     }
 
     loadOldMessages () {
-        function callback_lo(result){
+        function callback_load_old(result){
             that.is_loading_old = false;
 
             if (typeof result.load_old_messages == "undefined")
@@ -252,7 +283,7 @@ class MessagesHandler {
         };
 
         this.dataHandler.addData(data);
-        this.dataHandler.addCallback(callback_lo, false);
+        this.dataHandler.addCallback(callback_load_old, false);
 
         this.is_loading_old = true;
     }
