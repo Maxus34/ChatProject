@@ -12,6 +12,8 @@ namespace app\models;
 use app\models\records\ImageRecord;
 use yii\web\Exception;
 use yii\base\Object;
+use Imagine\Image\Box;
+use Imagine\Imagick\Imagine;
 
 class ImagePlaceholder extends Object
 {

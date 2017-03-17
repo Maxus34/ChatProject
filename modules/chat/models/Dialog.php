@@ -112,7 +112,6 @@ class Dialog extends DialogBase
          $reference -> save();
     }
 
-
 }
 
 

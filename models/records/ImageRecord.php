@@ -26,13 +26,22 @@ class ImageRecord extends ActiveRecord
 
     public $cash_path;
 
+    protected $_file_record = false;
+
     static function tableName()
     {
         return "images";
     }
 
     public function getUrl($size = false){
-        $file_record = FileRecord::findOne(['id' => $this->file_id]);
+
+        if ($this->_file_record){
+            $file_record = $this->_file_record;
+        } else {
+            $file_record = FileRecord::findOne(['id' => $this->file_id]);
+            $this->_file_record = $file_record;
+        }
+
 
 
         if (!$size){

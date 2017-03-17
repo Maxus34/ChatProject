@@ -17,6 +17,10 @@ class ImageBehavior extends Behavior
 
     public $key = 'default';
 
+    protected $_main_image = false;
+
+    protected $_gallery_images = [];
+
     public function attachImage(UploadedFile $file, $is_main=false, $name = false){
         $savePath = $this->images_path . $file->baseName . "." . $file->extension;
 
@@ -26,6 +30,11 @@ class ImageBehavior extends Behavior
     }
 
     public function getMainImage(){
+
+        if ($this->_main_image){
+            return $this->_main_image;
+        }
+
         $query = ImageRecord::find();
 
         $query = $query->where(['key' => $this->key, 'item_id' => $this->owner->id, 'is_main' => 1])
@@ -38,6 +47,8 @@ class ImageBehavior extends Behavior
         }
 
         $image->cash_path = $this->cash_path;
+
+        $this->_main_image = $image;
 
         return $image;
     }

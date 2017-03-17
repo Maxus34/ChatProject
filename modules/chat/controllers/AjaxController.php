@@ -108,7 +108,6 @@ class AjaxController extends Controller
             'attribute'  => 'users',
             'dialog'     => $dialog,
         ]);
-        //return $this->renderAjax('/forms/_dialog_properties_form', compact('dialog', 'model'));
     }
 
 
@@ -129,9 +128,9 @@ class AjaxController extends Controller
         return $this->renderMessages($messages);
     }
 
+
     protected function  sendMessages(Dialog $dialog, $j_object){
         $success = [];
-
 
         foreach ($j_object['messages_for_send'] as $item){
             $result = true;
@@ -143,8 +142,7 @@ class AjaxController extends Controller
                 $error = $e -> getMessage();
             }
 
-            $user = User::findOne($message->getAuthorId());
-            $user_image = $user->getMainImage()->getUrl([100, 100]);
+            $user_image = User::findIdentity($message->getAuthorId()) -> getMainImage() -> getUrl([100,100]);
             $success[] = [
                 'pseudo_id' => $item['pseudo_id'],
                 'message'   => $this->render('/templates/_message.php', ['message' => $message, 'user_image' => $user_image]),
@@ -199,7 +197,9 @@ class AjaxController extends Controller
     protected function  renderMessages(array $messages) :array{
         $messages_arr = [];
         foreach ($messages as $message) {
-            $messages_arr[] = $this->render("/templates/_message.php", ['message' => $message]);
+
+            $user_image = User::findIdentity($message->getAuthorId()) -> getMainImage() -> getUrl([100,100]);
+            $messages_arr[] = $this->render("/templates/_message.php", ['message' => $message, 'user_image' => $user_image]);
         }
 
         return $messages_arr;

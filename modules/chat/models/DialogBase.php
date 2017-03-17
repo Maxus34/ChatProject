@@ -35,7 +35,8 @@ class DialogBase extends Component
 
     static function getInstances(int $offset = null, int $limit = null, $condition = null)
     {
-        $query = DialogReferenceRecord::find()->where(['user_id' => \Yii::$app->user->getId()]);
+        $query = DialogReferenceRecord::find()->where(['user_id' => \Yii::$app->user->getId()])
+                 ->with('dialog');
 
         if (!empty($offset) && ($offset < 0))
             $offset += $query->count();
@@ -52,7 +53,7 @@ class DialogBase extends Component
         $dialogs = [];
         foreach ($dialog_references as $reference) {
             try {
-                $dialogs[] = static::getInstance($reference->dialog_id);
+                $dialogs[] = new static($reference->dialog);
             } catch (Exception $e) {
                 throw new Exception($e->getMessage());
             }
@@ -78,14 +79,10 @@ class DialogBase extends Component
         } else
 
             // Getting existing Dialog
-            if (empty($properties) && !empty($dialog_rec)) {
+            if (!empty($dialog_rec)) {
                 $this->_dialog_record = $dialog_rec;
-                $reference = DialogReferenceRecord::findOne(['user_id' => $this->_user_id, 'dialog_id' => $this->getId()]);
 
-                if (empty($reference))
-                    throw new Exception("Error: You don't belong to this dialog");
-
-                $this->_dialog_references[$reference->user_id] = $reference;
+                $this->findDialogReferences();
             }
     }
 
@@ -106,11 +103,7 @@ class DialogBase extends Component
 
     public function getReferences(bool $exclude_me = false)
     {
-        if (count($this->_dialog_references) < 2) {
-            $references = $this->findDialogReferences();
-        } else
-            $references = $this->_dialog_references;
-
+        $references = $this->_dialog_references;
         if ($exclude_me) {
             unset($references[$this->_user_id]);
         }
@@ -119,10 +112,6 @@ class DialogBase extends Component
 
     public function getUsers(bool $exclude_me = false)
     {
-        if (count($this->_dialog_references) < 2) {
-            $this->findDialogReferences();
-        }
-
         $users = [];
         foreach ($this->_dialog_references as $reference) {
             $users[$reference->user->id] = $reference->user;
@@ -139,7 +128,11 @@ class DialogBase extends Component
         return $this->_dialog_references[$this->getUserId()] -> is_active;
     }
 
-    public function isCreator ($user_id){
+    public function isCreator ($user_id = false){
+        if (!$user_id){
+            return $this->_dialog_record->created_by == $this->_user_id;
+        }
+
         return $this->_dialog_record->created_by == $user_id;
     }
 

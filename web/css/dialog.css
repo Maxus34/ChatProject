@@ -36,12 +36,12 @@ div.message-outgoing p{
 }
 
 div.message h5{
-    margin: 0px 0px 5px 0px;
+    margin: 0px 0px 0px 50px;
     font-weight:700;
 }
 
 div.message h6{
-    margin: 8px 10px 1px 10px;
+    margin: 8px 10px 0px 10px;
     font-weight:100;
 }
 

@@ -19,6 +19,8 @@ use Yii;
 
 class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
 {
+    static $users = [];
+
     public $image;
 
     const SCENARIO_UPDATE = 'update';
@@ -30,7 +32,13 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
 
     static function findIdentity($id)
     {
-        return static::findOne($id);
+        if (isset(static::$users[$id])){
+            return static::$users[$id];
+
+        } else {
+            static::$users[$id] = static::findOne($id);
+            return  static::$users[$id];
+        }
     }
 
     static function findIdentityByAccessToken($token, $type = null)

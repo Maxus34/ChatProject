@@ -17,6 +17,7 @@ class Message extends Model
     private  $message_record     = null;
     private  $message_references =   [];
 
+    // Not used
     static function  getMessageInstance(int $message_id = null){
         $message_record = MessageRecord::findOne($message_id);
         if (empty($message_record))
@@ -27,7 +28,8 @@ class Message extends Model
 
     static function  getMessagesInstances(int $user_id, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
 
-        $query = MessageReferenceRecord::find()->where(['user_id' => $user_id, 'dialog_id' => $dialog_id]);
+        $query = MessageReferenceRecord::find()->where(['user_id' => $user_id, 'dialog_id' => $dialog_id])
+            -> with('message');
 
         if ( !empty($conditions))
             foreach ($conditions as $condition)
@@ -42,18 +44,20 @@ class Message extends Model
         if ( !empty( $limit) )
             $query =  $query -> limit($limit);
 
-        $message_reference_records = $query -> with('message')-> all();
+        $message_reference_records = $query -> all();
         $messages = [];
 
         foreach ($message_reference_records as $record){
-            $messages[] = new static($record->message);
+            $messages[] = new static($record);
         }
 
         return $messages;
     }
 
     static function  getIsSeenMessages(int $user_id, int $dialog_id, array $messages){
-        $references = MessageReferenceRecord::find()->where(['dialog_id' => $dialog_id, 'message_id' => $messages, 'user_id' => $user_id])->all();
+        $references = MessageReferenceRecord::find()
+            ->where(['dialog_id' => $dialog_id, 'message_id' => $messages, 'user_id' => $user_id])
+            ->all();
 
         $seen = [];
         foreach ($references as $reference){
@@ -78,8 +82,28 @@ class Message extends Model
         return $seen;
     }
 
+    public function __construct(MessageReferenceRecord $message_ref_rec = null, Dialog $dialog = null, string $content = null){
+        parent::__construct();
 
-    public function __construct(MessageRecord $message_rec = null, Dialog $dialog = null, string $content = null){
+        // Creating a new Message
+        if (empty($message_ref_rec)){
+            $this->user_id = \Yii::$app->user->getId();
+
+            $this->message_record  = new MessageRecord($dialog->getId(), $content);
+            $this->message_record -> save();
+
+            $this->createReferences($dialog->getUsers());
+
+        // Getting an old Message
+        } else {
+
+            $this->message_references[$message_ref_rec->user_id] = $message_ref_rec;
+            $this->message_record   = $message_ref_rec->message;
+            $this->user_id          = \Yii::$app->user->getId();
+        }
+    }
+
+    public function __constructOld(MessageRecord $message_rec = null, Dialog $dialog = null, string $content = null){
         parent::__construct();
 
         if (empty($message_rec)){
@@ -107,10 +131,12 @@ class Message extends Model
         return  ($this->message_references[$this->user_id]->created_by === $this->user_id);
     }
 
-    public function getAuthorId(){
-        $this->findReferences();
-
-        return $this->message_record->created_by;
+    /*
+     *  @return integer Message author ID
+     */
+    public function getAuthorId()
+    {
+         return $this->message_record->created_by;
     }
 
     public function  getId()

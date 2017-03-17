@@ -19,7 +19,7 @@ class UserSelectPicture extends Widget
 
     public function run()
     {
-        $main_image = $this->model->getImage();
+        $main_image = $this->model->getMainImage();
 
         return $this->render("@app/modules/admin/components/templates/user_select_picture.php",
             [

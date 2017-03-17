@@ -1,3 +1,7 @@
+<?php
+    use app\models\User;
+?>
+
 <li data-id = "<?= $message->getId() ?>"
     data-new="<?= $message->isNew()?>">
     <div class="message
@@ -7,6 +11,7 @@
         <p><?= $message->getContent() ?></p>
         <h6><i><?= \Yii::$app->formatter->asDate($message->getCreationDate(), "php:d F, G : i") ?></i></h6>
         <img class="message-image" src="<?=$user_image?>">
+
     </div>
 </li>
 
