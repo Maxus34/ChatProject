@@ -6,12 +6,7 @@ $this->registerJsFile("@web/js/chat/dialog_.js");
 
 echo "<script>"
     . "var activeUser = {$dialog -> isActive()};"
-    . "var users = {";
-        foreach ($dialog->getUsers(true) as $user){
-            echo $user->id . " : '" . $user->username . "'";
-        }
-echo "}"
-     . "</script>";
+    . "</script>";
 ?>
 
 <?php $this->beginBlock('fixed-top') ?>
@@ -43,7 +38,9 @@ echo "}"
         <div class="col-md-1 col-sm-1">
             <a class="btn-sm btn-primary" href="<?= \yii\helpers\Url::to(['/chat/default']) ?>">Back</a>
         </div>
-        <div id="delete_messages" class="col-md-9 col-sm-9 col-sm-offset-1 ">
+        <div class="col-md-7     col-sm-7 col-sm-offset-3 ">
+            <a id="delete_messages" class="btn-sm btn-primary">Delete</a>
+            <a id="reset_delete_messages" class="btn-sm btn-primary"><i class="fa fa-times" aria="hidden"></i>Reset</a>
         </div>
         <div class="col-md-1 col-sm-1" data-toggle="tooltip" title="Options" data-placement="bottom">
             <a id="dialog_properties" style="cursor:pointer;"><i class="fa fa-ellipsis-h" aria-hidden="true"
@@ -54,40 +51,56 @@ echo "}"
 <?php $this->endBlock() ?>
 
 <?php $this->beginBlock('fixed-bottom') ?>
-
 <div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
-    <div class="typing" id="typing">
 
+    <ul id="files-list" class="files-list">
+
+    </ul>
+
+    <div>
+        <div class="typing" id="typing">
+
+        </div>
+
+        <div class="message-input">
+            <textarea class="dialog" id="textarea"></textarea>
+
+            <a id="send_message" class="btn btn-primary" data-dialog_id="<?= $dialog->getId() ?>"
+               data-user_id="<?php echo \Yii::$app->user->getId() ?>"><i class="fa fa-paper-plane-o fa-2x"
+                                                                         aria-hidden="true"></i>
+            </a>
+
+            <div class="btn-group dropup">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="#" id="upload-file"><i class="fa fa-file-o" aria-hidden="true"></i> Upload File</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
-
-    <div class="message-input">
-        <textarea class="dialog" id="textarea"></textarea>
-        <button id="send_message" class="btn" data-dialog_id="<?= $dialog->getId() ?>"
-                data-user_id="<?= \Yii::$app->user->getId() ?>">Send
-        </button>
-    </div>
-
 </div>
-
 <?php $this->endBlock() ?>
-
 
 <div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
     <div class="dialog" id="dialog_block">
         <ul class="dialog" id="messages_list">
             <?php if (!empty($messages)): ?>
                 <?php
-                    $users = $dialog->getUsers();
+                $users = $dialog->getUsers();
                 ?>
 
                 <?php
-                    foreach($messages as $i => $message){
-                        $user_image = $users[$messages[$i]->getAuthorId()]->getMainImage()->getUrl([100,100]);
-                        echo $this->render('/templates/_message',[
-                            'message' => $messages[$i],
-                            'user_image' => $user_image,
-                        ]);
-                    }
+                foreach ($messages as $i => $message) {
+                    $user_image = $users[$messages[$i]->getAuthorId()]->getMainImage()->getUrl([100, 100]);
+                    echo $this->render('/templates/_message', [
+                        'message' => $messages[$i],
+                        'user_image' => $user_image,
+                    ]);
+                }
                 ?>
 
             <?php endif; ?>
@@ -95,6 +108,4 @@ echo "}"
 
     </div>
 </div><!--Блок с сообщениями -->
-
-
 

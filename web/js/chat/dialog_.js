@@ -28,7 +28,7 @@ class JsonDataHandler {
 
         var that      = this;
         this.interval = setInterval(function (e) {
-            that.sendData();
+            //that.sendData();
         }, interval);
     }
 
@@ -123,6 +123,163 @@ class JsonDataHandler {
     }
 }
 
+class FileHandler {
+    constructor () {
+        this.input          = document.createElement('input');
+        this.input.type     = 'file';
+
+        this.files_list     = document.getElementById('files-list');
+        this.addImageButton = document.getElementById('upload-file');
+
+        this.param = document.querySelectorAll('meta[name=csrf-param]')[0].getAttribute('content');
+        this.token = document.querySelectorAll('meta[name=csrf-token]')[0].getAttribute('content');
+
+        this.files          = [];
+        this.fileReader     = new FileReader();
+
+        this.isLoading      = false;
+
+        this.addEventListeners();
+        this.defineFileIcons();
+    }
+
+    addEventListeners(){
+        this.addImageButton.onclick = (e) => {
+            e.preventDefault(e);
+            this.input.click();
+        }
+
+        this.input.onchange = (e) => {
+            console.log(e.target.files);
+            if (e.target.files.length > 0){
+                this.handleFile(e.target.files[0]);
+            }
+        }
+
+        this.files_list.onclick = (e) => {
+
+        }
+    }
+
+    handleFile(file){
+        function sendFile(file_obj){
+            let file = file_obj['file'];
+
+            let xhr = new XMLHttpRequest();
+
+            let formData = new FormData();
+            formData.append(that.param, that.token);
+            formData.append('file', file, file.name);
+
+            xhr.open("POST", 'ajax/upload-file', true);
+
+            xhr.upload.onloadstart =  (e) => {
+                file_obj.li.appendChild(file_obj.icon);
+                file_obj.li.appendChild(file_obj.div);
+                file_obj.li.appendChild(file_obj.progress);
+
+                file_obj.progress.setAttribute('max', e.total);
+
+                that.files_list.appendChild(file_obj.li);
+                file_obj.isLoading = true;
+            };
+
+            xhr.upload.onloadend = (e) => {
+                file_obj.progress.setAttribute('value', e.total);
+                file_obj.isLoading = false;
+            };
+
+            xhr.upload.onprogress = (e) => {
+                file_obj.progress.setAttribute('value', e.loaded);
+            };
+
+            xhr.onload = xhr.onerror = (e) => {
+                if (e.target.status === 200){
+
+                    let result = JSON.parse(e.target.responseText);
+                    if (result.error){
+                        file_obj.div.classList.add('text-danger');
+                        //file_obj.progress.style.backgroundColor = "#f00";
+                        file_obj.div.innerHTML += " -error";
+                        file_obj.error = true;
+
+                    } else {
+                        file_obj.id = result.file.id;
+                        file_obj.div.classList.add('text-success');
+                       // file_obj.progress.classList.add('success');
+                    }
+
+                } else {
+                    file_obj.div.classList.add('text-danger');
+                    file_obj.div.innerHTML += " -error";
+                    //file_obj.progress.style.backgroundColor = "#f00";
+                    file_obj.error = true;
+                }
+
+            }
+
+            xhr.send(formData);
+        }
+
+        var that     = this;
+
+        let file_obj = {
+            file      : file,
+            icon      : this.getFileIcon(file),
+            li        : document.createElement('li'),
+            div       : document.createElement('div'),
+            progress  : document.createElement('progress'),
+
+            error     : false,
+            isLoading : false
+        };
+
+        file_obj.div.innerHTML = file.name;
+
+        this.files.push(file_obj);
+        sendFile(file_obj);
+    }
+
+    defineFileIcons () {
+        this.icons = {
+            'image' : 'fa-file-image-o',
+            'audio' : 'fa-file-audio-o',
+            'text'  : 'fa-file-text-o',
+            'file'  : 'fa-file-o',
+            'video' : 'fa-film'
+        }
+    }
+
+    getFileIcon(file){
+        let fileIcon = document.createElement('i');
+        fileIcon.classList.add('fa');
+
+
+        switch(file.type.split('/')[0]){
+            case 'image':
+                fileIcon.classList.add(this.icons['image']);
+                break;
+
+            case 'audio':
+                fileIcon.classList.add(this.icons['audio']);
+                break;
+
+            case 'text':
+                fileIcon.classList.add(this.icons['text']);
+                break;
+
+            default:
+                fileIcon.classList.add(this.icons['file']);
+        }
+
+        return fileIcon;
+    }
+
+    removeFile(){
+
+    }
+}
+
 class MessagesHandler {
     constructor (dataHandler) {
 
@@ -130,6 +287,8 @@ class MessagesHandler {
         this.messages_list       = document.getElementById('messages_list');
         this.send_message_button = document.getElementById('send_message');
         this.del_messages_button = document.getElementById('delete_messages');
+        this.reset_selected_mess = document.getElementById('reset_delete_messages');
+
 
         this.monitored_messages  = {outgoing_messages : [ ], incoming_messages : [ ]};
         this.selected_messages   = { };
@@ -146,26 +305,30 @@ class MessagesHandler {
     addEventListeners () {
         let that = this;
 
-        this.eventListeners['add_message_to_send']  =  function (e) {
+        this.eventListeners['add_message_to_send']     =  function (e) {
             that.addMessageToSend.apply(that);
         }
-        this.eventListeners['body_scroll']          =  function (e) {
+        this.eventListeners['body_scroll']             =  function (e) {
             if (e.target.body.scrollTop < 1) {
                 that.loadOldMessages.apply(that);
             }
         }
-        this.eventListeners['select_message']       =  function (e) {
+        this.eventListeners['select_message']          =  function (e) {
             let li = e.target.closest('li');
             if (!li)
                 return;
             that.selectMessage.apply(that, [li]);
         }
-        this.eventListeners['delete_messages']      =  function (e) {
+        this.eventListeners['delete_messages']         =  function (e) {
             that.deleteMessages.apply(that);
+        }
+        this.eventListeners['reset_selected_messages'] =  function (e) {
+            that.resetSelectedMessages.apply(that);
         }
 
         this.del_messages_button  .addEventListener('click',   this.eventListeners['delete_messages']);
         this.send_message_button  .addEventListener('click',   this.eventListeners['add_message_to_send']);
+        this.reset_selected_mess  .addEventListener('click',   this.eventListeners['reset_selected_messages']);
         this.messages_list        .addEventListener('click',   this.eventListeners['select_message']);
         document                  .addEventListener('scroll',  this.eventListeners['body_scroll']);
 
@@ -187,8 +350,6 @@ class MessagesHandler {
 
             for( var i = 0; i < result.messages_for_send.length; i++){
                 let is_sending_message = that.messages_list.querySelectorAll("li[data-id='" + result.messages_for_send[i].pseudo_id + "']")[0];
-                console.log(is_sending_message);
-
 
                 if (result.messages_for_send[i].success){
                     that.messages_list.removeChild(is_sending_message);
@@ -254,6 +415,8 @@ class MessagesHandler {
             if (typeof result.load_old_messages == "undefined")
                 return;
 
+            that.messages_list.removeChild(isLoadingMessage);
+
             if (result.load_old_messages.length == 0) {
                 document.removeEventListener('scroll', that.eventListeners['body_scroll']);
                 that.messages_list.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + that.messages_list.innerHTML;
@@ -272,6 +435,13 @@ class MessagesHandler {
 
         var that = this;
         let firstMessage = this.messages_list.firstElementChild;
+
+        var isLoadingMessage = document.createElement("li");
+            isLoadingMessage.innerHTML = '<center><i class="fa fa-refresh fa-spin fa-2x fa-fw"></i><span class="sr-only">Loading...</span></center>';
+        this.messages_list.insertBefore(isLoadingMessage, this.messages_list.firstElementChild);
+
+
+
 
         if (!firstMessage)
             return;
@@ -397,7 +567,7 @@ class MessagesHandler {
         for(var i = 0; i < messages_list.length; i++){
             if ( (messages_list[i].dataset.new === "1") ){
 
-                if (messages_list[i].getElementsByTagName('div')[0].classList.contains('message-outgoing'))
+                if (messages_list[i].classList.contains('message-outgoing'))
                     my_messages_array.push(messages_list[i].dataset.id);
                 else
                     messages_array.push(messages_list[i].dataset.id);
@@ -460,33 +630,45 @@ class MessagesHandler {
     }
 
 
-    resetMonitoredMessages(){
-        // TODO rewrite to incoming_messages, outgoing_messages
-        this.monitored_messages = {my_messages : [], messages : []};
+    resetMonitoredMessages() {
+        this.monitored_messages = {incoming_messages : [], outgoing_messages : []};
     }
 
     createMessage (text, type = 0) {
         let list_node = document.createElement('li');
-        let messageDiv = document.createElement('div');
-        messageDiv.classList.add('message');
+        list_node.classList.add('message');
 
         switch(type){
-            case 0 : messageDiv.classList.add('message-incoming');
+            case 0 : list_node.classList.add('message-incoming');
                 break;
-            case 1 : messageDiv.classList.add('message-outgoing');
+            case 1 : list_node.classList.add('message-outgoing');
                 break;
-            case 2 : messageDiv.classList.add('message-error');
+            case 2 : list_node.classList.add('message-error');
                 break;
-            default : messageDiv.classList.add('message-info');
+            default : list_node.classList.add('message-info');
         }
 
-        messageDiv.innerHTML = text;
-        list_node.appendChild(messageDiv);
+        list_node.innerHTML = text;
 
         return list_node;
     }
 
     selectMessage (li) {
+        function showDialogHeader(number){
+            switch (number){
+                case 1:
+                    dialog_header_1.style.display = 'block';
+                    dialog_header_2.style.display =  'none';
+                    break;
+
+
+                case 2:
+                    dialog_header_1.style.display = 'none';
+                    dialog_header_2.style.display = 'block';
+                    break;
+            }
+        }
+
         if (this.selected_messages == undefined)
             this.selected_messages = {};
 
@@ -501,23 +683,45 @@ class MessagesHandler {
         }
 
 
-        let div1 = document.getElementById('dialog_header_1');
-        let div2 = document.getElementById('dialog_header_2');
-        let div3 = document.getElementById('delete_messages');
+        let dialog_header_1 = document.getElementById('dialog_header_1');
+        let dialog_header_2 = document.getElementById('dialog_header_2');
+        let delete_button = document.getElementById('delete_messages');
 
         if (Object.keys(this.selected_messages).length > 0){
-            div1.style.display = 'none';
-            div2.style.display = 'block';
-            div3.innerHTML = "<center><a class='btn-sm btn-warning'>" + "Delete " + Object.keys(this.selected_messages).length + " messages" + "</a></center>";
+            showDialogHeader(2);
+            delete_button.innerHTML = "Delete" + Object.keys(this.selected_messages).length + " messages.";
         } else {
-            div3.innerHTML = "";
-            div1.style.display = 'block';
-            div2.style.display =  'none';
+            delete_button.innerHTML = "Nothing to delete.";
+            showDialogHeader(1);
+        }
+
+    }
+
+    resetSelectedMessages () {
+        var selector = "";
+        let selected_messages = Object.keys(this.selected_messages);
+        this.selected_messages = {};
+
+        for (let i = 0; i < selected_messages.length; i++){
+            selector += "li[data-id='" + selected_messages[i] + "']";
+
+            if (i < selected_messages.length - 1){
+                selector += ",";
+            }
+        }
+
+        let messages = this.messages_list.querySelectorAll(selector);
+
+        for (let i = 0; i < selected_messages.length; i++){
+            messages[i].classList.remove('message-selected');
         }
 
 
-        //console.log(this.selected_messages);
-        //console.log(Object.keys(this.selected_messages).length);
+        let dialog_header_1 = document.getElementById('dialog_header_1');
+        let dialog_header_2 = document.getElementById('dialog_header_2');
+
+        dialog_header_1.style.display = 'block';
+        dialog_header_2.style.display =  'none';
     }
 }
 
@@ -663,3 +867,4 @@ class DialogHandler {
 
 var dialog_h = new DialogHandler();
 
+var file_h   = new FileHandler();

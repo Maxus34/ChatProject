@@ -3,6 +3,7 @@ use yii\bootstrap\Html;
 use yii\widgets\DetailView;
 /* @var $user app\models\User*/
 $this->title = 'Admin | view user';
+
 ?>
 
 <div>
@@ -29,7 +30,7 @@ $this->title = 'Admin | view user';
                 'label'     => 'Main Image',
                 'format'    => 'html',
                 'value' => (function () use($user){
-                    return Html::img($user->getMainImage()->getUrl([100, 100]));
+                    return Html::img($user->getMainImage()->getUrl([150, 150]));
                 })()
             ]
         ]

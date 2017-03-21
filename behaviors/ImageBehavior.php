@@ -2,6 +2,7 @@
 namespace app\behaviors;
 
 use yii\base\Behavior;
+use yii\base\Exception;
 use yii\web\UploadedFile;
 use app\models\records\ImageRecord;
 use app\models\records\FileRecord;
@@ -20,6 +21,22 @@ class ImageBehavior extends Behavior
     protected $_main_image = false;
 
     protected $_gallery_images = [];
+
+    public function init()
+    {
+        parent::init();
+
+        if (!file_exists($this->placeholder_path)){
+            $error = "Placeholder image has been not found in: " . $this->placeholder_path;
+            throw new Exception($error);
+        }
+        if (!file_exists($this->images_path)){
+            mkdir($_SERVER['DOCUMENT_ROOT'] . '/web/' . $this->images_path);
+        }
+        if (!file_exists($this->cash_path)){
+            mkdir($_SERVER['DOCUMENT_ROOT'] . '/web/'  . $this->cash_path);
+        }
+    }
 
     public function attachImage(UploadedFile $file, $is_main=false, $name = false){
         $savePath = $this->images_path . $file->baseName . "." . $file->extension;
@@ -47,7 +64,6 @@ class ImageBehavior extends Behavior
         }
 
         $image->cash_path = $this->cash_path;
-
         $this->_main_image = $image;
 
         return $image;

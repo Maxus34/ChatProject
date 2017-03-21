@@ -8,6 +8,7 @@
 
 namespace app\modules\chat\controllers;
 
+use app\models\records\FileRecord;
 use yii\web\Controller;
 use app\models\User;
 use app\modules\chat\models\{ Dialog, DialogProperties };
@@ -15,6 +16,7 @@ use app\modules\chat\components\DialogPropertiesForm\DialogPropertiesForm;
 use yii\base\Exception;
 use yii\filters\{ VerbFilter, AccessControl};
 use yii\helpers\Json;
+use yii\web\UploadedFile;
 
 class AjaxController extends Controller
 {
@@ -98,7 +100,38 @@ class AjaxController extends Controller
 
     }
 
+    public function  actionUploadFile(){
 
+        $result = [];
+        $file = UploadedFile::getInstanceByName('file');
+
+        if (empty($file)){
+            $result['file']  = null;
+            $result['error'] = true;
+
+        } else {
+            $path = '/var/www/public/web/upload/files/' . $file->name;
+
+            $file_rec              = new FileRecord();
+            $file_rec -> name      = $file -> baseName;
+            $file_rec -> extension = $file -> extension;
+            $file_rec -> type      = $file -> type;
+            $file_rec -> size      = $file -> size;
+            $file_rec -> path      = $path;
+
+            $file->saveAs($path);
+            $file_rec -> save();
+
+            $result['file']['id']        = $file_rec->id;
+            $result['file']['name']      = $file_rec->name;
+            $result['file']['extension'] = $file_rec->extension;
+            $result['file']['type']      = $file_rec->type;
+
+            $result['error']   = false;
+        }
+
+        return Json::encode($result);
+    }
 
     protected function  getDialogPropertiesForm(Dialog $dialog){
         $model = $dialog->getProperties();
