@@ -134,7 +134,7 @@ class FileHandler {
         this.param = document.querySelectorAll('meta[name=csrf-param]')[0].getAttribute('content');
         this.token = document.querySelectorAll('meta[name=csrf-token]')[0].getAttribute('content');
 
-        this.files          = [];
+        this.files          = {};
         this.fileReader     = new FileReader();
 
         this.isLoading      = false;
@@ -147,18 +147,27 @@ class FileHandler {
         this.addImageButton.onclick = (e) => {
             e.preventDefault(e);
             this.input.click();
-        }
+        };
 
         this.input.onchange = (e) => {
             console.log(e.target.files);
             if (e.target.files.length > 0){
                 this.handleFile(e.target.files[0]);
             }
-        }
+        };
 
         this.files_list.onclick = (e) => {
+            if (e.target.tagName == 'I'){
+                let a = e.target.closest('a');
+                if (!a)
+                    return;
 
-        }
+                let random_id = a.getAttribute('data-random_id');
+                if (random_id){
+                    this.removeFile(random_id);
+                }
+            }
+        };
     }
 
     handleFile(file){
@@ -174,13 +183,6 @@ class FileHandler {
             xhr.open("POST", 'ajax/upload-file', true);
 
             xhr.upload.onloadstart =  (e) => {
-                file_obj.li.appendChild(file_obj.icon);
-                file_obj.li.appendChild(file_obj.div);
-                file_obj.li.appendChild(file_obj.progress);
-
-                file_obj.progress.setAttribute('max', e.total);
-
-                that.files_list.appendChild(file_obj.li);
                 file_obj.isLoading = true;
             };
 
@@ -191,6 +193,7 @@ class FileHandler {
 
             xhr.upload.onprogress = (e) => {
                 file_obj.progress.setAttribute('value', e.loaded);
+                file_obj.progress.setAttribute('max', e.total);
             };
 
             xhr.onload = xhr.onerror = (e) => {
@@ -199,20 +202,20 @@ class FileHandler {
                     let result = JSON.parse(e.target.responseText);
                     if (result.error){
                         file_obj.div.classList.add('text-danger');
-                        //file_obj.progress.style.backgroundColor = "#f00";
+                        file_obj.progress.classList.add('error');
                         file_obj.div.innerHTML += " -error";
                         file_obj.error = true;
 
                     } else {
                         file_obj.id = result.file.id;
                         file_obj.div.classList.add('text-success');
-                       // file_obj.progress.classList.add('success');
+                        file_obj.progress.classList.add('success');
                     }
 
                 } else {
                     file_obj.div.classList.add('text-danger');
                     file_obj.div.innerHTML += " -error";
-                    //file_obj.progress.style.backgroundColor = "#f00";
+                    file_obj.progress.classList.add('error');
                     file_obj.error = true;
                 }
 
@@ -222,23 +225,31 @@ class FileHandler {
         }
 
         var that     = this;
+        let file_obj = this.createFileElement(file);
 
-        let file_obj = {
-            file      : file,
-            icon      : this.getFileIcon(file),
-            li        : document.createElement('li'),
-            div       : document.createElement('div'),
-            progress  : document.createElement('progress'),
 
-            error     : false,
-            isLoading : false
-        };
-
-        file_obj.div.innerHTML = file.name;
-
-        this.files.push(file_obj);
         sendFile(file_obj);
     }
+
+    getFiles(){
+        let file_ids = [];
+        for (var i in this.files){
+            if (this.files[i].isLoading){
+                return false;
+            }
+
+            file_ids.push(this.files[i].id);
+        }
+
+        //Removing files
+        for (var i in this.files){
+            this.files_list.removeChild(this.files[i].li);
+            delete this.files[i];
+        }
+
+        return file_ids;
+    }
+
 
     defineFileIcons () {
         this.icons = {
@@ -248,6 +259,44 @@ class FileHandler {
             'file'  : 'fa-file-o',
             'video' : 'fa-film'
         }
+    }
+
+    createFileElement (file) {
+        let file_obj = {
+            file      : file,
+            li        : document.createElement('li'),
+            div  : document.createElement('div'),
+            progress  : document.createElement('progress'),
+
+            error     : false,
+            isLoading : false
+        };
+
+        let rm_button = document.createElement('a');
+        rm_button.setAttribute('data-toggle', 'tooltip');
+        rm_button.setAttribute('title', 'remove');
+
+
+        file_obj.li.appendChild(this.getFileIcon(file));
+        file_obj.li.appendChild(file_obj.div);
+        file_obj.li.appendChild(file_obj.progress);
+        file_obj.li.appendChild(rm_button);
+        this.files_list.appendChild(file_obj.li);
+
+
+        file_obj.div.innerHTML = file.name;
+
+
+        let random_id = Math.floor(Math.random() * 10000);
+
+
+        rm_button.innerHTML = "<i class='fa fa-times'></i>";
+        rm_button.setAttribute('data-random_id', random_id);
+
+
+        this.files[random_id] = file_obj;
+
+        return file_obj;
     }
 
     getFileIcon(file){
@@ -275,8 +324,10 @@ class FileHandler {
         return fileIcon;
     }
 
-    removeFile(){
-
+    removeFile(random_id){
+        console.log(random_id);
+        this.files_list.removeChild(this.files[random_id].li);
+        delete this.files[random_id];
     }
 }
 
@@ -296,6 +347,7 @@ class MessagesHandler {
 
         this.eventListeners      = { };
 
+        this.fileHandler = new FileHandler();
         this.dataHandler = dataHandler;
 
         this.addEventListeners();
@@ -392,9 +444,15 @@ class MessagesHandler {
 
     addMessageToSend () {
         let text = this.text_area.value;
-        console.log(text);
         if (text == "")
             return;
+
+        let files = this.fileHandler.getFiles();
+        if (!files){
+            alert('Please wait while all files will be loaded');
+            return;
+        }
+
 
         var message   = this.createMessage('<i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i><span class="sr-only">Loading...</span>Sending...', 1);
         var pseudo_id = "@" + Math.round(Math.random() * 10000);
@@ -404,7 +462,8 @@ class MessagesHandler {
 
         this.messages_for_send.push({
             text      : text,
-            pseudo_id : pseudo_id
+            pseudo_id : pseudo_id,
+            files     : files,
         });
     }
 
@@ -866,5 +925,3 @@ class DialogHandler {
 
 
 var dialog_h = new DialogHandler();
-
-var file_h   = new FileHandler();

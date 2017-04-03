@@ -30,3 +30,6 @@ tests/_output/*
 tests/_support/_generated
 tests/_output/*
 tests/_output/*
+
+#some_files
+web/upload

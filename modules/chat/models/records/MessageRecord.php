@@ -39,12 +39,7 @@ class MessageRecord extends ActiveRecord
         $this->content   = $content;
     }
 
-    public function getReferences($dialog_id = null){
-        if (!empty($dialog_id)){
-            return $this->hasMany(MessageReferenceRecord::className(), ['message_id' => $this->id, 'dialog_id' => $dialog_id]);
-        } else {
-            return $this->hasMany(MessageReferenceRecord::className(), ['message_id' => $this->id]);
-        }
-
+    public function getReferences(){
+        return $this->hasMany(MessageReferenceRecord::className(), ['message_id' => $this->id]);
     }
 }

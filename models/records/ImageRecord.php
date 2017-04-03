@@ -11,6 +11,7 @@ namespace app\models\records;
 
 use Imagine\Image\Box;
 use Imagine\Imagick\Imagine;
+use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 
 /* @property integer $id*/
@@ -21,8 +22,6 @@ use yii\db\ActiveRecord;
 /* @property integer $created_at*/
 class ImageRecord extends ActiveRecord
 {
-    public $cash_path;
-
     protected $_file_record = false;
 
     static function tableName()
@@ -30,59 +29,25 @@ class ImageRecord extends ActiveRecord
         return "images";
     }
 
-    public function getUrl($size = false){
-
-        if ($this->_file_record){
-            $file_record = $this->_file_record;
-        } else {
-            $file_record = FileRecord::findOne(['id' => $this->file_id]);
-            $this->_file_record = $file_record;
-        }
-
-
-
-        if (!$size){
-            return "/" . $file_record->path;
-        } else {
-            return "/" . $this->getResizedImageUrl($file_record, $size);
-        }
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'attributes' => [
+                    ActiveRecord::EVENT_AFTER_INSERT => 'created_at',
+                ]
+            ]
+        ];
     }
 
-    protected function getResizedImageUrl($file, $size){
-        $resized_file_path = $this->cash_path . "{$size[0]}x{$size[1]}_" . $file->name . "." . $file->extension;
+    public function getPath(){
 
-        if (file_exists($resized_file_path)){
-            return $resized_file_path;
+        if (!$this->_file_record){
+            $this->_file_record = FileRecord::findOne(['id' => $this->file_id]);
         }
 
-        else {
-            $Imagine = new Imagine();
-            $image = $Imagine -> open($file->path);
-
-            $this->checkSize($size, $image);
-
-            $box = new Box($size[1], $size[0]);
-            $image -> resize($box) -> save($resized_file_path);
-        }
-
-        return $resized_file_path;
-    }
-
-    protected function checkSize(&$size, $image){
-        $box = $image->getSize();
-
-        if (empty($size[0]) && empty($size[1])) {
-            $size[0] = $box->getHeight();
-            $size[1] = $box->getWidth();
-        }
-
-        if (empty($size[0])){
-            $size[0] = $box->getHeight() / ($box->getWidth() / $size[1]);
-        }
-
-        if (empty($size[1])){
-            $size[1] = $box->getWidth() / ($box->getHeight() / $size[0]);
-        }
+        return $this->_file_record->path;
     }
 
 }

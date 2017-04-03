@@ -34,6 +34,14 @@ class AjaxController extends Controller
     const SET_IS_TYPING     = "set_is_typing";
     const DIALOG_PROPERTIES = "dialog_properties";
 
+    public function actions(){
+        return [
+            'upload-file' => [
+                'class' => \app\modules\chat\components\LoadFileAction::class
+            ]
+        ];
+    }
+
     public function  actionIndex()
     {
         $this->layout = false;
@@ -100,38 +108,6 @@ class AjaxController extends Controller
 
     }
 
-    public function  actionUploadFile(){
-
-        $result = [];
-        $file = UploadedFile::getInstanceByName('file');
-
-        if (empty($file)){
-            $result['file']  = null;
-            $result['error'] = true;
-
-        } else {
-            $path = '/var/www/public/web/upload/files/' . $file->name;
-
-            $file_rec              = new FileRecord();
-            $file_rec -> name      = $file -> baseName;
-            $file_rec -> extension = $file -> extension;
-            $file_rec -> type      = $file -> type;
-            $file_rec -> size      = $file -> size;
-            $file_rec -> path      = $path;
-
-            $file->saveAs($path);
-            $file_rec -> save();
-
-            $result['file']['id']        = $file_rec->id;
-            $result['file']['name']      = $file_rec->name;
-            $result['file']['extension'] = $file_rec->extension;
-            $result['file']['type']      = $file_rec->type;
-
-            $result['error']   = false;
-        }
-
-        return Json::encode($result);
-    }
 
     protected function  getDialogPropertiesForm(Dialog $dialog){
         $model = $dialog->getProperties();
@@ -169,7 +145,7 @@ class AjaxController extends Controller
             $result = true;
             $error  = false;
             try {
-                $message = $dialog->addMessage($item['text']);
+                $message = $dialog->addMessage($item['text'], $item['files']);
             } catch (Exception $e) {
                 $result = false;
                 $error = $e -> getMessage();
@@ -188,11 +164,9 @@ class AjaxController extends Controller
     }
 
 
-
     protected function  getTypingUsers(Dialog $dialog, $j_object){
         return $dialog->getTypingUsers();
     }
-
 
 
     protected function  checkIsSeenMessages(Dialog $dialog, $j_object){

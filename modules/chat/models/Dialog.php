@@ -64,11 +64,11 @@ class Dialog extends DialogBase
         return Message::getIsSeenMessages($this->_user_id, $this->getId(), $messages);
     }
 
-    public function addMessage($content){
+    public function addMessage($content, $files = []){
         if ($this->isActive()){
             try{
 
-                $message = new Message(null, $this, $content);
+                $message = new Message(null, $this, $content, $files);
                 $message -> save();
 
             } catch (Exception $e){

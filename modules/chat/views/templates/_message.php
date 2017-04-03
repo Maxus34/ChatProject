@@ -1,5 +1,6 @@
 <?php
     use app\models\User;
+    use app\modules\chat\components\MessageFilesWidget;
 ?>
 <li data-id = "<?= $message->getId() ?>"
     data-new="<?= $message->isNew()?>"
@@ -12,5 +13,10 @@
         <h6><i><?= \Yii::$app->formatter->asDate($message->getCreationDate(), "php:d F, G : i") ?></i></h6>
         <img class="message-image" src="<?=$user_image?>">
 
+    <?php
+        echo MessageFilesWidget::widget([
+            'model' => $message
+        ]);
+    ?>
 </li>
 

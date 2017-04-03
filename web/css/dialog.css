@@ -196,17 +196,32 @@ div.btn-group.dropup{
     width: 90%;
     padding: 1px 10px 1px 25px;
 }
-
-
-.files-list progress.success{
-    background-color: #F00;
+.files-list a{
+    color: #333;
+    font-size: 14px;
+    height: 14px;
+    width: 14px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
 }
-.files-list progress.error{
-   background-color: #f00 !important;
+
+progress::-webkit-progress-bar { background-color: rgba(0, 128, 192, 0.02); }
+progress::-moz-progress-bar { background-color: rgba(0, 128, 192, 0.02);}
+
+.files-list progress::-webkit-progress-value{
+    background-color: #0b93d5;
+}
+.files-list progress.success::-webkit-progress-value{
+    background-color: green;
+}
+.files-list progress.error::-webkit-progress-value{
+    background-color: red;
 }
 .files-list progress{
     width: 100%;
     margin: 2px auto 2px auto;
+    background-color: #ffffff;
 }
 
 /* Chat Index Page */

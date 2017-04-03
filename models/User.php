@@ -61,10 +61,8 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
                 ],
             ],
             [
-                'class' => ImageBehavior::class,
+                'class'             => ImageBehavior::class,
                 'placeholder_path'  => 'images/placeholder/user_placeholder.png',
-                'images_path'       => 'upload/images/user/',
-                'cash_path'         => 'upload/images/cash/user/',
                 'key'               => 'user_images',
             ]
         ];
@@ -103,18 +101,6 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
     public function getAuthKey()
     {
         return $this->auth_key;
-    }
-
-    public function getImage(){
-        $image_record = UserImageRecord::findOne(['user_id' => $this->getId()]);
-
-        if (empty($image_record)){
-            return \Yii::getAlias("@web/") ."images/placeholder/user_placeholder.png";
-        }
-
-        $image_file = $image_record->getMainImage();
-
-        return \Yii::getAlias("@web/") . $image_file->path;
     }
 
 

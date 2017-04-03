@@ -71,8 +71,8 @@ echo "<script>"
             </a>
 
             <div class="btn-group dropup">
-                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                    <i class="fa fa-plus" aria-hidden="true"></i>
+                <a class="btn dropdown-toggle" data-toggle="dropdown"  href="#">
+                    <i class="fa fa-plus" aria-hidden="true" data-toggle="tooltip" title="upload"></i>
                 </a>
                 <ul class="dropdown-menu">
                     <li>
@@ -95,7 +95,7 @@ echo "<script>"
 
                 <?php
                 foreach ($messages as $i => $message) {
-                    $user_image = $users[$messages[$i]->getAuthorId()]->getMainImage()->getUrl([100, 100]);
+                    $user_image   = $users[ $messages[$i]->getAuthorId() ] -> getMainImage() -> getUrl( [100, 100] );
                     echo $this->render('/templates/_message', [
                         'message' => $messages[$i],
                         'user_image' => $user_image,

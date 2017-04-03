@@ -17,6 +17,15 @@ class Message extends Model
     private  $message_record     = null;
     private  $message_references =   [];
 
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => \app\behaviors\AttachedFileBehavior::class,
+            ],
+        ];
+    }
+
     // Not used
     static function  getMessageInstance(int $message_id = null){
         $message_record = MessageRecord::findOne($message_id);
@@ -82,7 +91,7 @@ class Message extends Model
         return $seen;
     }
 
-    public function __construct(MessageReferenceRecord $message_ref_rec = null, Dialog $dialog = null, string $content = null){
+    public function __construct(MessageReferenceRecord $message_ref_rec = null, Dialog $dialog = null, string $content = null, array $files = []){
         parent::__construct();
 
         // Creating a new Message
@@ -94,6 +103,10 @@ class Message extends Model
 
             $this->createReferences($dialog->getUsers());
 
+            if (count($files) > 0){
+                $this->attachFiles($files);
+            }
+
         // Getting an old Message
         } else {
 
@@ -103,28 +116,6 @@ class Message extends Model
         }
     }
 
-    public function __constructOld(MessageRecord $message_rec = null, Dialog $dialog = null, string $content = null){
-        parent::__construct();
-
-        if (empty($message_rec)){
-            $this->user_id = \Yii::$app->user->getId();
-
-            $this->message_record  = new MessageRecord($dialog->getId(), $content);
-            $this->message_record -> save();
-
-            $this->createReferences($dialog->getUsers());
-
-        } else {
-            $this->message_record = $message_rec;
-            $this->user_id = \Yii::$app->user->getId();
-
-            $reference = MessageReferenceRecord::findOne(['message_id' => $this->getId(), 'user_id' => $this->user_id]);
-            if (empty($reference))
-                throw new Exception("Empty reference when initialize message");
-
-            $this->message_references[$reference->user_id] = $reference;
-        }
-    }
 
     public function  isAuthor(int $user_id)
     {
@@ -159,9 +150,17 @@ class Message extends Model
         return $this->message_references[$this->user_id]->is_new;
     }
 
+    public function  setHasFiles($value){
+        $this->message_record->has_files = $value;
+    }
+
+    public function  getHasFiles(){
+        return $this->message_record->has_files;
+    }
+
+
 
     public function  save(){
-        //TODO Fix method Message::save();
         $this->message_record->save();
         foreach ($this->message_references as $ref){
             $ref->save();
