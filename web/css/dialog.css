@@ -238,7 +238,9 @@ div.dialog-item{
 
 /*Fixed Layout parts*/
 .prop-block{
-    padding: 7px 10px 7px 10px;
+    padding: 4px 10px 4px 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid #333;
 }
 
 
@@ -264,7 +266,7 @@ div.fixed-bottom{
 }
 div.under-fixed{
     position: relative;
-    top: 15%;
+    top: 135px;
     z-index: 0;
     padding-bottom: 15px;
 }
@@ -272,6 +274,10 @@ div.under-fixed{
 
 
 /* Modal window Styles*/
+@media screen and (min-width: 800px) {
+    #chat_modal>div{ width: 80% }
+}
+
 div.modal-header{
     padding: 5px 5px 5px 10px;
 }
@@ -287,6 +293,11 @@ a.btn-primary{
 
 a.btn-primary:hover{
     background-color: #555;
+}
+
+
+.message-attached-image{
+    margin-top: 3px;
 }
 
 
@@ -321,7 +332,7 @@ label.user-checkbox.deleted{
 	display: none;
 }
 
-i.btn-delete, i.btn-restore {
+a.btn-delete, a.btn-restore {
     position: absolute;
     right: .7rem;
     top: .3rem;
@@ -331,7 +342,7 @@ i.btn-delete, i.btn-restore {
     color: #fff;
     font-size: 1.2em;
 }
-i.btn-delete:hover {
+a.btn-delete:hover {
     color: #ffbbbb;
     text-decoration: none;
     cursor: pointer;
@@ -346,3 +357,22 @@ i.btn-delete:hover {
     cursor: pointer;
 }
 
+
+/* Message files styles*/
+
+.message-audio{
+    padding: 2px 4px 2px 4px;
+    margin-top: 4px;
+}
+.message-audio p {
+    margin: 0px;
+    padding: 5px 0px 3px 2px;
+    font-weight: 400;
+    font-style: italic;
+}
+.message-audio audio{
+    width: 100%;
+}
+
+.modal-dialog img{
+}

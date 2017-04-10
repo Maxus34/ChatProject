@@ -19,7 +19,15 @@ class AttachedFileBehavior extends Behavior
     const TYPE_AUDIO = "audio";
     const TYPE_FILE  = "file";
 
+    /*
+     * @var FileRecord file record
+     */
     protected $files = [];
+
+    public function init(){
+        parent::init();
+
+    }
 
     public function events()
     {
@@ -35,7 +43,7 @@ class AttachedFileBehavior extends Behavior
         $message_file = new MessageFileRecord($file_id, $this->owner->id);
         $message_file -> save();
 
-        $this->owner->setHasFiles(1);
+        $this->owner->has_files = 1;
         $this->owner->save();
     }
 
@@ -72,7 +80,7 @@ class AttachedFileBehavior extends Behavior
     }
 
 
-    protected function deleteFiles(){
+    public function deleteFiles(){
         $this->findFiles();
 
         foreach ($this->files as $file){
@@ -81,7 +89,7 @@ class AttachedFileBehavior extends Behavior
     }
 
     protected function findFiles(){
-        if ($this->owner->getHasFiles() == 0){
+        if ($this->owner->has_files == 0){
             return [];
         }
 

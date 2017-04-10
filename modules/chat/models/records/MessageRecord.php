@@ -27,7 +27,10 @@ class MessageRecord extends ActiveRecord
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_by']
                 ]
-            ]
+            ],
+            [
+                'class' => \app\behaviors\AttachedFileBehavior::class,
+            ],
         ];
     }
 

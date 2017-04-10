@@ -81,9 +81,18 @@ class UserController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
             return $this->goBack();
         }
-        return $this->render('login', [
-            'model' => $model,
-        ]);
+
+
+        if (Yii::$app->request->isAjax){
+            return $this->renderAjax('login', [
+                'model' => $model,
+            ]);
+
+        } else {
+            return $this->render('login', [
+                'model' => $model,
+            ]);
+        }
     }
 
 

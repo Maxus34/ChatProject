@@ -1,10 +1,10 @@
 <?php
     use yii\helpers\Html;
     use yii\bootstrap\ActiveForm;
-    $this->title='Регистрация';
+    $this->title='Chat | Registration';
 ?>
 
-<h2>Регистрация</h2>
+<h2>Registration</h2>
 
 <?php $form = ActiveForm::begin([
     'id' => 'login-form',

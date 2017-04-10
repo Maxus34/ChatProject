@@ -33,32 +33,38 @@ ie9AppAsset::register($this);
 <?php $this->beginBody() ?>
 
 <div class="fixed-top">
-    <div class="navbar navbar-inverse">
-        <div class="container">
-            <div class="navbar-header">
-                <!-- Button for smallest screens -->
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"><span
-                        class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
-                <a class="navbar-brand"
-                   href="<?= Url::home() ?>"><?= Html::img('/images/logo.png', ['alt' => 'Progressus HTML5 template']) ?></a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav pull-right">
-                    <li><a href="<?= Url::home() ?>">Home</a></li>
-                    <li class="active"><a href="<?= Url::to(['/chat/default']) ?>">Chat</a></li>
-                    <li><a href="<?= Url::to(['/admin']) ?>">Admin Panel</a></li>
-                    <li><a href="<?= Url::to(['/site/contact']) ?>">Contact</a></li>
-                    <?php if (\Yii::$app->user->isGuest): ?>
-                        <li><a class="btn" href="<?= Url::to(['/user/login']) ?>">LOGIN</a></li>
-                    <?php else: ?>
-                        <li><a class="btn"
-                               href="<?= Url::to(['/user/logout']) ?>">Logout<b>(<?= Yii::$app->user->identity->username ?>
-                                    )</b></a></li>
-                    <?php endif; ?>
-                </ul>
-            </div><!--/.nav-collapse -->
-        </div>
-    </div><!-- /.navbar -->
+    <?php
+    NavBar::begin([
+        'brandLabel' => 'MyProject',
+        'brandUrl'  => Yii::$app->homeUrl,
+        'options'   => [
+            'class' => 'navbar navbar-inverse'
+        ]
+    ]);
+
+    echo Nav::widget([
+        'options' => [ 'class' => 'navbar-nav navbar-right'],
+        'items'  => [
+            ['label' => 'Home', 'url' => ['/']],
+            ['label' => 'Chat', 'url' => ['/chat/']],
+            ['label' => 'Admin panel', 'url' => ['/admin'], 'linkOptions' =>
+                \Yii::$app->user->can('moder') ? [] : ['style' => 'display:none;']] ,
+
+            ['label' => 'Registration', 'url' => ['/user/register'], 'linkOptions' =>
+                \Yii::$app->user->isGuest ? [] : ['style' => 'display:none;']] ,
+
+
+            \Yii::$app->user->isGuest ?
+                ['label' => 'Login', 'url' => '/user/login', 'class' => 'btn btn-link', 'linkOptions' => [
+                    'class' => 'btn btn-link',
+                    'id'    => 'login-link'
+                ]] :
+                ['label' => "Logout(" . \Yii::$app->user->identity->username .")", 'url' => 'user/logout', 'linkOptions' => ['class' => 'btn btn-link']],
+        ]
+    ]);
+
+    NavBar::end();
+    ?>
     <?php if (isset($this->blocks['fixed-top'])): ?>
         <div class="container">
             <?= $this->blocks['fixed-top'] ?>

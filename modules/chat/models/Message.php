@@ -20,9 +20,7 @@ class Message extends Model
     public function behaviors()
     {
         return [
-            [
-                'class' => \app\behaviors\AttachedFileBehavior::class,
-            ],
+
         ];
     }
 
@@ -104,7 +102,7 @@ class Message extends Model
             $this->createReferences($dialog->getUsers());
 
             if (count($files) > 0){
-                $this->attachFiles($files);
+                $this->message_record->attachFiles($files);
             }
 
         // Getting an old Message
@@ -150,14 +148,9 @@ class Message extends Model
         return $this->message_references[$this->user_id]->is_new;
     }
 
-    public function  setHasFiles($value){
-        $this->message_record->has_files = $value;
+    public function getFiles(){
+        return $this->message_record->getFiles();
     }
-
-    public function  getHasFiles(){
-        return $this->message_record->has_files;
-    }
-
 
 
     public function  save(){

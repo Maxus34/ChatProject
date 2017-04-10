@@ -28,7 +28,7 @@ class JsonDataHandler {
 
         var that      = this;
         this.interval = setInterval(function (e) {
-            //that.sendData();
+            that.sendData();
         }, interval);
     }
 
@@ -366,10 +366,40 @@ class MessagesHandler {
             }
         }
         this.eventListeners['select_message']          =  function (e) {
-            let li = e.target.closest('li');
-            if (!li)
-                return;
-            that.selectMessage.apply(that, [li]);
+            let image = e.target.closest('img');
+
+            if (image){
+                let image = e.target.closest('img');
+                if (!image)
+                    return;
+
+                let full_image_link = image.getAttribute('data-url');
+                let img             = document.createElement('img');
+                let download_link   = document.createElement('a');
+                download_link.href  = full_image_link;
+
+                download_link.innerHTML = 'download image';
+                download_link.setAttribute('download', '');
+                img.src = full_image_link;
+
+                console.log(image);
+
+                $("#chat_modal .modal-body").html('');
+                $("#chat_modal .modal-body").append(img);
+                $("#chat_modal .modal-body").append(document.createElement('hr'));
+                $("#chat_modal .modal-body").append(download_link);
+                $("#chat_modal").modal();
+
+                e.preventDefault();
+
+            } else {
+                let li = e.target.closest('li');
+                if (!li)
+                    return;
+
+                that.selectMessage.apply(that, [li]);
+            }
+
         }
         this.eventListeners['delete_messages']         =  function (e) {
             that.deleteMessages.apply(that);
@@ -443,20 +473,21 @@ class MessagesHandler {
     }
 
     addMessageToSend () {
-        let text = this.text_area.value;
-        if (text == "")
-            return;
-
         let files = this.fileHandler.getFiles();
         if (!files){
             alert('Please wait while all files will be loaded');
             return;
         }
 
+        let text = this.text_area.value;
+        if ( (text == "") && files.length < 1)
+            return;
+
 
         var message   = this.createMessage('<i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i><span class="sr-only">Loading...</span>Sending...', 1);
         var pseudo_id = "@" + Math.round(Math.random() * 10000);
             message.setAttribute('data-id', pseudo_id);
+
         this.messages_list.appendChild(message);
         DialogHandler.goToTheDialogBottom();
 
@@ -469,41 +500,50 @@ class MessagesHandler {
 
     loadOldMessages () {
         function callback_load_old(result){
-            that.is_loading_old = false;
+            this.is_loading_old = false;
 
             if (typeof result.load_old_messages == "undefined")
                 return;
 
-            that.messages_list.removeChild(isLoadingMessage);
+            this.messages_list.removeChild(isLoadingMessage);
 
             if (result.load_old_messages.length == 0) {
-                document.removeEventListener('scroll', that.eventListeners['body_scroll']);
-                that.messages_list.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + that.messages_list.innerHTML;
+                document.removeEventListener('scroll', this.eventListeners['body_scroll']);
+                this.messages_list.innerHTML = "<h5 class='text-warning text-center'><b>начало диалога</b></h5>" + this.messages_list.innerHTML;
             }
 
             let scrollBottom = document.body.scrollHeight - document.body.scrollTop;
             for (var i = result.load_old_messages.length - 1; i >= 0; i--){
-                that.messages_list.insertBefore(createElementsByHTML(result.load_old_messages[i])[0], that.messages_list.firstElementChild);
+                this.messages_list.insertBefore(createElementsByHTML(result.load_old_messages[i])[0], this.messages_list.firstElementChild);
             }
 
             document.body.scrollTop = document.body.scrollHeight - scrollBottom;
         }
 
+        function getFirstMessageId(messages_list){
+
+           for (var i = 0; i < messages_list.childNodes.length; i++){
+               if (messages_list.childNodes[i].tagName !== 'LI')
+                   continue;
+
+               if (messages_list.childNodes[i].classList.contains('message')){
+                   return messages_list.childNodes[i];
+               }
+           }
+
+
+        }
+
         if (this.is_loading_old)
             return;
 
-        var that = this;
-        let firstMessage = this.messages_list.firstElementChild;
+        let firstMessage = getFirstMessageId(this.messages_list);
+        if (!firstMessage)
+            return;
 
         var isLoadingMessage = document.createElement("li");
             isLoadingMessage.innerHTML = '<center><i class="fa fa-refresh fa-spin fa-2x fa-fw"></i><span class="sr-only">Loading...</span></center>';
         this.messages_list.insertBefore(isLoadingMessage, this.messages_list.firstElementChild);
-
-
-
-
-        if (!firstMessage)
-            return;
 
         let data = {
             load_old_messages : {
@@ -512,7 +552,7 @@ class MessagesHandler {
         };
 
         this.dataHandler.addData(data);
-        this.dataHandler.addCallback(callback_load_old, false);
+        this.dataHandler.addCallback(callback_load_old.bind(this), false);
 
         this.is_loading_old = true;
     }
@@ -532,7 +572,7 @@ class MessagesHandler {
             need_to_change = that.messages_list.querySelectorAll(selector);
             for (var i = 0; i < need_to_change.length; i++){
                 need_to_change[i].dataset.new = "0";
-                need_to_change[i].getElementsByTagName('div')[0].classList.remove('message-new');
+                need_to_change[i].classList.remove('message-new');
             }
         }
 
@@ -591,6 +631,8 @@ class MessagesHandler {
             let div2 = document.getElementById('dialog_header_2');
             div1.style.display = 'block';
             div2.style.display = 'none';
+
+            that.selected_messages = { };
         }
 
         if (this.is_loading_dm)
@@ -645,11 +687,11 @@ class MessagesHandler {
             let last_m_id = null;
 
             if (messages.length > 0){
-                last_m_id = messages[messages.length - 1].parentNode.getAttribute('data-id');
+                last_m_id = messages[messages.length - 1].getAttribute('data-id');
             } else {
                 messages = that.messages_list.getElementsByClassName('message-outgoing');
                 if (messages.length > 0){
-                    last_m_id = messages[messages.length-1].parentNode.getAttribute('data-id');
+                    last_m_id = messages[messages.length-1].getAttribute('data-id');
                 }
             }
 
@@ -674,11 +716,11 @@ class MessagesHandler {
             return;
 
         var that = this;
-        var last_message_id = getLastMessageId();
+        var first_message_id = getLastMessageId();
 
         var data = {
             "load_new_messages" : {
-                "first_message-id" : last_message_id
+                "first_message-id" : first_message_id
             }
         }
 

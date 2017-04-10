@@ -10,6 +10,8 @@ namespace app\modules\chat\components;
 
 
 use app\models\ImagePlaceholder;
+use yii\base\Exception;
+use yii\bootstrap\Html;
 use yii\bootstrap\Widget;
 use app\models\Image;
 
@@ -21,7 +23,7 @@ class MessageFilesWidget extends Widget
 
     public function run(){
         if (empty($this->model))
-            return;
+            throw new Exception('Empty model has been given');
 
         $this->files = $this->model->files;
 
@@ -33,10 +35,12 @@ class MessageFilesWidget extends Widget
             $this->renderImages($this->files['image']);
         }
         if (isset($this->files['audio'])){
-            foreach ($this->files['audio'] as $file){
+            $this->renderAudios($this->files['audio']);
+        }
 
-                echo "$file->name";
-                echo "<audio controls src='/" . $file->path ."'></audio>";
+        if (isset($this->files['file'])){
+            foreach ($this->files['file'] as $file){
+                echo "<a download href='/$file->path'>Download -- $file->name.$file->extension</a>";
             }
         }
     }
@@ -51,8 +55,22 @@ class MessageFilesWidget extends Widget
 
         foreach ($this->files['image'] as $file){
             $image = new Image($file->path  );
-            echo "<image src='" . $image->getUrl($size) ."'>";
+
+            echo Html::img($image->getUrl($size),
+                [
+                    'class'    => 'message-attached-image',
+                    'data-url' => $image->getUrl()
+                ]);
         }
     }
 
+    protected function renderAudios($array){
+        foreach ($array as $file){
+
+            echo  "<div class='message-audio'>"
+                . "<p>$file->name</p>"
+                . "<audio controls src='/" . $file->path ."'></audio>"
+                . "</div>";
+        }
+    }
 }

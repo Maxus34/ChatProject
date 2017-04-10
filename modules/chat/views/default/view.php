@@ -2,7 +2,7 @@
 /* @var $dialog app\modules\chat\models\Dialog; */
 /* @var $this yii\web\View */
 $this->registerJsFile("@web/js/chat/dialog_.js");
-
+use app\models\User;
 
 echo "<script>"
     . "var activeUser = {$dialog -> isActive()};"
@@ -71,7 +71,7 @@ echo "<script>"
             </a>
 
             <div class="btn-group dropup">
-                <a class="btn dropdown-toggle" data-toggle="dropdown"  href="#">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
                     <i class="fa fa-plus" aria-hidden="true" data-toggle="tooltip" title="upload"></i>
                 </a>
                 <ul class="dropdown-menu">
@@ -90,12 +90,8 @@ echo "<script>"
         <ul class="dialog" id="messages_list">
             <?php if (!empty($messages)): ?>
                 <?php
-                $users = $dialog->getUsers();
-                ?>
-
-                <?php
                 foreach ($messages as $i => $message) {
-                    $user_image   = $users[ $messages[$i]->getAuthorId() ] -> getMainImage() -> getUrl( [100, 100] );
+                    $user_image = User::findIdentity($messages[$i]->getAuthorId())->getMainImage()->getUrl([100, 100]);
                     echo $this->render('/templates/_message', [
                         'message' => $messages[$i],
                         'user_image' => $user_image,

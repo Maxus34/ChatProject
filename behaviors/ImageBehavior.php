@@ -48,10 +48,10 @@ class ImageBehavior extends Behavior
                     ->orderBy(['id' => SORT_DESC])
                     ->one();
 
-        $image_path = $image->path;
-
         if (empty($image)) {
             $image_path = $this->placeholder_path;
+        } else {
+            $image_path = $image->path;
         }
 
         $this->_main_image = $image;

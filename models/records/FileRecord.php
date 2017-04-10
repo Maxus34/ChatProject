@@ -83,9 +83,6 @@ class FileRecord extends ActiveRecord
         return parent::beforeSave($insert);
     }
 
-    protected function saveFile(){
-
-    }
 
     protected function generateFilePath($file){
         $path = static::FILES_PATH;
@@ -100,7 +97,11 @@ class FileRecord extends ActiveRecord
                 break;
 
             default:
-                $path .= '/' . static::DEFAULT_PATH_PATH;
+                $path .= '/' . static::DEFAULT_PATH;
+        }
+
+        if (!file_exists($path)){
+            mkdir($path);
         }
 
         return $path;
