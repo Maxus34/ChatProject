@@ -6,7 +6,7 @@
  * Time: 17:06
  */
 
-namespace app\models\records;
+namespace app\records;
 
 use yii\behaviors\{ TimestampBehavior, BlameableBehavior };
 use yii\db\ActiveRecord;
@@ -28,9 +28,9 @@ class FileRecord extends ActiveRecord
     /*
      * @var UploadedFile uploaded file
      */
-    protected $_uploaded_file;
+    protected $uploaded_file;
 
-    static function tableName()
+    public static function tableName()
     {
         return "files";
     }
@@ -40,13 +40,13 @@ class FileRecord extends ActiveRecord
             'timestamp' => [
                 'class' => TimestampBehavior::class,
                 'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['createdAt'],
                 ],
             ],
             'blame' => [
                 'class' => BlameableBehavior::class,
                 'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_by']
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['createdBy']
                 ]
             ]
         ];
@@ -57,7 +57,7 @@ class FileRecord extends ActiveRecord
         parent::__construct(null);
 
         if (!empty($file) && $this->isNewRecord){
-            $this->_uploaded_file = $file;
+            $this->uploaded_file = $file;
 
             $this->name      = $file->baseName;
             $this->extension = $file->extension;
@@ -68,15 +68,15 @@ class FileRecord extends ActiveRecord
 
     public function beforeSave($insert)
     {
-        $path = $this->generateFilePath($this->_uploaded_file);
+        $path = $this->generateFilePath($this->uploaded_file);
 
         do {
             $name = $this->generateRandomFileName();
-            $file = $path . '/' . $name . '.' . $this->_uploaded_file->extension;
+            $file = $path . '/' . $name . '.' . $this->uploaded_file->extension;
 
         } while (file_exists($file));
 
-        $this->_uploaded_file->saveAs($_SERVER['DOCUMENT_ROOT'] . "/web/" . $file);
+        $this->uploaded_file->saveAs($_SERVER['DOCUMENT_ROOT'] . "/web/" . $file);
 
         $this-> path = $file;
 

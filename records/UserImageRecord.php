@@ -6,7 +6,7 @@
  * Time: 17:11
  */
 
-namespace app\models\records;
+namespace app\records;
 
 
 use yii\behaviors\TimestampBehavior;

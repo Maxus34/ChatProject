@@ -3,19 +3,25 @@
 namespace app\models;
 
 use app\behaviors\ImageBehavior;
-use app\models\records\UserImageRecord;
 use developeruz\db_rbac\interfaces\UserRbacInterface;
 use yii\db\ActiveRecord;
-use yii\db\Expression;
 use yii\web\IdentityInterface;
 use yii\behaviors\TimestampBehavior;
 use Yii;
 
-/* @property $id*/
-/* @property $username*/
-/* @property $email*/
-/* @property $password*/
-/* @property $auth_key*/
+/**
+ * Class User
+ * @package app\models
+ *
+ * @property Integer $id
+ * @property Integer $isActive
+ * @property Integer $createdAt
+ * @property String  $username
+ * @property String  $email
+ * @property String  $password
+ * @property String  $authKey
+ * @property String  $activationKey
+ */
 
 class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
 {
@@ -43,7 +49,7 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
 
     static function findIdentityByAccessToken($token, $type = null)
     {
-        return static::findOne(['access_token' => $token]);
+        return false; //static::findOne(['access_token' => $token]);
     }
 
     static function findByUsername($username)
@@ -55,14 +61,14 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
     {
         return [
             [
-                'class' => TimestampBehavior::className(),
+                'class' => TimestampBehavior::class,
                 'attributes' => [
-                    ActiveRecord :: EVENT_BEFORE_INSERT => ['created_at'],
+                    ActiveRecord :: EVENT_BEFORE_INSERT => ['createdAt'],
                 ],
             ],
             [
                 'class'             => ImageBehavior::class,
-                'placeholder_path'  => 'images/placeholder/user_placeholder.png',
+                'placeholderPath'  => 'images/placeholder/user_placeholder.png',
                 'key'               => 'user_images',
             ]
         ];
@@ -72,7 +78,7 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
     public function scenarios()
     {
         $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_UPDATE] = ['username', 'email', 'active', 'image'];
+        $scenarios[self::SCENARIO_UPDATE] = ['username', 'email', 'isActive', 'image'];
 
         return $scenarios;
     }
@@ -80,7 +86,7 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
     public function beforeSave($insert){
         if (parent::beforeSave($insert)){
             if ($this->isNewRecord){
-                $this->auth_key = \Yii::$app->security->generateRandomString();
+                $this->authKey = \Yii::$app->security->generateRandomString();
             }
             return true;
         }
@@ -100,14 +106,13 @@ class User extends ActiveRecord implements IdentityInterface, UserRbacInterface
 
     public function getAuthKey()
     {
-        return $this->auth_key;
+        return $this->authKey;
     }
-
 
 
     public function validateAuthKey($authKey)
     {
-        return $this->auth_key === $authKey;
+        return $this->authKey === $authKey;
     }
 
     public function validatePassword($password)

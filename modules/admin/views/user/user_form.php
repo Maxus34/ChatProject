@@ -1,4 +1,9 @@
 <?php
+/**
+ * @var \app\models\User $model
+ *
+ */
+
     use yii\bootstrap\ActiveForm;
 ?>
 
@@ -6,7 +11,7 @@
 
 <?= $form->field($model, 'username')->textInput() ?>
 <?= $form->field($model, 'email')->textInput() ?>
-<?= $form->field($model, 'active')->checkBox(['0', '1',]) ?>
+<?= $form->field($model, 'isActive')->checkbox(['0', '1',]) ?>
 <?= \app\modules\admin\components\UserSelectPicture::widget([
     'model' => $model,
     'attribute' => 'main-image',

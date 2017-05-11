@@ -123,7 +123,7 @@ class AjaxController extends Controller
     protected function  loadOldMessages(Dialog $dialog, $j_object)
     {
         $first_message_id = $j_object['load_old_messages']['first_message-id'];
-        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "message_id", $first_message_id]]);
+        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null, [["<", "messageId", $first_message_id]]);
 
         return $this->renderMessages($messages);
     }
@@ -132,7 +132,7 @@ class AjaxController extends Controller
     protected function  loadNewMessages(Dialog $dialog, $j_object)
     {
         $last_message_id = $j_object['load_new_messages']['first_message-id'];
-        $messages = $dialog->getMessages(null, null, [[">", "message_id", $last_message_id], ["!=", "created_by", \Yii::$app->user->getId() ]]);
+        $messages = $dialog->getMessages(null, null, [[">", "messageId", $last_message_id], ["!=", "createdBy", \Yii::$app->user->getId() ]]);
 
         return $this->renderMessages($messages);
     }

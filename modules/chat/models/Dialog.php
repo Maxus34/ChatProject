@@ -8,29 +8,27 @@
 
 namespace app\modules\chat\models;
 
-use app\modules\chat\models\records\MessageReferenceRecord;
+use app\modules\chat\records\ { MessageReferenceRecord, DialogReferenceRecord };
 use yii\base\Exception;
 use yii\web\HttpException;
-
-use app\modules\chat\models\records\DialogReferenceRecord;
 
 
 class Dialog extends DialogBase
 {
     public function getTypingUsers(){
 
-        if (count($this->_dialog_references) <= 1)
+        if (count($this->dialogReferences) <= 1)
             $references = $this->findDialogReferences();
         else
-            $references = $this->_dialog_references;
+            $references = $this->dialogReferences;
 
-        unset($references[$this->_user_id]);
+        unset($references[$this->_userId]);
         $users_array = [];
 
         foreach ($references as $reference){
-            if ($reference->is_typing){
-                if (time() - $reference->updated_at > static::MAX_TYPING_TIMEOUT){
-                    $reference -> is_typing = 0;
+            if ($reference->isTyping){
+                if ( time() - $reference->updatedAt > static::MAX_TYPING_TIMEOUT){
+                    $reference -> isTyping = 0;
                     $reference -> save();
 
                 } else {
@@ -44,24 +42,21 @@ class Dialog extends DialogBase
 
     public function getMessages(int $offset = null, int $limit = null, array $conditions = null){
 
-        return Message::getMessagesInstances($this->_user_id, $this->getId(), $offset, $limit, $conditions);
+        return Message::getMessagesInstances($this->_userId, $this->getId(), $offset, $limit, $conditions);
 
     }
 
     public function getMessagesCount($new = false){
-        $query = MessageReferenceRecord::find() -> where(['dialog_id' => $this->getId(), 'user_id' => $this->_user_id]);
+        $query = MessageReferenceRecord::find() -> where(['dialogId' => $this->getId(), 'userId' => $this->_userId]);
 
         if ($new)
-            $query = $query -> andWhere(["is_new"  => 1]) -> andWhere(['!=', 'created_by', $this->_user_id]);
+            $query = $query -> andWhere(["isNew"  => 1]) -> andWhere(['!=', 'createdBy', $this->_userId]);
 
         return $query->count();
     }
 
     public function getIsSeenMessages(array $messages){
-        if (empty($messages))
-            throw new Exception("setSeenMessages => Empty messages array");
-
-        return Message::getIsSeenMessages($this->_user_id, $this->getId(), $messages);
+        return Message::getIsSeenMessages($this->_userId, $this->getId(), $messages);
     }
 
     public function addMessage($content, $files = []){
@@ -83,9 +78,9 @@ class Dialog extends DialogBase
 
     }
 
-    public function deleteMessages(array $messages_id){
+    public function deleteMessages(array $messages_ids){
 
-        $messages = $this->getMessages(null, null, [['message_id' => $messages_id]]);
+        $messages = $this->getMessages(null, null, [['messageId' => $messages_ids]]);
         $success = [];
 
         foreach ($messages as $message){
@@ -103,12 +98,12 @@ class Dialog extends DialogBase
     }
 
     public function setIsTyping($is_typing){
-         if ( !isset($this->dialog_references[$this->_user_id]) )
-             $reference = DialogReferenceRecord::findOne(['user_id' => $this->_user_id, 'dialog_id' => $this->getId()]);
+         if ( !isset($this->dialogReferences[$this->_userId]) )
+             $reference = DialogReferenceRecord::findOne(['userId' => $this->_userId, 'dialogId' => $this->getId()]);
          else
-             $reference = $this -> dialog_references[$this->_user_id];
+             $reference = $this -> dialogReferences[$this->_userId];
 
-         $reference -> is_typing = $is_typing ? 1 : 0;
+         $reference -> isTyping = $is_typing ? 1 : 0;
          $reference -> save();
     }
 

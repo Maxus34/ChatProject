@@ -8,8 +8,8 @@
 
 namespace app\behaviors;
 
-use app\models\records\FileRecord;
-use app\models\records\MessageFileRecord;
+use app\records\FileRecord;
+use app\modules\chat\records\MessageFileRecord;
 use yii\base\Behavior;
 use yii\db\ActiveRecord;
 
@@ -32,7 +32,7 @@ class AttachedFileBehavior extends Behavior
     public function events()
     {
         return [
-            ActiveRecord::EVENT_AFTER_DELETE => 'deleteFiles',
+            ActiveRecord::EVENT_BEFORE_DELETE => 'deleteFiles',
         ];
     }
 
@@ -89,12 +89,8 @@ class AttachedFileBehavior extends Behavior
     }
 
     protected function findFiles(){
-        if ($this->owner->has_files == 0){
-            return [];
-        }
-
         $m_files = MessageFileRecord::find()
-            ->where(['message_id' => $this->owner->id])
+            ->where(['messageId' => $this->owner->id])
             ->all();
 
         foreach ($m_files as $m_file){

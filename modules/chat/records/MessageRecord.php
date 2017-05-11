@@ -1,11 +1,21 @@
 <?php
 
-namespace app\modules\chat\models\records;
-
+namespace app\modules\chat\records;
 
 use yii\db\ActiveRecord;
 use yii\behaviors\{TimestampBehavior, BlameableBehavior};
+use app\behaviors\AttachedFileBehavior;
 
+/**
+ * Class MessageRecord
+ * @package app\modules\chat\models\records
+ *
+ * @property Integer $id
+ * @property Integer $dialogId
+ * @property String  $content
+ * @property Integer $createdAt
+ * @property Integer $createdBy
+ */
 class MessageRecord extends ActiveRecord
 {
     static function tableName()
@@ -19,17 +29,17 @@ class MessageRecord extends ActiveRecord
             'timestamp' => [
                 'class' => TimestampBehavior::class,
                 'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['createdAt'],
                 ],
             ],
             'blame' => [
                 'class' => BlameableBehavior::class,
                 'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_by']
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['createdBy']
                 ]
             ],
-            [
-                'class' => \app\behaviors\AttachedFileBehavior::class,
+            'attachedFile' => [
+                'class' => AttachedFileBehavior::class,
             ],
         ];
     }
@@ -38,11 +48,11 @@ class MessageRecord extends ActiveRecord
     {
         parent::__construct();
 
-        $this->dialog_id = $dialog_id;
+        $this->dialogId = $dialog_id;
         $this->content   = $content;
     }
 
     public function getReferences(){
-        return $this->hasMany(MessageReferenceRecord::className(), ['message_id' => $this->id]);
+        return $this->hasMany(MessageReferenceRecord::className(), ['messageId' => $this->id]);
     }
 }

@@ -56,9 +56,10 @@ class RegistrationForm extends Model
         $user->username       = $this->username;
         $user->email          = $this->email;
         $user->password       = Yii::$app->getSecurity()->generatePasswordHash($this->password);
-        $user->activation_key = Yii::$app->security->generateRandomString();
+        $user->activationKey  = Yii::$app->security->generateRandomString(40);
         $user->save();
 
+        $this->sendEmail();
         return $user;
     }
 
@@ -68,5 +69,6 @@ class RegistrationForm extends Model
     }
 
     protected function sendEmail(){
+
     }
 }

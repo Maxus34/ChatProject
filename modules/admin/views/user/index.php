@@ -20,17 +20,17 @@
             'username',
             'email',
             [
-                'attribute' => 'created_at',
+                'attribute' => 'createdAt',
                 'label'     => 'Registration date',
                 'value' => function ($data) {
-                    return Yii::$app->formatter->asDate($data->created_at, "d.m.Y  h:i");
+                    return Yii::$app->formatter->asDate($data->createdAt, "d/m/Y");
                 }
             ],
             [
-                'attribute' => 'active',
+                'attribute' => 'isActive',
                 'format' => 'raw',
                 'value' => function ($data) {
-                    return $data->active ? "<span class='text-success'><b>Active</b></span>" : "<span class='text-warning'><b>Not</b></span>";
+                    return $data->isActive ? "<span class='text-success'><b>Active</b></span>" : "<span class='text-warning'><b>Not</b></span>";
                 }
             ],
             ['class' => 'yii\grid\ActionColumn'],

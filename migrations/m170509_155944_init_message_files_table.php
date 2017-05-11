@@ -2,23 +2,23 @@
 
 use yii\db\Migration;
 
-class m170321_133152_init_table_message_files extends Migration
+class m170509_155944_init_message_files_table extends Migration
 {
     public function up()
     {
         $this->createTable('message_files',
             [
                 'id'         => $this->primaryKey(),
-                'message_id' => $this->integer(11)->unsigned(),
-                'file_id'    => $this->integer(11)->unsigned(),
-                'created_at' => $this->integer(11)->unsigned(),
+                'messageId' => $this->integer(11)->unsigned(),
+                'fileId'    => $this->integer(11)->unsigned(),
+                'createdAt' => $this->integer(11)->unsigned(),
             ]
         );
 
         $this->addForeignKey(
             'fk-message_files-message',
             'message_files',
-            'message_id',
+            'messageId',
             'message',
             'id',
             'CASCADE', 'CASCADE'
@@ -27,7 +27,7 @@ class m170321_133152_init_table_message_files extends Migration
         $this->addForeignKey(
             'fk-message_files-files',
             'message_files',
-            'file_id',
+            'fileId',
             'files',
             'id',
             'CASCADE', 'CASCADE'
@@ -40,6 +40,5 @@ class m170321_133152_init_table_message_files extends Migration
         $this->dropForeignKey('fk-message_files-files', 'message_files');
 
         $this->dropTable('message_files');
-        return false;
     }
 }

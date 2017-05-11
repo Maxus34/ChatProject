@@ -2,24 +2,22 @@
 
 use yii\db\Migration;
 
-class m170313_143508_init_user_images_table extends Migration
+class m170509_155833_init_user_images_table extends Migration
 {
     public function up()
     {
-        $this->createTable("user_images",
-            [
+        $this->createTable("user_images", [
                 'id'         => $this->primaryKey()->unsigned(),
-                'user_id'    => $this->integer(11)->unsigned(),
-                'file_id'    => $this->integer(11)->unsigned(),
-                'is_main'    => $this->boolean(),
-                'created_at' => $this->integer(11)->unsigned(),
-            ]
-        );
+                'userId'     => $this->integer(11)->unsigned(),
+                'fileId'     => $this->integer(11)->unsigned(),
+                'isMain'     => $this->boolean(),
+                'createdAt'  => $this->integer(11)->unsigned(),
+        ]);
 
         $this->addForeignKey(
             'fk-user_images-files_id',
             'user_images',
-            'file_id',
+            'fileId',
             'files',
             'id',
             'CASCADE', 'CASCADE'
@@ -28,7 +26,7 @@ class m170313_143508_init_user_images_table extends Migration
         $this->addForeignKey(
             'fk-user_images-user_id',
             'user_images',
-            'user_id',
+            'userId',
             'user',
             'id',
             'CASCADE', 'CASCADE'
@@ -37,9 +35,9 @@ class m170313_143508_init_user_images_table extends Migration
 
     public function down()
     {
-        $this->dropTable('user_images');
         $this->dropForeignKey('fk-user_images-files_id', 'user_images');
         $this->dropForeignKey('fk-user_images-user_id' , 'user_images');
+        $this->dropTable('user_images');
     }
 
 }

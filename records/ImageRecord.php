@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: MXS34
- * Date: 16.03.2017
- * Time: 16:17
- */
 
-namespace app\models\records;
-
+namespace app\records;
 
 use Imagine\Image\Box;
 use Imagine\Imagick\Imagine;
@@ -15,14 +8,14 @@ use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 
 /* @property integer $id*/
-/* @property integer item_id*/
-/* @property integer $file_id*/
-/* @property boolean $is_main*/
+/* @property integer itemId*/
+/* @property integer $fileId*/
+/* @property boolean $isMain*/
 /* @property string  $key*/
-/* @property integer $created_at*/
+/* @property integer $createdAt*/
 class ImageRecord extends ActiveRecord
 {
-    protected $_file_record = false;
+    protected $_fileRecord = false;
 
     static function tableName()
     {
@@ -35,7 +28,7 @@ class ImageRecord extends ActiveRecord
             [
                 'class' => TimestampBehavior::class,
                 'attributes' => [
-                    ActiveRecord::EVENT_AFTER_INSERT => 'created_at',
+                    ActiveRecord::EVENT_AFTER_INSERT => 'createdAt',
                 ]
             ]
         ];
@@ -43,11 +36,11 @@ class ImageRecord extends ActiveRecord
 
     public function getPath(){
 
-        if (!$this->_file_record){
-            $this->_file_record = FileRecord::findOne(['id' => $this->file_id]);
+        if (!$this->_fileRecord){
+            $this->_fileRecord = FileRecord::findOne(['id' => $this->fileId]);
         }
 
-        return $this->_file_record->path;
+        return $this->_fileRecord->path;
     }
 
 }

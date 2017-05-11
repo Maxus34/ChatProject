@@ -25,7 +25,7 @@ class UserController extends Controller
     }
 
     public function actionView($id){
-        $user = User::findOne($id);
+        $user = User::findIdentity($id);
 
         return $this->render('view', compact('user'));
     }
@@ -37,7 +37,8 @@ class UserController extends Controller
 
         if ($model->load(\Yii::$app->request->post()) && $model->save()) {
             $file = UploadedFile::getInstanceByName('main-image');
-            $model -> attachImage($file, true);
+            if (!empty($file))
+                $model -> attachImage($file, true);
 
             \Yii::$app->session->setFlash('success', "User {$model->id} was updated successfully");
             return $this->redirect(['/admin/user/view', 'id' => $model->id]);
@@ -45,31 +46,4 @@ class UserController extends Controller
 
         return $this->render('update', compact('model'));
     }
-
-
-    public function actionUpdate123($id)
-    {
-        $model = User::findOne($id);
-        $model->scenario = User::SCENARIO_UPDATE;
-
-        if ($model->load(\Yii::$app->request->post()) && $model->save()) {
-            $image_record = new UserImageRecord();
-            $image_record->user_id   = $model->id;
-            $image_record->is_main   = 1;
-            $image_record->imageFile = UploadedFile::getInstanceByName('main-image');
-            $image_record->upload();
-
-            \Yii::$app->session->setFlash('success', "User {$model->id} was updated successfully");
-            return $this->redirect(['/admin/user/view', 'id' => $model->id]);
-        }
-
-        return $this->render('update', compact('model'));
-    }
-
-    public function actionTest(){
-        $user = User::findOne(['id' => 1]);
-
-        return debug($user->getMainImage()->getUrl());
-    }
-
 }

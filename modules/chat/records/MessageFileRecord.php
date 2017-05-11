@@ -1,15 +1,18 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: MXS34
- * Date: 21.03.2017
- * Time: 15:42
- */
-
-namespace app\models\records;
+namespace app\modules\chat\records;
 
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+
+/**
+ * Class MessageFileRecord
+ * @package app\modules\chat\records
+ *
+ * @property Integer $id
+ * @property Integer $messageId
+ * @property Integer $fileId
+ * @property Integer $createdAt
+ */
 
 class MessageFileRecord extends ActiveRecord
 {
@@ -23,7 +26,7 @@ class MessageFileRecord extends ActiveRecord
           [
               'class' => TimestampBehavior::class,
               'attributes' => [
-                  ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
+                  ActiveRecord::EVENT_BEFORE_INSERT => ['createdAt'],
               ],
           ]
         ];
@@ -32,13 +35,13 @@ class MessageFileRecord extends ActiveRecord
     public function __construct($file_id = null, $message_id = null)
     {
         parent::__construct();
-        $this->file_id    = $file_id ?? null;
-        $this->message_id = $message_id ?? null;
+        $this->fileId    = $file_id ?? null;
+        $this->messageId = $message_id ?? null;
     }
 
     public function getFile()
     {
-        return FileRecord::findOne($this->file_id);
+        return FileRecord::findOne($this->fileId);
     }
 
 }

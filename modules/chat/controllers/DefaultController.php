@@ -50,7 +50,7 @@ class DefaultController extends \yii\web\Controller
         }
 
         $this->view->title = "Dialog | " . $dialog->getTitle();
-        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE, null);
+        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE);
         return $this->render('view', compact('dialog', 'messages'));
     }
 

@@ -8,34 +8,27 @@
 
 namespace app\modules\chat\models;
 
-use app\modules\chat\models\records\{ MessageRecord, MessageReferenceRecord};
+use app\modules\chat\records\{ MessageRecord, MessageReferenceRecord};
 use yii\base\{ Exception, Model };
 
 class Message extends Model
 {
-    private  $user_id            = null;
-    private  $message_record     = null;
-    private  $message_references =   [];
+    private  $userId            = null;
+    private  $messageRecord     = null;
+    private  $messageReferences =   [];
 
-    public function behaviors()
-    {
-        return [
-
-        ];
-    }
-
-    // Not used
+    // Not uses
     static function  getMessageInstance(int $message_id = null){
-        $message_record = MessageRecord::findOne($message_id);
-        if (empty($message_record))
+        $messageRecord = MessageRecord::findOne($message_id);
+        if (empty($messageRecord))
             throw new Exception("Empty message record id = $message_id");
 
-        return new static($message_record);
+        return new static($messageRecord);
     }
 
-    static function  getMessagesInstances(int $user_id, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
+    static function  getMessagesInstances(int $userId, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
 
-        $query = MessageReferenceRecord::find()->where(['user_id' => $user_id, 'dialog_id' => $dialog_id])
+        $query = MessageReferenceRecord::find()->where(['userId' => $userId, 'dialogId' => $dialog_id])
             -> with('message');
 
         if ( !empty($conditions))
@@ -61,15 +54,15 @@ class Message extends Model
         return $messages;
     }
 
-    static function  getIsSeenMessages(int $user_id, int $dialog_id, array $messages){
+    static function  getIsSeenMessages(int $userId, int $dialog_id, array $messages){
         $references = MessageReferenceRecord::find()
-            ->where(['dialog_id' => $dialog_id, 'message_id' => $messages, 'user_id' => $user_id])
+            ->where(['dialogId' => $dialog_id, 'messageId' => $messages, 'userId' => $userId])
             ->all();
 
         $seen = [];
         foreach ($references as $reference){
-            if (!$reference -> is_new) {
-                $seen[] = $reference -> message_id;
+            if (!$reference -> isNew) {
+                $seen[] = $reference -> messageId;
             }
         }
 
@@ -77,12 +70,12 @@ class Message extends Model
     }
 
     static function  setSeenMessages(int $dialog_id, array $messages){
-        $references = MessageReferenceRecord::find()->where(['dialog_id' => $dialog_id, 'message_id' => $messages])->all();
+        $references = MessageReferenceRecord::find()->where(['dialogId' => $dialog_id, 'messageId' => $messages])->all();
         $seen = [];
         foreach ($references as $reference){
-            $reference -> is_new = 0;
+            $reference -> isNew = 0;
             if ($reference -> save()) {
-                $seen[] = $reference -> message_id;
+                $seen[] = $reference -> messageId;
             }
         }
 
@@ -94,68 +87,68 @@ class Message extends Model
 
         // Creating a new Message
         if (empty($message_ref_rec)){
-            $this->user_id = \Yii::$app->user->getId();
+            $this->userId = \Yii::$app->user->getId();
 
-            $this->message_record  = new MessageRecord($dialog->getId(), $content);
-            $this->message_record -> save();
+            $this->messageRecord  = new MessageRecord($dialog->getId(), $content);
+            $this->messageRecord -> save();
 
             $this->createReferences($dialog->getUsers());
 
             if (count($files) > 0){
-                $this->message_record->attachFiles($files);
+                $this->messageRecord->attachFiles($files);
             }
 
         // Getting an old Message
         } else {
 
-            $this->message_references[$message_ref_rec->user_id] = $message_ref_rec;
-            $this->message_record   = $message_ref_rec->message;
-            $this->user_id          = \Yii::$app->user->getId();
+            $this->messageReferences[$message_ref_rec->userId] = $message_ref_rec;
+            $this->messageRecord   = $message_ref_rec->message;
+            $this->userId          = \Yii::$app->user->getId();
         }
     }
 
 
-    public function  isAuthor(int $user_id)
+    public function  isAuthor(int $userId)
     {
-        return  ($this->message_references[$this->user_id]->created_by === $this->user_id);
+        return  ($this->messageReferences[$this->userId]->createdBy === $this->userId);
     }
 
-    /*
+    /**
      *  @return integer Message author ID
      */
     public function getAuthorId()
     {
-         return $this->message_record->created_by;
+         return $this->messageRecord->createdBy;
     }
 
     public function  getId()
     {
-        return $this -> message_record -> id;
+        return $this -> messageRecord -> id;
     }
 
     public function  getCreationDate()
     {
-        return $this -> message_record -> created_at;
+        return $this -> messageRecord -> createdAt;
     }
 
     public function  getContent()
     {
-        return $this -> message_record -> content;
+        return $this -> messageRecord -> content;
     }
 
     public function  isNew()
     {
-        return $this->message_references[$this->user_id]->is_new;
+        return $this->messageReferences[$this->userId]->isNew;
     }
 
     public function getFiles(){
-        return $this->message_record->getFiles();
+        return $this->messageRecord->getFiles();
     }
 
 
     public function  save(){
-        $this->message_record->save();
-        foreach ($this->message_references as $ref){
+        $this->messageRecord->save();
+        foreach ($this->messageReferences as $ref){
             $ref->save();
         }
     }
@@ -164,23 +157,23 @@ class Message extends Model
 
         $this->findReferences();
 
-        $this->message_references[$this->user_id]->delete();
-        if (count($this->message_references) > 1){
+        $this->messageReferences[$this->userId]->delete();
+        if (count($this->messageReferences) > 1){
 
         } else {
-            $this->message_record->delete();
+            $this->messageRecord->delete();
         }
 
-        return $this->message_record->id;
+        return $this->messageRecord->id;
     }
 
 
     private function createReferences(array $users){
         foreach ($users as $user){
-            if ( empty($this->message_references[$user->id]) ) {
+            if ( empty($this->messageReferences[$user->id]) ) {
                 $ref = new MessageReferenceRecord(
-                    $this->message_record->dialog_id,
-                    $this->message_record->id,
+                    $this->messageRecord->dialogId,
+                    $this->messageRecord->id,
                     $user->id
                 );
 
@@ -190,17 +183,17 @@ class Message extends Model
                    // \Yii::warning("Error: {$e->getMessage()}", "message_reference");
                 }
 
-                $this->message_references[$ref->user_id] = $ref;
+                $this->messageReferences[$ref->userId] = $ref;
             }
         }
     }
 
     private function findReferences(){
 
-        $message_references = MessageReferenceRecord::find()->where(['message_id' => $this->message_record->id])->all();
+        $messageReferences = MessageReferenceRecord::find()->where(['messageId' => $this->messageRecord->id])->all();
 
-        foreach($message_references as $reference){
-            $this->message_references[$reference->user_id] = $reference;
+        foreach($messageReferences as $reference){
+            $this->messageReferences[$reference->userId] = $reference;
         }
     }
 }

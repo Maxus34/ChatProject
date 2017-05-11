@@ -55,12 +55,12 @@ class UserController extends Controller
         if($model->load(Yii::$app->request->post())){
 
             if ($model->register()){
-                $model->sendEmail();
-                Yii::$app->session->setFlash('success', "Registration success"
-                                                         . "<br>A message with instructions to confirm registration has been sent to your email");
+                Yii::$app->session->setFlash('success', "Registration success."
+                    . "<br>A message with instructions to confirm registration has been sent to your email.");
                 return $this->goHome();
             } else {
-                Yii::$app->session->setFlash('error',  print_r($model->getErrors()));
+
+                Yii::$app->session->setFlash('error', 'Form has some errors.');
             }
 
         }
@@ -84,7 +84,7 @@ class UserController extends Controller
 
 
         if (Yii::$app->request->isAjax){
-            return $this->renderAjax('login', [
+            return $this->renderAjax('login_ajax', [
                 'model' => $model,
             ]);
 

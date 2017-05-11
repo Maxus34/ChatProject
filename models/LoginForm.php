@@ -18,7 +18,7 @@ class LoginForm extends Model
     public $password;
     public $rememberMe = true;
 
-    private $_user = false;
+    private $user = false;
 
 
     public function rules()
@@ -58,7 +58,7 @@ class LoginForm extends Model
     {
         if ($this->validate()) {
             if (!$this->isActive()){
-                Yii::$app->session->setFlash('error', "Аккаунт необходимо активировать перейдя по ссылке из email");
+                Yii::$app->session->setFlash('error', "You should to activate an account with instructions that sent to your email.");
                 return false;
             }
             return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600*24*30 : 0);
@@ -69,16 +69,16 @@ class LoginForm extends Model
 
     public function getUser()
     {
-        if ($this->_user === false) {
-            $this->_user = User::findByUsername($this->username);
+        if ($this->user === false) {
+            $this->user = User::findByUsername($this->username);
         }
 
-        return $this->_user;
+        return $this->user;
     }
 
 
     public function isActive(){
-        return $this->getUser()->active == 1 ? true : false;
+        return $this->getUser()->isActive == 1 ? true : false;
     }
 
 }

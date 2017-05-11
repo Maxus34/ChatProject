@@ -21,4 +21,11 @@ class DialogProperties extends Model
             [ ['users'], 'default', 'value' => []],
         ];
     }
+
+    public function attributeLabels() {
+        return [
+            'title' => "Title",
+            'users' => "Users"
+        ];
+    }
 }

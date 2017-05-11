@@ -1,5 +1,8 @@
 <?php
-    /* @var $this yii\web\View;*/
+    /**
+     * @var \yii\web\View    $this
+     * @var \app\models\User $model
+     */
 
 
     $this->title = "Admin | Update User #" . $model -> id;

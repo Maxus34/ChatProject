@@ -17,13 +17,13 @@ $this->title = 'Admin | view user';
             'username',
             'email',
             [
-                'attribute' => 'created_at',
-                'value' => Yii::$app->formatter->asDate($user->created_at),
+                'attribute' => 'createdAt',
+                'value' => Yii::$app->formatter->asDate($user->createdAt),
             ],
             [
                 'attribute' => 'active',
                 'format' => 'raw',
-                'value' => ($user->active == 1) ? "<span class='text-success'><b>Yes</b></span>" : "<span class='text-success'><b>No</b></span>",
+                'value' => ($user->isActive == 1) ? "<span class='text-success'><b>Yes</b></span>" : "<span class='text-success'><b>No</b></span>",
             ],
             [
                 'attribute' => 'image',
