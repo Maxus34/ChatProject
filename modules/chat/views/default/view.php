@@ -10,39 +10,38 @@ echo "<script>"
 ?>
 
 <?php $this->beginBlock('fixed-top') ?>
-<div id="dialog_header_1" class="prop-block col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
+<div id="dialog_header_1" class="prop-block col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2">
     <div>
-        <div class="col-md-1 col-sm-1">
+        <div class="col-sm-1">
             <a class="btn-sm btn-primary" href="<?= \yii\helpers\Url::to(['/chat/default']) ?>">Back</a>
         </div>
-        <div class="col-md-3 col-sm-3 col-sm-offset-1 ">
+        <div class="col-sm-3 col-sm-offset-1">
             <span class="text-left">#<?= $dialog->getId() . " | " . $dialog->getTitle() ?></span>
         </div>
-        <div class="col-md-6 col-sm-6">
-            <p class="text-success text-center" style="font-weight:700; text-align: center;">
+        <div class="col-sm-6">
+            <div class="text-success text-center" style="font-weight:700; text-align: center;">
                 <?php
                 foreach ($dialog->getUsers(true) as $user) echo " " . $user->username
                 ?>
-            </p>
+            </div>
         </div>
-
-        <div class="col-md-1 col-sm-1" data-toggle="tooltip" title="Options" data-placement="bottom">
+        <div class="col-sm-1" data-toggle="tooltip" title="Options" data-placement="bottom">
             <a id="dialog_properties" style="cursor:pointer;"><i class="fa fa-ellipsis-h" aria-hidden="true"
                                                                  style="font-size: 20px;"></i></a>
         </div>
     </div>
 </div>
 
-<div id="dialog_header_2" class="prop-block col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1" style="display: none;">
+<div id="dialog_header_2" class="prop-block col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2 hidden">
     <div>
-        <div class="col-md-1 col-sm-1">
+        <div class="col-sm-1">
             <a class="btn-sm btn-primary" href="<?= \yii\helpers\Url::to(['/chat/default']) ?>">Back</a>
         </div>
-        <div class="col-md-7     col-sm-7 col-sm-offset-3 ">
+        <div class="col-sm-7 col-sm-offset-3">
             <a id="delete_messages" class="btn-sm btn-primary">Delete</a>
             <a id="reset_delete_messages" class="btn-sm btn-primary"><i class="fa fa-times" aria="hidden"></i>Reset</a>
         </div>
-        <div class="col-md-1 col-sm-1" data-toggle="tooltip" title="Options" data-placement="bottom">
+        <div class="col-sm-1" data-toggle="tooltip" title="Options" data-placement="bottom">
             <a id="dialog_properties" style="cursor:pointer;"><i class="fa fa-ellipsis-h" aria-hidden="true"
                                                                  style="font-size: 20px;"></i></a>
         </div>
@@ -51,7 +50,7 @@ echo "<script>"
 <?php $this->endBlock() ?>
 
 <?php $this->beginBlock('fixed-bottom') ?>
-<div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
+<div class="col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2">
 
     <ul id="files-list" class="files-list">
 
@@ -85,7 +84,7 @@ echo "<script>"
 </div>
 <?php $this->endBlock() ?>
 
-<div class="col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
+<div class="col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2">
     <div class="dialog" id="dialog_block">
         <ul class="dialog" id="messages_list">
             <?php if (!empty($messages)): ?>

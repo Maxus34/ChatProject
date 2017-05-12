@@ -275,7 +275,13 @@ div.under-fixed{
 
 /* Modal window Styles*/
 @media screen and (min-width: 800px) {
-    #chat_modal>div{ width: 80% }
+    #media_modal>div{
+        width  : 75%;
+        height: 80%;
+    }
+    #media_modal>div>img{
+        height: 75%;
+    }
 }
 
 div.modal-header{

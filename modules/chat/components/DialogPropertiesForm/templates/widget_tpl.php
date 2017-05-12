@@ -1,10 +1,13 @@
 <?php
-/* @var $this yii\web\View;*/
-/* @var $available_models app\models\User; */
-/* @var $current_references app\modules\chat\models\records\DialogReferenceRecord; */
-/* @var $create_new boolean;*/
-/* @var $model      app\modules\chat\models\DialogProperties */
-/* @var $attribute  string */
+/**
+ * @var $this               yii\web\View;
+ * @var $available_models   app\models\User;
+ * @var $current_references app\modules\chat\records\DialogReferenceRecord;
+ * @var $create_new         boolean;
+ * @var $model              app\modules\chat\models\DialogProperties
+ * @var $attribute          string
+ * @var $dialog             app\modules\chat\models\Dialog
+ */
 use app\models\User;
 use yii\bootstrap\{ ActiveForm, Html };
 
@@ -46,12 +49,12 @@ use yii\bootstrap\{ ActiveForm, Html };
 
         <?php foreach ($current_references as $reference): ?>
             <label class="user-checkbox">
-                <input type="checkbox" name="<?=$modelClassName?>[<?=$attribute?>][]" id="checkbox-<?= $reference->user_id ?>" value="<?= $reference->user_id ?>" checked>
+                <input type="checkbox" name="<?=$modelClassName?>[<?=$attribute?>][]" id="checkbox-<?= $reference->userId ?>" value="<?= $reference->userId ?>" checked>
                 <span><?= $reference->user->username;?></span>
-                <p> Added by <?= User::findOne($reference->created_by)->username ?> on <?= \Yii::$app->formatter->asDate($reference->created_at); ?> </p>
+                <p> Added by <?= User::findOne($reference->createdBy)->username ?> on <?= \Yii::$app->formatter->asDate($reference->createdAt); ?> </p>
 
                 <?php
-                    if (   $reference->created_by == $dialog->getUserId()
+                    if (   $reference->createdBy == $dialog->getUserId()
                         || $dialog -> isCreator( $dialog->getUserId()) ){
                         echo "<a class=\"btn-delete\"  > <i class=\"fa fa-times\" aria-hidden=\"true\"> </i></a>";
                         echo "<a class=\"btn-restore\" > <i class=\"fa fa-undo\"  aria-hidden=\"true\"> </i></a>";

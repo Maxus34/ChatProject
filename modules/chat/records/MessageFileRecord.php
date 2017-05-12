@@ -3,6 +3,7 @@ namespace app\modules\chat\records;
 
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use app\records\FileRecord;
 
 /**
  * Class MessageFileRecord

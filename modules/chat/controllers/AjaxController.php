@@ -8,15 +8,13 @@
 
 namespace app\modules\chat\controllers;
 
-use app\models\records\FileRecord;
 use yii\web\Controller;
 use app\models\User;
 use app\modules\chat\models\{ Dialog, DialogProperties };
-use app\modules\chat\components\DialogPropertiesForm\DialogPropertiesForm;
 use yii\base\Exception;
-use yii\filters\{ VerbFilter, AccessControl};
 use yii\helpers\Json;
-use yii\web\UploadedFile;
+use app\modules\chat\actions\LoadFileAction;
+
 
 class AjaxController extends Controller
 {
@@ -37,7 +35,7 @@ class AjaxController extends Controller
     public function actions(){
         return [
             'upload-file' => [
-                'class' => \app\modules\chat\components\LoadFileAction::class
+                'class' => LoadFileAction::class
             ]
         ];
     }
@@ -97,6 +95,7 @@ class AjaxController extends Controller
         return Json::encode($response_arr);
     }
 
+
     public function  actionGetCreateDialogForm(){
         $d_p = new DialogProperties();
 
@@ -107,6 +106,7 @@ class AjaxController extends Controller
         ]);
 
     }
+
 
 
     protected function  getDialogPropertiesForm(Dialog $dialog){
@@ -177,11 +177,9 @@ class AjaxController extends Controller
     }
 
 
-
     protected function  setIsTyping(Dialog $dialog, $j_object){
         $dialog->setIsTyping($j_object['set_is_typing']['is_typing']);
     }
-
 
 
     protected function  setSeenMessages(Dialog $dialog, $j_object) {
@@ -191,7 +189,6 @@ class AjaxController extends Controller
 
         return $dialog->setSeenMessages($messages);
     }
-
 
 
     protected function  deleteMessages(Dialog $dialog, $j_object){

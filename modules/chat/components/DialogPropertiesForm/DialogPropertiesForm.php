@@ -9,8 +9,16 @@ use Yii;
 class DialogPropertiesForm extends Widget
 {
     public $create_new  = false;
+
+    /**
+     * @var DialogProperties
+     */
     public $model       = null;
     public $attribute   = null;
+
+    /**
+     * @var \app\modules\chat\models\Dialog
+     */
     public $dialog      = null;
 
     public $references      = [];

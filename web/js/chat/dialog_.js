@@ -12,7 +12,6 @@ var createElementsByHTML = (function(){
     };
 })();
 
-
 class JsonDataHandler {
     constructor (url, interval, dialog_id){
         this.url      = url;
@@ -125,11 +124,11 @@ class JsonDataHandler {
 
 class FileHandler {
     constructor () {
-        this.input          = document.createElement('input');
-        this.input.type     = 'file';
+        this.filesInput            = document.createElement('input');
+        this.filesInput.type       = 'file';
 
-        this.files_list     = document.getElementById('files-list');
-        this.addImageButton = document.getElementById('upload-file');
+        this.files_list       = document.getElementById('files-list');
+        this.uploadFileButton = document.getElementById('upload-file');
 
         this.param = document.querySelectorAll('meta[name=csrf-param]')[0].getAttribute('content');
         this.token = document.querySelectorAll('meta[name=csrf-token]')[0].getAttribute('content');
@@ -144,12 +143,12 @@ class FileHandler {
     }
 
     addEventListeners(){
-        this.addImageButton.onclick = (e) => {
+        this.uploadFileButton.onclick = (e) => {
             e.preventDefault(e);
-            this.input.click();
+            this.filesInput.click();
         };
 
-        this.input.onchange = (e) => {
+        this.filesInput.onchange = (e) => {
             console.log(e.target.files);
             if (e.target.files.length > 0){
                 this.handleFile(e.target.files[0]);
@@ -355,58 +354,22 @@ class MessagesHandler {
     }
 
     addEventListeners () {
-        let that = this;
 
-        this.eventListeners['add_message_to_send']     =  function (e) {
-            that.addMessageToSend.apply(that);
-        }
-        this.eventListeners['body_scroll']             =  function (e) {
+        this.eventListeners['add_message_to_send']     =  this.addMessageToSend.bind(this);
+        this.eventListeners['body_scroll']             =  (e) => {
             if (e.target.body.scrollTop < 1) {
-                that.loadOldMessages.apply(that);
+                this.loadOldMessages();
             }
-        }
-        this.eventListeners['select_message']          =  function (e) {
-            let image = e.target.closest('img');
-
-            if (image){
-                let image = e.target.closest('img');
-                if (!image)
-                    return;
-
-                let full_image_link = image.getAttribute('data-url');
-                let img             = document.createElement('img');
-                let download_link   = document.createElement('a');
-                download_link.href  = full_image_link;
-
-                download_link.innerHTML = 'download image';
-                download_link.setAttribute('download', '');
-                img.src = full_image_link;
-
-                console.log(image);
-
-                $("#chat_modal .modal-body").html('');
-                $("#chat_modal .modal-body").append(img);
-                $("#chat_modal .modal-body").append(document.createElement('hr'));
-                $("#chat_modal .modal-body").append(download_link);
-                $("#chat_modal").modal();
-
-                e.preventDefault();
-
-            } else {
-                let li = e.target.closest('li');
-                if (!li)
-                    return;
-
-                that.selectMessage.apply(that, [li]);
-            }
-
-        }
-        this.eventListeners['delete_messages']         =  function (e) {
-            that.deleteMessages.apply(that);
-        }
-        this.eventListeners['reset_selected_messages'] =  function (e) {
-            that.resetSelectedMessages.apply(that);
-        }
+        };
+        this.eventListeners['select_message']          =  (e) => {
+            this.handleMessageClick(e);
+        };
+        this.eventListeners['delete_messages']         =  (e) => {
+            this.deleteMessages();
+        };
+        this.eventListeners['reset_selected_messages'] =  (e) => {
+            this.resetSelectedMessages();
+        };
 
         this.del_messages_button  .addEventListener('click',   this.eventListeners['delete_messages']);
         this.send_message_button  .addEventListener('click',   this.eventListeners['add_message_to_send']);
@@ -415,12 +378,53 @@ class MessagesHandler {
         document                  .addEventListener('scroll',  this.eventListeners['body_scroll']);
 
 
-        this.interval = setInterval(function (){
-            that.sendMessages.apply(that);
-            that.searchMessagesForSeen.apply(that);
-            that.checkNewIncomingMessages.apply(that);
-            that.handleSeenMessages.apply(that);
+        this.interval = setInterval( () => {
+            this.sendMessages();
+            this.searchMessagesForSeen();
+            this.checkNewIncomingMessages();
+            this.handleSeenMessages();
         }, 1100);
+    }
+
+    handleMessageClick (e) {
+        function showModalImage(image){
+            if (image){
+                let full_image_link = image.getAttribute('data-url');
+
+                if (!full_image_link)
+                    return;
+
+                let img             = document.createElement('img');
+                let download_link   = document.createElement('a');
+                download_link.href  = full_image_link;
+
+                download_link.innerHTML = 'download image';
+                download_link.setAttribute('download', '');
+                img.src = full_image_link;
+
+                let modalWindowBody = $("#media_modal .modal-body");
+                modalWindowBody.html('');
+                modalWindowBody.append(img);
+                modalWindowBody.append(document.createElement('hr'));
+                modalWindowBody.append(download_link);
+                $("#media_modal").modal();
+
+                e.preventDefault();
+
+            }
+        }
+
+        switch (e.target.tagName){
+            case "IMG":
+                showModalImage(e.target);
+                break;
+
+            case "A":
+                break;
+
+            default:
+                this.selectMessage.call(this, e.target.closest('LI'));
+        }
     }
 
     sendMessages() {
@@ -758,14 +762,14 @@ class MessagesHandler {
         function showDialogHeader(number){
             switch (number){
                 case 1:
-                    dialog_header_1.style.display = 'block';
-                    dialog_header_2.style.display =  'none';
+                    dialog_header_1.classList.remove('hidden');
+                    dialog_header_2.classList.add('hidden');
                     break;
 
 
                 case 2:
-                    dialog_header_1.style.display = 'none';
-                    dialog_header_2.style.display = 'block';
+                    dialog_header_1.classList.add('hidden');
+                    dialog_header_2.classList.remove('hidden');
                     break;
             }
         }
@@ -876,16 +880,6 @@ class DialogHandler {
         this.interval = setInterval (function () {
             that.handleIsTyping.apply(that);
         }, 1000);
-    }
-
-    sendJsonByAjax (data, success, error, type = "POST") {
-        return $.ajax({
-            type : type,
-            url  : "/chat/ajax",
-            success : success,
-            error   : error,
-            data : data
-        });
     }
 
     handleIsTyping() {

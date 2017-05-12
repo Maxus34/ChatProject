@@ -9,7 +9,6 @@
 namespace app\modules\chat\components;
 
 
-use app\models\ImagePlaceholder;
 use yii\base\Exception;
 use yii\bootstrap\Html;
 use yii\bootstrap\Widget;

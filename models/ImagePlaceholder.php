@@ -15,13 +15,13 @@ use yii\base\Object;
 use Imagine\Image\Box;
 use Imagine\Imagick\Imagine;
 
-class ImagePlaceholder extends Object
+class ImagePlaceholder extends Image
 {
-    protected $_placeholder_path;
+    protected $path;
 
     public function __construct($path)
     {
-        $this->_placeholder_path = $path;
+
     }
 
     public function getPath(){

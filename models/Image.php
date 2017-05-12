@@ -9,8 +9,8 @@
 namespace app\models;
 
 
+use yii\base\Exception;
 use yii\base\Model;
-use yii\web\Exception;
 use Imagine\Image\Box;
 use Imagine\Imagick\Imagine;
 
@@ -18,13 +18,20 @@ class Image extends Model
 {
     const CASH_PATH = 'upload/images/cash/';
 
-    protected $_path;
+    /**
+     * @var String
+     */
+    protected $path;
 
     public function __construct($path)
     {
         parent::__construct(null);
 
-        $this->_path = $path;
+        if (file_exists($path)){
+            $this->path = $path;
+        } else {
+            throw new Exception("No found image in {$this->path}");
+        }
     }
 
     public function init(){
@@ -37,7 +44,7 @@ class Image extends Model
 
     public  function getUrl($size = false){
 
-        $path = $this->_path;
+        $path = $this->path;
 
         if (!$size){
             return "/" . $path;
@@ -45,9 +52,7 @@ class Image extends Model
             return "/" . $this->getResizedImageUrl($path, $size);
         }
     }
-
-
-
+    
     protected function getResizedImageUrl($path, $size){
         $resized_file_path = static::CASH_PATH . "{$size[0]}x{$size[1]}_" . basename($path);
 

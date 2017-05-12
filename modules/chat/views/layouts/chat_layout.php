@@ -114,11 +114,17 @@ ie9AppAsset::register($this);
 <?php
 \yii\bootstrap\Modal::begin([
     'id' => 'chat_modal',
+    'size' => 'modal_md',
+]);
+\yii\bootstrap\Modal::end();
+
+\yii\bootstrap\Modal::begin([
+    'id' => 'media_modal',
     'size' => 'modal_lg',
 ]);
-
 \yii\bootstrap\Modal::end(); ?>
-<!--Modal Window -->
+
+<!--Modal Windows -->
 
 <?php $this->endBody() ?>
 </body>

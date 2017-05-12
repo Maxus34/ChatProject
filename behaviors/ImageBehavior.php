@@ -2,19 +2,20 @@
 namespace app\behaviors;
 
 use app\models\Image;
-use yii\base\Behavior;
-use yii\base\Exception;
+use yii\base\{ Behavior, Exception };
 use yii\web\UploadedFile;
-use app\records\ImageRecord;
-use app\records\FileRecord;
-use app\models\ImagePlaceholder;
+use app\records\ { ImageRecord, FileRecord };
+
 
 class ImageBehavior extends Behavior {
     public $placeholderPath;
 
     public $key = 'default';
 
-    protected $_mainImage = false;
+    /**
+     * @var FileRecord
+     */
+    protected $_mainImage;
 
     protected $_galleryImages = [];
 
@@ -23,8 +24,7 @@ class ImageBehavior extends Behavior {
         parent::init();
 
         if (!file_exists($this->placeholderPath)) {
-            $error = "Placeholder image has been not found in: " . $this->placeholderPath;
-            throw new Exception($error);
+            throw new Exception("Placeholder image has been not found in: {$this->placeholderPath}");
         }
     }
 
@@ -36,7 +36,7 @@ class ImageBehavior extends Behavior {
     public function getMainImage() {
 
         if ($this->_mainImage) {
-            return $this->_mainImage;
+            return (new Image($this-> _mainImage -> path));
         }
 
         $image = ImageRecord::find()->where([

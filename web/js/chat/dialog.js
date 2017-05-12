@@ -47,30 +47,34 @@ class DialogHandler {
         // Event listeners declaration
         this.eventListeners['dialogPropertiesLi'] =  function (e) {
             that.showDialogProperties.apply(that);
-        }
+        };
+
         this.eventListeners['sendMessageButton']  =  function (e) {
             that.sendMessage.apply(that);
-        }
+        };
+
         this.eventListeners['bodyScroll']         =  function (e) {
             if (e.target.body.scrollTop < 1) {
                 that.loadOldMessages.apply(that);
             }
-        }
+        };
+
         this.eventListeners['textArea']           =  function (e) {
             that.isTyping = true;
-        }
+        };
+
         this.eventListeners['messagesList']       =  function (e) {
-            let li = e.target.closest('li');
-            if (!li)
-                return;
-            that.selectMessage.apply(that, [li]);
-        }
+            if (e.target.tagName == 'li'){
+                that.selectMessage.apply(that, [li]);
+            }
+        };
+
         this.eventListeners['delMessagesButton']  =  function (e) {
             that.deleteMessages.apply(that);
-        }
+        };
 
         //Event listeners adding
-        document                .addEventListener('scroll',  this.eventListeners['bodyScroll']);
+        document.addEventListener('scroll',  this.eventListeners['bodyScroll']);
 
         if (this.isActiveUser){
             this.dialogPropertiesLi .addEventListener('click',   this.eventListeners['dialogPropertiesLi']);

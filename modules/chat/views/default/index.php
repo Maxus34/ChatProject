@@ -8,8 +8,8 @@
 
 <?php $this->beginBlock('fixed-top') ?>
 <div class="container">
-    <div class="prop-block col-md-8 col-sm-10 col-md-offset-2 col-sm-offset-1">
-        <div class="col-md-1 col-sm-1">
+    <div class="prop-block col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2">
+        <div class=col-sm-2">
             <a class="btn-sm btn-primary" onclick="history.back()">Back</a>
         </div>
         <div style="cursor:pointer; position:absolute; top:24%; right:3%;">

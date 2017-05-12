@@ -37,6 +37,7 @@ class DefaultController extends \yii\web\Controller
         return $this->render('index', compact('dialogs'));
     }
 
+
     public function  actionView ($id){
         try{
             $dialog = Dialog::getInstance($id);
@@ -54,6 +55,7 @@ class DefaultController extends \yii\web\Controller
         return $this->render('view', compact('dialog', 'messages'));
     }
 
+
     public function  actionDeleteDialog($id){
         try{
             $dialog = Dialog::getInstance($id);
@@ -66,6 +68,7 @@ class DefaultController extends \yii\web\Controller
         \Yii::$app->session->setFlash('success', "Dialog " . $dialog->getTitle() . " has been deleted.");
         return $this->redirect('index');
     }
+
 
     public function actionCreateDialog () {
         $model = new DialogProperties();
@@ -84,27 +87,4 @@ class DefaultController extends \yii\web\Controller
 
         return $this->redirect(['default/index']);
     }
-
-    public function actionSetDialogProperties(){
-        $post = \Yii::$app->request->post();
-        $model = new DialogProperties();
-        $dialog = Dialog::getInstance($post['DialogProp']['id']);
-
-        if ($model -> load($post)){
-            if ($model -> validate()){
-
-                $dialog -> applyProperties($model);
-
-                \Yii::$app->session->setFlash('success', "A Dialog properties were been changed");
-                return $this->redirect(['default/view', 'id' => $dialog->id]);
-
-            } else {
-                \Yii::$app->session->setFlash('error', "Errors: " . $model->getErrors());
-
-            }
-        }
-
-        return $this->redirect(['default/view', 'id' => $dialog->id]);
-    }
-
 }
