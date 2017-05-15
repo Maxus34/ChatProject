@@ -53,7 +53,7 @@
                    'class' => 'btn btn-link',
                    'id'    => 'login-link'
                ]] :
-               ['label' => "Logout(" . \Yii::$app->user->identity->username .")", 'url' => 'user/logout', 'linkOptions' => ['class' => 'btn btn-link']],
+               ['label' => "Logout(" . \Yii::$app->user->identity->username .")", 'url' => '/user/logout', 'linkOptions' => ['class' => 'btn btn-link']],
        ]
    ]);
 

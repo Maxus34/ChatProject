@@ -59,6 +59,6 @@ class DialogRecord extends ActiveRecord
 
     public function getReferences()
     {
-        return $this->hasMany(DialogReferenceRecord::className(), ['dialogId' => $this->id]);
+        return $this->hasMany(DialogReferenceRecord::class, ['dialogId' => $this->id]);
     }
 }

@@ -99,7 +99,7 @@ class AjaxController extends Controller
     public function  actionGetCreateDialogForm(){
         $d_p = new DialogProperties();
 
-        return $this->renderAjax('/forms/_new_dialog_pr_form', [
+        return $this->renderAjax('/forms/new_dialog_pr_form', [
             'create_new' => true,
             'model' => $d_p,
             'attribute' => 'users',
@@ -111,7 +111,7 @@ class AjaxController extends Controller
 
     protected function  getDialogPropertiesForm(Dialog $dialog){
         $model = $dialog->getProperties();
-        return $this->renderAjax('/forms/_new_dialog_pr_form', [
+        return $this->renderAjax('/forms/new_dialog_pr_form', [
             'create_new' => false,
             'model'      => $model,
             'attribute'  => 'users',

@@ -33,7 +33,7 @@ use yii\bootstrap\{ ActiveForm, Html };
         );
 
         if (!$create_new) {
-            echo Html:: hiddenInput("DialogProp[id] ", $dialog->getId());
+            echo Html:: hiddenInput("{$modelClassName}[id] ", $dialog->getId());
             echo $form -> field($model, 'title')->input('string', ['id' => "title-input"]);
 
         } else {

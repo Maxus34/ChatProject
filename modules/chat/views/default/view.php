@@ -3,6 +3,7 @@
 /* @var $this yii\web\View */
 $this->registerJsFile("@web/js/chat/dialog_.js");
 use app\models\User;
+use yii\bootstrap\Html;
 
 echo "<script>"
     . "var activeUser = {$dialog -> isActive()};"
@@ -12,18 +13,18 @@ echo "<script>"
 <?php $this->beginBlock('fixed-top') ?>
 <div id="dialog_header_1" class="prop-block col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2">
     <div>
-        <div class="col-sm-1">
+        <div class="col-sm-2">
             <a class="btn-sm btn-primary" href="<?= \yii\helpers\Url::to(['/chat/default']) ?>">Back</a>
         </div>
-        <div class="col-sm-3 col-sm-offset-1">
-            <span class="text-left">#<?= $dialog->getId() . " | " . $dialog->getTitle() ?></span>
+        <div class="col-sm-3">
+            <span class="text-left dialog-title">#<?= $dialog->getId() . " | " . $dialog->getTitle() ?></span>
         </div>
-        <div class="col-sm-6">
-            <div class="text-success text-center" style="font-weight:700; text-align: center;">
+        <div class="col-sm-6 text-center">
                 <?php
-                foreach ($dialog->getUsers(true) as $user) echo " " . $user->username
+                    foreach ($dialog->getUsers(true) as $user){
+                        echo Html::img( $user->getMainImage()->getUrl([30,30]), ['class' => 'user-image', 'data-toggle' => "tooltip", 'title' => $user->username, 'data-placement' =>"bottom"] );
+                    }
                 ?>
-            </div>
         </div>
         <div class="col-sm-1" data-toggle="tooltip" title="Options" data-placement="bottom">
             <a id="dialog_properties" style="cursor:pointer;"><i class="fa fa-ellipsis-h" aria-hidden="true"

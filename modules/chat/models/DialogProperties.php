@@ -12,11 +12,13 @@ use yii\base\Model;
 
 class DialogProperties extends Model
 {
+    public $id;
     public $title;
     public $users;
 
     public function rules(){
         return [
+            [ ['id'], 'integer' ],
             [ ['title'], 'string', 'max' =>  20],
             [ ['users'], 'default', 'value' => []],
         ];

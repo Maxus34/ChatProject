@@ -34,6 +34,7 @@ class Image extends Model
         }
     }
 
+
     public function init(){
         parent::init();
 
@@ -42,17 +43,23 @@ class Image extends Model
         }
     }
 
-    public  function getUrl($size = false){
+    /** size = [height, width]
+     * @param array $size ;
+     * @return string
+     */
+    public  function getUrl($size = null){
 
         $path = $this->path;
 
-        if (!$size){
+        if (empty($size)){
             return "/" . $path;
         } else {
             return "/" . $this->getResizedImageUrl($path, $size);
         }
     }
-    
+
+
+
     protected function getResizedImageUrl($path, $size){
         $resized_file_path = static::CASH_PATH . "{$size[0]}x{$size[1]}_" . basename($path);
 
@@ -72,6 +79,7 @@ class Image extends Model
 
         return $resized_file_path;
     }
+
 
     protected function checkSize(&$size, $image){
         $box = $image->getSize();

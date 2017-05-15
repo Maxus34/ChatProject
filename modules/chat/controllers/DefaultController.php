@@ -10,37 +10,63 @@ namespace app\modules\chat\controllers;
 
 
 use app\modules\chat\models\{ Dialog, DialogProperties};
+use app\modules\chat\services\ChatService;
 use yii\base\Exception;
-use yii\filters\VerbFilter;
+use yii\filters\{ AccessControl, VerbFilter };
 
 class DefaultController extends \yii\web\Controller
 {
     const DIALOGS_PER_PAGE = 10;
     const MESSAGES_PER_PAGE = 12;
 
+    /**
+     * @var ChatService
+     */
+    protected $chatService;
+
+    public function init() {
+        parent::init();
+
+        $this->chatService = \Yii::$app->chatService;
+    }
+
+
     public function  behaviors ()
     {
         return [
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
                     'create-dialog' => ['post'],
                     'set-dialog-properties' => ['post'],
                 ],
             ],
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['user']
+                    ]
+                ]
+            ]
         ];
     }
 
+
     public function  actionIndex (){
         $this->view->title = "Chat";
-        $dialogs = Dialog::getInstances(null, static::DIALOGS_PER_PAGE, null);
+
+        $dialogs = $this->chatService->getDialogInstances(null, static::DIALOGS_PER_PAGE);
+
         return $this->render('index', compact('dialogs'));
     }
 
 
     public function  actionView ($id){
         try{
-            $dialog = Dialog::getInstance($id);
+            $dialog = $this->chatService->getDialogInstance($id);
+
         } catch (Exception $e){
             \Yii::$app->session->setFlash('error', $e->getMessage());
             return $this->redirect('index');
@@ -58,15 +84,30 @@ class DefaultController extends \yii\web\Controller
 
     public function  actionDeleteDialog($id){
         try{
-            $dialog = Dialog::getInstance($id);
+            $dialog = $this->chatService->getDialogInstance($id);
         } catch (Exception $e){
             \Yii::$app->session->setFlash('error', $e->getMessage());
             return $this->redirect('index');
         }
 
-        $dialog->delete();
+        $this->chatService->deleteDialog($dialog);
         \Yii::$app->session->setFlash('success', "Dialog " . $dialog->getTitle() . " has been deleted.");
         return $this->redirect('index');
+    }
+
+
+    public function actionSetDialogProperties(){
+        $dProperties = new DialogProperties();
+
+        if ($dProperties->load(\Yii::$app->request->post())
+            && $dProperties->validate() ){
+
+            $dialog = $this->chatService->getDialogInstance($dProperties->id);
+            $this->chatService->applyProperties($dialog, $dProperties);
+            $this->chatService->saveDialog($dialog);
+        }
+
+        return $this->redirect(['view', 'id'=> $dProperties->id]);
     }
 
 
@@ -76,10 +117,10 @@ class DefaultController extends \yii\web\Controller
 
         if ($model -> load($post)){
             if ($model -> validate()){
-                $dialog = new Dialog(null, $model);
-                $dialog -> save();
-                return $this->redirect(['default/view', 'id' => $dialog->id]);
+                $dialog = $this->chatService->createNewDialog($model);
+                $this->chatService->saveDialog($dialog);
 
+                return $this->redirect(['default/view', 'id' => $dialog->getId()]);
             } else {
                 \Yii::$app->session->setFlash('error', "Errors: " . $model->getErrors());
             }
@@ -87,4 +128,13 @@ class DefaultController extends \yii\web\Controller
 
         return $this->redirect(['default/index']);
     }
+
+
+    public function actionTest () {
+        $dialogs = $this->chatService->getDialogInstances();
+
+        debug($dialogs);
+        die();
+    }
+
 }

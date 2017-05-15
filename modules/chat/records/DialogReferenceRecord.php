@@ -18,15 +18,15 @@ use yii\filters\AccessControl;
  * Class DialogReferenceRecord
  * @package app\modules\chat\records
  *
- * @property Integer $id
- * @property Integer $userId
- * @property Integer $dialogId
- * @property Integer $createdAt
- * @property Integer $createdBy
- * @property Integer $updatedAt
- * @property Integer $updatedBy
- * @property Integer $isActive
- * @property Integer $isTyping
+ * @property integer $id
+ * @property integer $userId
+ * @property integer $dialogId
+ * @property integer $createdAt
+ * @property integer $createdBy
+ * @property integer $updatedAt
+ * @property integer $updatedBy
+ * @property integer $isActive
+ * @property integer $isTyping
  */
 
 class DialogReferenceRecord extends ActiveRecord
@@ -57,11 +57,11 @@ class DialogReferenceRecord extends ActiveRecord
 
 
     public function getDialog(){
-        return $this->hasOne(DialogRecord::className(), ['id' => 'dialogId']);
+        return $this->hasOne(DialogRecord::class, ['id' => 'dialogId']);
     }
 
     public function getUser(){
-        return $this->hasOne(User::className(), ['id' => 'userId']);
+        return $this->hasOne(User::class, ['id' => 'userId']);
     }
 
     public function __construct(int $dialog_id = null, int $user_id = null)

@@ -18,7 +18,7 @@ class Message extends Model
     private  $messageReferences =   [];
 
     // Not uses
-    static function  getMessageInstance(int $message_id = null){
+    public static function  getMessageInstance(int $message_id = null){
         $messageRecord = MessageRecord::findOne($message_id);
         if (empty($messageRecord))
             throw new Exception("Empty message record id = $message_id");
@@ -26,7 +26,7 @@ class Message extends Model
         return new static($messageRecord);
     }
 
-    static function  getMessagesInstances(int $userId, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
+    public static function  getMessagesInstances(int $userId, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
 
         $query = MessageReferenceRecord::find()->where(['userId' => $userId, 'dialogId' => $dialog_id])
             -> with('message');
@@ -54,7 +54,7 @@ class Message extends Model
         return $messages;
     }
 
-    static function  getIsSeenMessages(int $userId, int $dialog_id, array $messages){
+    public static function  getIsSeenMessages(int $userId, int $dialog_id, array $messages){
         $references = MessageReferenceRecord::find()
             ->where(['dialogId' => $dialog_id, 'messageId' => $messages, 'userId' => $userId])
             ->all();
@@ -69,7 +69,7 @@ class Message extends Model
         return $seen;
     }
 
-    static function  setSeenMessages(int $dialog_id, array $messages){
+    public static function  setSeenMessages(int $dialog_id, array $messages){
         $references = MessageReferenceRecord::find()->where(['dialogId' => $dialog_id, 'messageId' => $messages])->all();
         $seen = [];
         foreach ($references as $reference){

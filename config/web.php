@@ -15,15 +15,10 @@ $config = [
             'class' => 'app\modules\chat\Module',
             'defaultRoute' => 'default/index',
             'layout' => 'chat_layout',
-        ],
-        'permit' => [
-            'class' => 'developeruz\db_rbac\Yii2DbRbac',
-            'params' => [
-                'userClass' => 'app\models\User',
-                'accessRoles' => ['admin'],
-            ],
-        ],
+            'components' => [
 
+            ]
+        ],
     ],
 	'components' => [
         'request' => [
@@ -68,6 +63,9 @@ $config = [
                 'chat' => '/chat/default',
             ],
         ],
+        'chatService' => [
+            'class' => \app\modules\chat\services\ChatService::class,
+        ]
     ],
     'params' => $params,
 ];

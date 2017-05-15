@@ -1,3 +1,7 @@
+i{
+    color: #333;
+}
+
 /*Chat View Page */
 div.dialog{
     border: 0px solid #333;
@@ -98,7 +102,7 @@ ul.files-list{
     position:absolute;
     height: 44px;
     width:  44px;
-    border-radius: 30px;
+    border-radius: 50%;
 }
 
 .message-incoming .message-image{
@@ -238,7 +242,8 @@ div.dialog-item{
 
 /*Fixed Layout parts*/
 .prop-block{
-    padding: 4px 10px 4px 10px;
+    height: 40px;
+    padding: 5px 0px 0px 0px;
     margin-bottom: 4px;
     border-bottom: 1px solid #333;
 }
@@ -338,6 +343,7 @@ label.user-checkbox.deleted{
 	display: none;
 }
 
+
 a.btn-delete, a.btn-restore {
     position: absolute;
     right: .7rem;
@@ -345,27 +351,25 @@ a.btn-delete, a.btn-restore {
     outline: none;
     border: none;
     background-color: transparent;
-    color: #fff;
     font-size: 1.2em;
 }
-a.btn-delete:hover {
+a.btn-delete:hover i{
     color: #ffbbbb;
-    text-decoration: none;
+    text-shadow: #6c5252 1px 1px 0px;
     cursor: pointer;
 }
-
 .btn-restore {
    display:none;
 }
-.btn-restore:hover{
+
+.btn-restore:hover i{
     color: #bbffbb;
-    text-decoration: none;
+    text-shadow:  #688c68 1px 1px 0px;
     cursor: pointer;
 }
 
 
 /* Message files styles*/
-
 .message-audio{
     padding: 2px 4px 2px 4px;
     margin-top: 4px;
@@ -382,3 +386,16 @@ a.btn-delete:hover {
 
 .modal-dialog img{
 }
+
+#dialog_header_1 img.user-image{
+    display:inline-block;
+    height: 30px;
+    width: 30px;
+    margin: 0px 5px 0px 0px;
+    border-radius: 50%;
+}
+
+.dialog-title{
+    font-size: 16px;
+}
+
