@@ -28,7 +28,8 @@ class Message extends Model
 
     public static function  getMessagesInstances(int $userId, int $dialog_id, int $offset = null, int $limit = null, array $conditions = null){
 
-        $query = MessageReferenceRecord::find()->where(['userId' => $userId, 'dialogId' => $dialog_id])
+        $query = MessageReferenceRecord::find()
+            ->where(['userId' => $userId, 'dialogId' => $dialog_id])
             -> with('message');
 
         if ( !empty($conditions))
@@ -187,6 +188,7 @@ class Message extends Model
             }
         }
     }
+
 
     private function findReferences(){
 

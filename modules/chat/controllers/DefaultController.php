@@ -11,6 +11,11 @@ namespace app\modules\chat\controllers;
 
 use app\modules\chat\models\{ Dialog, DialogProperties};
 use app\modules\chat\services\ChatService;
+use app\modules\chat\services\DialogFactory;
+use app\modules\chat\services\DialogMessagesHandler;
+use app\modules\chat\services\DialogRepository;
+use app\modules\chat\services\MessageFactory;
+use app\modules\chat\services\MessageRepository;
 use yii\base\Exception;
 use yii\filters\{ AccessControl, VerbFilter };
 
@@ -130,11 +135,27 @@ class DefaultController extends \yii\web\Controller
     }
 
 
-    public function actionTest () {
-        $dialogs = $this->chatService->getDialogInstances();
 
-        debug($dialogs);
-        die();
+
+
+    public function actionTest () {
+        $dr = new DialogRepository();
+
+        $dialog = $dr -> findById(4);
+
+        $dmh = new MessageRepository($dialog);
+
+        $messages = $dmh -> findMessagesByConditions();
+        debug($messages);
     }
 
 }
+
+
+
+
+
+
+
+
+

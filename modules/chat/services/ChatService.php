@@ -181,15 +181,15 @@ class ChatService extends Component{
     }
 
 
-    protected function updateDialogReferences (DialogN $dialog, array $users_persist) {
+    protected function updateDialogReferences (DialogN $dialog, array $usersPersist) {
         $delete = $dialog->getReferences(true);
 
-        if (count($users_persist) > 0 && !empty($delete)) {
+        if (count($usersPersist) > 0 && !empty($delete)) {
             foreach ($delete as  $dkey => $value) {
-                foreach ($users_persist as  $akey => $add_item) {
+                foreach ($usersPersist as  $akey => $add_item) {
                     if ($dkey == $add_item) {
                         unset($delete[$dkey]);
-                        unset($users_persist[$akey]);
+                        unset($usersPersist[$akey]);
                     }
                 }
             }
@@ -202,7 +202,7 @@ class ChatService extends Component{
 
 
         $add_users = [];
-        foreach ($users_persist as $id) {
+        foreach ($usersPersist as $id) {
             $add_users[] = \Yii::$app->user->identity->findIdentity($id);
         }
 

@@ -14,6 +14,8 @@ use yii\base\Model;
 
 class DialogN extends Model {
 
+    const MAX_TYPING_TIMEOUT = 4;
+
     protected $userId;
 
     /**
@@ -31,48 +33,48 @@ class DialogN extends Model {
         parent::__construct();
 
 
-        $this->userId = \Yii::$app->user->getId();
-        $this->dialogRecord = $dRecord;
+        $this->userId           = \Yii::$app->user->getId();
+        $this->dialogRecord     = $dRecord;
         $this->dialogReferences = $dReferences;
     }
 
 
-    public function getId() {
+    public function  getId() {
         return $this->dialogRecord->id;
     }
 
 
-    public function getUserId() {
+    public function  getUserId() {
         return $this->userId;
     }
 
 
-    public function setTitle($title) {
+    public function  setTitle($title) {
         $this->dialogRecord->title = $title;
     }
 
 
-    public function getTitle() {
+    public function  getTitle() {
         return $this->dialogRecord->title;
     }
 
 
-    public function getReferences(bool $exclude_me = false) {
+    public function  getReferences (bool $excludeMe = false) {
         $references = $this->dialogReferences;
-        if ($exclude_me) {
+        if ($excludeMe) {
             unset($references[$this->userId]);
         }
         return $references;
     }
 
 
-    public function getUsers(bool $exclude_me = false) {
+    public function  getUsers (bool $excludeMe = false) {
         $users = [];
         foreach ($this->dialogReferences as $reference) {
             $users[$reference->user->id] = $reference->user;
         }
 
-        if ($exclude_me) {
+        if ($excludeMe) {
             unset($users[$this->userId]);
         }
 
@@ -80,18 +82,30 @@ class DialogN extends Model {
     }
 
 
-    public function isActive() {
+    public function  isActive () {
         return $this->dialogReferences[$this->userId]->isActive;
     }
 
 
-    public function isCreator($user_id = false) {
-        if (!$user_id) {
+    public function  isCreator (int $userId = null) {
+        if ( empty($userId) ) {
             return $this->dialogRecord->createdBy == $this->userId;
         }
 
-        return $this->dialogRecord->createdBy == $user_id;
+        return $this->dialogRecord->createdBy == $userId;
     }
+
+
+    public function  setIsTyping ($isTyping) {
+        if ( !isset($this->dialogReferences[$this->userId]) )
+            $reference = DialogReferenceRecord::findOne(['userId' => $this->userId, 'dialogId' => $this->getId()]);
+        else
+            $reference = $this -> dialogReferences[$this->userId];
+
+        $reference -> isTyping = $isTyping ? 1 : 0;
+        $reference -> save();
+    }
+
 
 
     public function getMessages(int $offset = null, int $limit = null, array $conditions = null){
@@ -132,9 +146,9 @@ class DialogN extends Model {
 
     }
 
-    public function deleteMessages(array $messages_ids){
+    public function deleteMessages(array $messagesIds){
 
-        $messages = $this->getMessages(null, null, [['messageId' => $messages_ids]]);
+        $messages = $this->getMessages(null, null, [['messageId' => $messagesIds]]);
         $success = [];
 
         foreach ($messages as $message){
@@ -151,14 +165,6 @@ class DialogN extends Model {
         return Message::setSeenMessages($this->getId(), $messages);
     }
 
-    public function setIsTyping($is_typing){
-        if ( !isset($this->dialogReferences[$this->_userId]) )
-            $reference = DialogReferenceRecord::findOne(['userId' => $this->_userId, 'dialogId' => $this->getId()]);
-        else
-            $reference = $this -> dialogReferences[$this->_userId];
 
-        $reference -> isTyping = $is_typing ? 1 : 0;
-        $reference -> save();
-    }
 
 }

@@ -19,12 +19,17 @@ use yii\behaviors\{
  * @property  String  $title
  * @property  Integer $createdAt
  * @property  Integer $createdBy
+ * @property  array   $references
  */
 class DialogRecord extends ActiveRecord
 {
-    /**
-     * @property Integer $id
-     */
+
+    public static function tableName()
+    {
+        return 'dialog';
+    }
+
+
 
     public function behaviors()
     {
@@ -45,10 +50,6 @@ class DialogRecord extends ActiveRecord
     }
 
 
-    public static function tableName()
-    {
-        return 'dialog';
-    }
 
     public function __construct($title = null)
     {
@@ -57,8 +58,11 @@ class DialogRecord extends ActiveRecord
         $this->title = $title;
     }
 
+
+
     public function getReferences()
     {
-        return $this->hasMany(DialogReferenceRecord::class, ['dialogId' => $this->id]);
+        return $this->hasMany(DialogReferenceRecord::class, ['dialogId' => 'id']);
     }
+
 }

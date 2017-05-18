@@ -15,6 +15,8 @@ use app\behaviors\AttachedFileBehavior;
  * @property String  $content
  * @property Integer $createdAt
  * @property Integer $createdBy
+ *
+ * @method  attachFiles(array $files)
  */
 class MessageRecord extends ActiveRecord
 {
@@ -53,6 +55,6 @@ class MessageRecord extends ActiveRecord
     }
 
     public function getReferences(){
-        return $this->hasMany(MessageReferenceRecord::className(), ['messageId' => $this->id]);
+        return $this->hasMany(MessageReferenceRecord::className(), ['messageId' => 'id']);
     }
 }
