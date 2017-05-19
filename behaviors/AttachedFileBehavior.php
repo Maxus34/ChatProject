@@ -13,6 +13,8 @@ use app\modules\chat\records\MessageFileRecord;
 use yii\base\Behavior;
 use yii\db\ActiveRecord;
 
+// TODO Разобраться с удалением файлов при удалении сообщения, ссылающегося на него
+
 class AttachedFileBehavior extends Behavior
 {
     const TYPE_IMAGE = "image";
@@ -36,25 +38,19 @@ class AttachedFileBehavior extends Behavior
         ];
     }
 
-    /*
-     *
-     */
+
     public function attachFile($file_id){
         $message_file = new MessageFileRecord($file_id, $this->owner->id);
         $message_file -> save();
-
-        $this->owner->has_files = 1;
-        $this->owner->save();
     }
 
-    /*
-     *
-     */
+
     public function attachFiles(array $files){
         foreach ($files as $file){
             $this->attachFile($file);
         }
     }
+
 
     public function getFiles(){
         $this->findFiles();
@@ -87,6 +83,7 @@ class AttachedFileBehavior extends Behavior
             $file->delete();
         }
     }
+
 
     protected function findFiles(){
         $m_files = MessageFileRecord::find()

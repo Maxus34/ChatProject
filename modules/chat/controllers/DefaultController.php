@@ -10,29 +10,25 @@ namespace app\modules\chat\controllers;
 
 
 use app\modules\chat\models\{ Dialog, DialogProperties};
-use app\modules\chat\services\ChatService;
-use app\modules\chat\services\DialogFactory;
-use app\modules\chat\services\DialogMessagesHandler;
-use app\modules\chat\services\DialogRepository;
-use app\modules\chat\services\MessageFactory;
-use app\modules\chat\services\MessageRepository;
+use app\modules\chat\services\{
+    DialogRepository, DialogFactory, DialogHandler, DialogMessagesHandler,
+    MessageRepository, MessageFactory} ;
 use yii\base\Exception;
 use yii\filters\{ AccessControl, VerbFilter };
 
 class DefaultController extends \yii\web\Controller
 {
-    const DIALOGS_PER_PAGE = 10;
-    const MESSAGES_PER_PAGE = 12;
+    const  DIALOGS_PER_PAGE   = 10;
+    const  MESSAGES_PER_PAGE  = 12;
 
-    /**
-     * @var ChatService
-     */
-    protected $chatService;
+    /** @var DialogRepository */
+    protected $dialogRepository;
+
 
     public function init() {
         parent::init();
 
-        $this->chatService = \Yii::$app->chatService;
+        $this->dialogRepository = DialogRepository::getInstance();
     }
 
 
@@ -62,7 +58,7 @@ class DefaultController extends \yii\web\Controller
     public function  actionIndex (){
         $this->view->title = "Chat";
 
-        $dialogs = $this->chatService->getDialogInstances(null, static::DIALOGS_PER_PAGE);
+        $dialogs = $this->dialogRepository -> findDialogsByConditions(null, static::DIALOGS_PER_PAGE);
 
         return $this->render('index', compact('dialogs'));
     }
@@ -70,7 +66,7 @@ class DefaultController extends \yii\web\Controller
 
     public function  actionView ($id){
         try{
-            $dialog = $this->chatService->getDialogInstance($id);
+            $dialog = $this->dialogRepository->findDialogById($id);
 
         } catch (Exception $e){
             \Yii::$app->session->setFlash('error', $e->getMessage());
@@ -81,8 +77,12 @@ class DefaultController extends \yii\web\Controller
             \Yii::$app->session->setFlash('warning', "You were been excluded from current dialog");
         }
 
-        $this->view->title = "Dialog | " . $dialog->getTitle();
-        $messages = $dialog->getMessages(-static::MESSAGES_PER_PAGE);
+        $this->view->title = "Chat | " . $dialog->getTitle();
+
+        $messageRepository = new MessageRepository($dialog);
+        $messages = $messageRepository -> findMessagesByConditions(-static::MESSAGES_PER_PAGE);
+
+
         return $this->render('view', compact('dialog', 'messages'));
     }
 
@@ -132,21 +132,6 @@ class DefaultController extends \yii\web\Controller
         }
 
         return $this->redirect(['default/index']);
-    }
-
-
-
-
-
-    public function actionTest () {
-        $dr = new DialogRepository();
-
-        $dialog = $dr -> findById(4);
-
-        $dmh = new MessageRepository($dialog);
-
-        $messages = $dmh -> findMessagesByConditions();
-        debug($messages);
     }
 
 }

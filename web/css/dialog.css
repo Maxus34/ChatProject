@@ -153,6 +153,10 @@ div.typing{
     right: 2px;
 }
 
+#send_message i {
+    color: #ddd;
+}
+
 div.btn-group.dropup{
     position: absolute;
     top: 1px;

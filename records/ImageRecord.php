@@ -17,10 +17,12 @@ class ImageRecord extends ActiveRecord
 {
     protected $_fileRecord = false;
 
+
     static function tableName()
     {
         return "images";
     }
+
 
     public function behaviors()
     {
@@ -32,6 +34,11 @@ class ImageRecord extends ActiveRecord
                 ]
             ]
         ];
+    }
+
+
+    public function getFile(){
+        return $this->hasOne(FileRecord::class, ['id' => 'fileId']);
     }
 
     public function getPath(){

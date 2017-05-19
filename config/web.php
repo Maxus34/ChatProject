@@ -63,9 +63,6 @@ $config = [
                 'chat' => '/chat/default',
             ],
         ],
-        'chatService' => [
-            'class' => \app\modules\chat\services\ChatService::class,
-        ]
     ],
     'params' => $params,
 ];

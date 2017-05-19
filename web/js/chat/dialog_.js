@@ -850,7 +850,7 @@ class DialogHandler {
         this.eventListeners     = {};
         this.isTyping           = false;
 
-        this.dataHandler    = new JsonDataHandler('/chat/ajax', 1200, this.dialogId);
+        this.dataHandler    = new JsonDataHandler('/chat/ajax/json', 1200, this.dialogId);
         this.messageHandler = new MessagesHandler(this.dataHandler);
 
         this.addEventListeners();

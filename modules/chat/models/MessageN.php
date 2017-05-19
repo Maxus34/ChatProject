@@ -8,10 +8,10 @@
 
 namespace app\modules\chat\models;
 
-
+use yii\base\Object;
 use app\modules\chat\records\ { MessageRecord, MessageReferenceRecord };
 
-class MessageN {
+class MessageN extends Object{
 
     /** @var int */
     protected $userId;
@@ -41,6 +41,11 @@ class MessageN {
 
     public function getCreationDate(){
         return $this->messageRecord->createdAt;
+    }
+
+
+    public function isNew(){
+        return $this->messageReferences[$this->userId] -> isNew;
     }
 
 

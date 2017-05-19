@@ -9,16 +9,28 @@ class DialogRepository {
 
     protected static $dialogs = [];
 
+    protected static $instance = null;
 
     protected $dialogFactory;
 
 
-    public function __construct() {
+
+    public static function getInstance() :DialogRepository{
+        if ( empty(static::$instance) ) {
+            static::$instance = new static();
+        }
+
+        return static::$instance;
+    }
+
+
+    private function __construct() {
         $this->dialogFactory = DialogFactory::getInstance();
     }
 
 
-    public function findById(int $id){
+
+    public function findDialogById(int $id){
         if ( !isset(static::$dialogs[$id]) ){
 
             $dialog = $this->dialogFactory->getDialogInstanceById($id);

@@ -8,7 +8,7 @@
 
 namespace app\modules\chat\services;
 
-use app\modules\chat\models\    DialogN;
+use app\modules\chat\models\  { DialogN, MessageN };
 use app\modules\chat\records\ { MessageRecord, MessageReferenceRecord };
 
 class DialogMessagesHandler {
@@ -21,12 +21,15 @@ class DialogMessagesHandler {
     }
 
 
-    public function getMessagesCount() {
+    public function getMessagesCount(bool $new = false) {
         $query = MessageRecord :: find()
             -> innerJoin('message_ref', '`message`.`id` = `message_ref`.`messageId`')
             //-> groupBy('`message`.`id`')
-            -> where("`message_ref`.`dialogId` = {$this->dialog->getId()} AND `message_ref`.`userId` = {$this->dialog->getUserId()}")
-            -> with('references');
+            -> where("`message_ref`.`dialogId` = {$this->dialog->getId()} AND `message_ref`.`userId` = {$this->dialog->getUserId()}");
+
+        if ($new){
+            $query = $query -> andWhere("`message_ref`.`isNew`=1 AND `message_ref`.`userId`!={$this->dialog->getUserId()}");
+        }
 
         return $query->count();
     }
@@ -58,7 +61,7 @@ class DialogMessagesHandler {
                 'dialogId'  => $this->dialog->getId(),
                 'messageId' => $messageIds
             ])
-            ->andWhere(['!=', 'userId', $this->dialog->getUserId()])
+            //->andWhere(['!=', 'userId', $this->dialog->getUserId()])
             -> all();
 
         $seenMessages = [];
@@ -73,4 +76,14 @@ class DialogMessagesHandler {
         return $seenMessages;
     }
 
+
+    public function addMessageToTheDialog(string $content, array $files = []) :MessageN{
+        $messageFactory = new MessageFactory($this->dialog);
+
+        $message = $messageFactory->createNewMessage($content, $files);
+
+        $this->dialog->messageRepository->saveMessage($message);
+
+        return $message;
+    }
 }

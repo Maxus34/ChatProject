@@ -36,7 +36,7 @@ class DialogFactory {
 
     public function getDialogInstanceById(int $id) {
 
-        $dialogRecord = DialogRecord::find()->where(['id' => $id])->with('references')->one();
+        $dialogRecord = DialogRecord::find()->where(['id' => $id,])->with('references')->one();
 
         if (empty($dialogRecord))
             return false;

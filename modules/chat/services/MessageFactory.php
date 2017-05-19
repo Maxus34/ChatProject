@@ -94,9 +94,9 @@ class MessageFactory {
 
     protected function createAndSaveMessageRecord ($content, $files = []) :MessageRecord{
         $messageRecord = new MessageRecord($this->dialog->getId(), $content);
-        $messageRecord -> attachFiles($files);
-
         $messageRecord -> save();
+
+        $messageRecord -> attachFiles($files);
 
         return $messageRecord;
     }
@@ -107,7 +107,7 @@ class MessageFactory {
         $messageReferences = [];
 
         foreach ($dialogReferences as $reference){
-            if ( $reference->isActive() ) {
+            if ( $reference->isActive ) {
                 $reference = new MessageReferenceRecord(
                     $this->dialog->getId(),
                     $messageId,

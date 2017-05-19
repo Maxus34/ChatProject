@@ -9,7 +9,7 @@
 namespace app\modules\chat\services;
 
 
-use app\modules\chat\models\DialogN;
+use app\modules\chat\models\{ DialogN, DialogProperties};
 
 class DialogHandler {
 
@@ -47,4 +47,12 @@ class DialogHandler {
         $this->dialog->dialogReferences[$this->dialog->getUserId()] -> save();
     }
 
+
+    public function getDialogProperties () {
+        $model = new DialogProperties();
+        $model->title = $this->dialog->getTitle();
+        $model->users = $this->dialog->getUsers(true);
+
+        return $model;
+    }
 }

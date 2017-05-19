@@ -25,15 +25,17 @@ class FileRecord extends ActiveRecord
     const  TYPE_FILE     =  'file';
 
 
-    /*
-     * @var UploadedFile uploaded file
+    /**
+     * @var UploadedFile
      */
     protected $uploaded_file;
+
 
     public static function tableName()
     {
         return "files";
     }
+
 
     public function behaviors(){
         return [
@@ -52,6 +54,7 @@ class FileRecord extends ActiveRecord
         ];
     }
 
+
     public function __construct(UploadedFile $file = null)
     {
         parent::__construct(null);
@@ -65,6 +68,7 @@ class FileRecord extends ActiveRecord
             $this->size      = $file->size;
         }
     }
+
 
     public function beforeSave($insert)
     {
@@ -106,6 +110,7 @@ class FileRecord extends ActiveRecord
 
         return $path;
     }
+
 
     protected function generateRandomFileName(){
         return md5(microtime() . rand(0, 9999));

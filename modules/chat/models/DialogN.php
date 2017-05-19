@@ -8,15 +8,25 @@
 
 namespace app\modules\chat\models;
 
-use app\modules\chat\records\{ DialogRecord, DialogReferenceRecord, MessageRecord, MessageReferenceRecord };
-use app\modules\chat\models\DialogProperties;
+use app\modules\chat\records\ { DialogRecord,  DialogReferenceRecord };
+use app\modules\chat\services\{
+    DialogHandler, DialogMessagesHandler, MessageRepository
+};
 use yii\base\Model;
 
+
+/**
+ * Class DialogN
+ * @package app\modules\chat\models
+ *
+ * @property  DialogMessagesHandler $messageHandler
+ * @property  DialogHandler         $dialogHandler
+ * @property  MessageRepository     $messageRepository
+ *
+ */
 class DialogN extends Model {
 
     const MAX_TYPING_TIMEOUT = 4;
-
-    protected $userId;
 
     /**
      * @var DialogRecord
@@ -28,14 +38,59 @@ class DialogN extends Model {
      */
     public $dialogReferences;
 
+    /** @var int */
+    protected $userId;
+
+    /**
+     * @var DialogHandler
+     */
+    protected $_dialogHandler = null;
+
+    /**
+     * @var DialogMessagesHandler
+     */
+    protected $_messagesHandler = null;
+
+    /**
+     * @var MessageRepository
+     */
+    protected $_messageRepository = null;
+
+
 
     public function __construct($dRecord, $dReferences) {
         parent::__construct();
 
-
         $this->userId           = \Yii::$app->user->getId();
         $this->dialogRecord     = $dRecord;
         $this->dialogReferences = $dReferences;
+    }
+
+
+    public function getDialogHandler ()     :DialogHandler {
+        if ( empty($this->_dialogHandler) ){
+            $this->_dialogHandler = new DialogHandler($this);
+        }
+
+        return $this->_dialogHandler;
+    }
+
+
+    public function getMessageHandler ()   :DialogMessagesHandler {
+        if ( empty($this->_messagesHandler) ){
+            $this->_messagesHandler = new DialogMessagesHandler($this);
+        }
+
+        return $this->_messagesHandler;
+    }
+
+
+    public function getMessageRepository () :MessageRepository {
+        if ( empty($this->_messageRepository) ){
+            $this->_messageRepository = new MessageRepository($this);
+        }
+
+        return $this->_messageRepository;
     }
 
 
@@ -82,7 +137,7 @@ class DialogN extends Model {
     }
 
 
-    public function  isActive () {
+    public function  isActive () :bool{
         return $this->dialogReferences[$this->userId]->isActive;
     }
 
@@ -105,66 +160,4 @@ class DialogN extends Model {
         $reference -> isTyping = $isTyping ? 1 : 0;
         $reference -> save();
     }
-
-
-
-    public function getMessages(int $offset = null, int $limit = null, array $conditions = null){
-
-        return Message::getMessagesInstances($this->userId, $this->getId(), $offset, $limit, $conditions);
-
-    }
-
-    public function getMessagesCount($new = false){
-        $query = MessageReferenceRecord::find() -> where(['dialogId' => $this->getId(), 'userId' => $this->userId]);
-
-        if ($new)
-            $query = $query -> andWhere(["isNew"  => 1]) -> andWhere(['!=', 'createdBy', $this->userId]);
-
-        return $query->count();
-    }
-
-    public function getIsSeenMessages(array $messages){
-        return Message::getIsSeenMessages($this->userId, $this->getId(), $messages);
-    }
-
-    public function addMessage($content, $files = []){
-        if ($this->isActive()){
-            try{
-
-                $message = new Message(null, $this, $content, $files);
-                $message -> save();
-
-            } catch (Exception $e){
-                debug ($e->getMessage());
-                die();
-            }
-
-            return $message;
-        } else {
-            throw new HttpException(403, 'Inactive user ' . $this->getUserId() . ' is trying to send message');
-        }
-
-    }
-
-    public function deleteMessages(array $messagesIds){
-
-        $messages = $this->getMessages(null, null, [['messageId' => $messagesIds]]);
-        $success = [];
-
-        foreach ($messages as $message){
-            $success[] = $message->delete();
-        }
-
-        return $success;
-    }
-
-    public function setSeenMessages (array $messages = null){
-        if (empty($messages))
-            throw new Exception("setSeenMessages => Empty messages array");
-
-        return Message::setSeenMessages($this->getId(), $messages);
-    }
-
-
-
 }
