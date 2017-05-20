@@ -24,11 +24,14 @@ class DefaultController extends \yii\web\Controller
     /** @var DialogRepository */
     protected $dialogRepository;
 
+    /** @var DialogFactory */
+    protected $dialogFactory;
 
     public function init() {
         parent::init();
 
         $this->dialogRepository = DialogRepository::getInstance();
+        $this->dialogFactory    = DialogFactory::getInstance();
     }
 
 
@@ -70,7 +73,7 @@ class DefaultController extends \yii\web\Controller
 
         } catch (Exception $e){
             \Yii::$app->session->setFlash('error', $e->getMessage());
-            return $this->redirect('index');
+            return $this->redirect('default');
         }
 
         if (!$dialog->isActive()){
@@ -79,8 +82,8 @@ class DefaultController extends \yii\web\Controller
 
         $this->view->title = "Chat | " . $dialog->getTitle();
 
-        $messageRepository = new MessageRepository($dialog);
-        $messages = $messageRepository -> findMessagesByConditions(-static::MESSAGES_PER_PAGE);
+
+        $messages = $dialog->messageRepository -> findMessagesByConditions(-static::MESSAGES_PER_PAGE);
 
 
         return $this->render('view', compact('dialog', 'messages'));
@@ -89,13 +92,13 @@ class DefaultController extends \yii\web\Controller
 
     public function  actionDeleteDialog($id){
         try{
-            $dialog = $this->chatService->getDialogInstance($id);
+            $dialog = $this->dialogRepository->findDialogById($id);
         } catch (Exception $e){
             \Yii::$app->session->setFlash('error', $e->getMessage());
             return $this->redirect('index');
         }
 
-        $this->chatService->deleteDialog($dialog);
+        $this->dialogRepository->deleteDialog($dialog);
         \Yii::$app->session->setFlash('success', "Dialog " . $dialog->getTitle() . " has been deleted.");
         return $this->redirect('index');
     }
@@ -107,9 +110,9 @@ class DefaultController extends \yii\web\Controller
         if ($dProperties->load(\Yii::$app->request->post())
             && $dProperties->validate() ){
 
-            $dialog = $this->chatService->getDialogInstance($dProperties->id);
-            $this->chatService->applyProperties($dialog, $dProperties);
-            $this->chatService->saveDialog($dialog);
+            $dialog = $this->dialogRepository->findDialogById($dProperties->id);
+            $dialog->dialogHandler->applyDialogProperties($dProperties);
+            $this->dialogRepository->saveDialog($dialog);
         }
 
         return $this->redirect(['view', 'id'=> $dProperties->id]);
@@ -122,8 +125,10 @@ class DefaultController extends \yii\web\Controller
 
         if ($model -> load($post)){
             if ($model -> validate()){
-                $dialog = $this->chatService->createNewDialog($model);
-                $this->chatService->saveDialog($dialog);
+
+                $dialog = $this -> dialogFactory -> createNewDialog();
+                $dialog -> dialogHandler    -> applyDialogProperties($model);
+                $this->dialogRepository->saveDialog($dialog);
 
                 return $this->redirect(['default/view', 'id' => $dialog->getId()]);
             } else {
@@ -132,6 +137,12 @@ class DefaultController extends \yii\web\Controller
         }
 
         return $this->redirect(['default/index']);
+    }
+
+
+    public function actionTest(){
+        $dialog = $this->dialogRepository->findDialogById(4);
+        debug($dialog->getReferences(true));
     }
 
 }

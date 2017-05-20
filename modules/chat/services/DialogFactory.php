@@ -8,6 +8,7 @@
 
 namespace app\modules\chat\services;
 
+use app\modules\chat\models\DialogProperties;
 use app\modules\chat\records\ { DialogRecord, DialogReferenceRecord };
 use app\modules\chat\models\    DialogN;
 use yii\base\Exception;
@@ -109,11 +110,27 @@ class DialogFactory {
     }
 
 
+    public function createNewDialog() :DialogN{
+        $dialogRecord = new DialogRecord();
+        $dialogRecord -> save();
+
+        $dialogReference = new DialogReferenceRecord($dialogRecord->id, $this->userId);
+        $dialogReference -> save();
+
+        $dialog = new DialogN($dialogRecord, $this->processDialogReferences([$dialogReference]));
+
+        return $dialog;
+    }
+
+
     protected function processDialogReferences (array $references) :array {
         $referencesProcessed = [];
 
         foreach ($references as $reference){
-            $referencesProcessed[$reference->userId] = $reference;
+
+            if ($reference -> isActive === 1 || $reference->userId === $this->userId){
+                $referencesProcessed[$reference->userId] = $reference;
+            }
         }
 
         return $referencesProcessed;

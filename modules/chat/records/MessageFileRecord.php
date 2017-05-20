@@ -1,6 +1,7 @@
 <?php
 namespace app\modules\chat\records;
 
+use app\modules\chat\models\MessageN;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use app\records\FileRecord;
@@ -14,35 +15,38 @@ use app\records\FileRecord;
  * @property Integer $fileId
  * @property Integer $createdAt
  */
+class MessageFileRecord extends ActiveRecord {
 
-class MessageFileRecord extends ActiveRecord
-{
-    static function tableName() {
+    public static function tableName() {
         return 'message_files';
     }
 
-    public function behaviors()
-    {
+
+    public function behaviors() {
         return [
-          [
-              'class' => TimestampBehavior::class,
-              'attributes' => [
-                  ActiveRecord::EVENT_BEFORE_INSERT => ['createdAt'],
-              ],
-          ]
+            [
+                'class' => TimestampBehavior::class,
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['createdAt'],
+                ],
+            ]
         ];
     }
 
-    public function __construct($file_id = null, $message_id = null)
-    {
+
+    public function __construct($file_id = null, $message_id = null) {
         parent::__construct();
-        $this->fileId    = $file_id ?? null;
+        $this->fileId = $file_id ?? null;
         $this->messageId = $message_id ?? null;
     }
 
-    public function getFile()
-    {
-        return FileRecord::findOne($this->fileId);
+
+    public function getFile() {
+        return $this->hasOne(FileRecord::class, ['id' => 'fileId']);
     }
 
+
+    public function getMessage() {
+        return $this->hasOne(MessageN::class, ['id' => 'messageId']);
+    }
 }

@@ -57,7 +57,6 @@ class DialogN extends Model {
     protected $_messageRepository = null;
 
 
-
     public function __construct($dRecord, $dReferences) {
         parent::__construct();
 

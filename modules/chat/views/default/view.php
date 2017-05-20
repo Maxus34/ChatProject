@@ -1,5 +1,5 @@
 <?php
-/* @var $dialog app\modules\chat\models\Dialog; */
+/* @var $dialog app\modules\chat\models\DialogN; */
 /* @var $this yii\web\View */
 $this->registerJsFile("@web/js/chat/dialog_.js");
 use app\models\User;

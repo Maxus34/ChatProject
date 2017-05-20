@@ -14,6 +14,7 @@ class DialogPropertiesForm extends Widget
      * @var DialogProperties
      */
     public $model       = null;
+
     public $attribute   = null;
 
     /**

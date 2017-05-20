@@ -70,6 +70,5 @@ class DialogReferenceRecord extends ActiveRecord
 
         $this->dialogId  =  $dialog_id;
         $this->userId    =  $user_id;
-        $this->isTyping  =  0;
     }
 }

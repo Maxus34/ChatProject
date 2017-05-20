@@ -80,7 +80,6 @@ class MessageFactory {
 
 
 
-
     protected function processMessageReferences (array $references){
         $referencesProcessed = [];
 

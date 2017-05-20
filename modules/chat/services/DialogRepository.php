@@ -30,7 +30,7 @@ class DialogRepository {
 
 
 
-    public function findDialogById(int $id){
+    public function findDialogById(int $id) :DialogN{
         if ( !isset(static::$dialogs[$id]) ){
 
             $dialog = $this->dialogFactory->getDialogInstanceById($id);
@@ -80,7 +80,7 @@ class DialogRepository {
         if (count($references) > 1){
             $dialog -> dialogReferences[$dialog->getUserId()] -> delete();
 
-            $message_references = MessageReferenceRecord::findAll(['dialogId' => $dialog->getId(), 'userId' => $this->getUserId()]);
+            $message_references = MessageReferenceRecord::findAll(['dialogId' => $dialog->getId(), 'userId' => $dialog->getUserId()]);
             foreach ($message_references as $reference) {
                 $reference->delete();
             }

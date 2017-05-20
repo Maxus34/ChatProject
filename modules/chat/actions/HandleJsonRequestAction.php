@@ -227,7 +227,7 @@ class HandleJsonRequestAction extends Action {
     protected function  getDialogPropertiesForm(DialogN $dialog){
         $model = $dialog->dialogHandler->getDialogProperties();
 
-        return \Yii::$app->view->renderAjax('@chat/forms/new_dialog_pr_form', [
+        return \Yii::$app->view->renderAjax('@chat/views/forms/new_dialog_pr_form', [
             'create_new' => false,
             'model'      => $model,
             'attribute'  => 'users',
