@@ -62,7 +62,7 @@ class FileRecord extends ActiveRecord
         if (!empty($file) && $this->isNewRecord){
             $this->uploaded_file = $file;
 
-            $this->name      = $file->baseName;
+            $this->name      = $this->getTranslitFileName($file->baseName);
             $this->extension = $file->extension;
             $this->type      = $file->type;
             $this->size      = $file->size;
@@ -114,5 +114,19 @@ class FileRecord extends ActiveRecord
 
     protected function generateRandomFileName(){
         return md5(microtime() . rand(0, 9999));
+    }
+
+
+    protected function getTranslitFileName(string $s) {
+          $s = (string) $s; // преобразуем в строковое значение
+          $s = strip_tags($s); // убираем HTML-теги
+          $s = str_replace(array("\n", "\r"), " ", $s); // убираем перевод каретки
+          $s = preg_replace("/\s+/", ' ', $s); // удаляем повторяющие пробелы
+          $s = trim($s); // убираем пробелы в начале и конце строки
+          $s = function_exists('mb_strtolower') ? mb_strtolower($s) : strtolower($s); // переводим строку в нижний регистр (иногда надо задать локаль)
+          $s = strtr($s, array('а'=>'a','б'=>'b','в'=>'v','г'=>'g','д'=>'d','е'=>'e','ё'=>'e','ж'=>'j','з'=>'z','и'=>'i','й'=>'y','к'=>'k','л'=>'l','м'=>'m','н'=>'n','о'=>'o','п'=>'p','р'=>'r','с'=>'s','т'=>'t','у'=>'u','ф'=>'f','х'=>'h','ц'=>'c','ч'=>'ch','ш'=>'sh','щ'=>'shch','ы'=>'y','э'=>'e','ю'=>'yu','я'=>'ya','ъ'=>'','ь'=>''));
+          $s = preg_replace("/[^0-9a-z-_ ]/i", "", $s); // очищаем строку от недопустимых символов
+         // $s = str_replace(" ", "-", $s); // заменяем пробелы знаком минус
+          return $s; // возвращаем результат
     }
 }

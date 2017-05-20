@@ -15,10 +15,11 @@ class DialogPropertiesForm extends Widget
      */
     public $model       = null;
 
+    /** @var string */
     public $attribute   = null;
 
     /**
-     * @var \app\modules\chat\models\Dialog
+     * @var \app\modules\chat\models\DialogN
      */
     public $dialog      = null;
 
@@ -27,7 +28,7 @@ class DialogPropertiesForm extends Widget
 
     public function run()
     {
-        $this->getAvailableModels();
+        $this->getAvailableUsers();
         $this->getCurrentReferences();
 
         return $this->render('@chat/components/DialogPropertiesForm/templates/widget_tpl.php',
@@ -42,7 +43,7 @@ class DialogPropertiesForm extends Widget
         );
     }
 
-    private function getAvailableModels($new = false)
+    private function getAvailableUsers()
     {
         if ($this->create_new) {
             $this->available_users = User::find()->where(['!=' , 'id', \Yii::$app->user->getId()])->all();
@@ -50,13 +51,13 @@ class DialogPropertiesForm extends Widget
         }
 
 
-        $array = [];
+        $UsersIds = [];
         foreach ($this->model->users as $user) {
-            $array[] = $user->id;
+            $UsersIds[] = $user->id;
         }
 
         $this->available_users = User::find()
-            ->where(['NOT IN', 'id', $array])
+            ->where(['NOT IN', 'id', $UsersIds])
             ->andWhere(['!=', 'id', \Yii::$app->user->getId()])
             ->all();
     }

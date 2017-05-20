@@ -25,20 +25,19 @@ use yii\bootstrap\{ ActiveForm, Html };
 
 
 <?php
-        $form = ActiveForm::begin(
-            [
-                'id' => "dialog-properties",
-                'action' =>  ($create_new) ? '/chat/default/create-dialog' : '/chat/default/set-dialog-properties'
-            ]
-        );
+    $form = ActiveForm::begin(
+        [
+            'id' => "dialog-properties",
+            'action' =>  ($create_new) ? '/chat/default/create-dialog' : '/chat/default/set-dialog-properties'
+        ]
+    );
 
-        if (!$create_new) {
-            echo Html:: hiddenInput("{$modelClassName}[id] ", $dialog->getId());
-            echo $form -> field($model, 'title')->input('string', ['id' => "title-input"]);
+    if (!$create_new) {
+        echo Html:: hiddenInput("{$modelClassName}[id] ", $dialog->getId());
+    }
 
-        } else {
-            echo $form -> field($model, 'title')->input('string', ['id' => "title-input", "placeholder" => 'Please enter name for new dialog']);
-        }
+    echo $form -> field($model, 'title')->input('string', ['id' => "title-input", "placeholder" => 'Please enter name for new dialog']);
+
 ?>
 
 

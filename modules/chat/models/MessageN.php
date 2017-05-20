@@ -9,8 +9,15 @@
 namespace app\modules\chat\models;
 
 use yii\base\Object;
+use app\modules\chat\services\MessageFilesHandler;
 use app\modules\chat\records\ { MessageRecord, MessageReferenceRecord };
 
+/**
+ * Class MessageN
+ * @package app\modules\chat\models
+ *
+ * @property MessageFilesHandler $filesHandler
+ */
 class MessageN extends Object{
 
     /** @var int */
@@ -22,10 +29,25 @@ class MessageN extends Object{
     /** @var array|MessageReferenceRecord */
     public $messageReferences;
 
+    /** @var  MessageFilesHandler */
+    protected $_filesHandler;
+
+
     public function __construct(MessageRecord $messageRecord, array $messageReferences) {
+        parent::__construct();
+
         $this->messageRecord     = $messageRecord;
         $this->messageReferences = $messageReferences;
         $this->userId            = \Yii::$app->user->getId();
+    }
+
+
+    public function getFilesHandler(){
+        if (empty($this->_filesHandler)){
+            $this->_filesHandler = new MessageFilesHandler($this);
+        }
+
+        return $this->_filesHandler;
     }
 
 

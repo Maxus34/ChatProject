@@ -1,7 +1,7 @@
 <?php
 /* @var $dialog app\modules\chat\models\DialogN; */
 /* @var $this yii\web\View */
-$this->registerJsFile("@web/js/chat/dialog_.js");
+$this->registerJsFile("@web/js/chat/dialog.js");
 use app\models\User;
 use yii\bootstrap\Html;
 

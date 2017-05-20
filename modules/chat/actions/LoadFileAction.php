@@ -17,11 +17,12 @@ class LoadFileAction extends Action
 
         $file = UploadedFile::getInstanceByName('file');
 
-        if (empty($file)) {
+        if (empty($file) || $file->getHasError()) {
             $result['file'] = null;
             $result['error'] = true;
-
+            $result['error_code'] = $file->error;
         } else {
+
             $file_record = new FileRecord($file);
             $file_record -> save();
 

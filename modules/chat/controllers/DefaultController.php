@@ -142,7 +142,9 @@ class DefaultController extends \yii\web\Controller
 
     public function actionTest(){
         $dialog = $this->dialogRepository->findDialogById(4);
-        debug($dialog->getReferences(true));
+        $message = $dialog->messageRepository->findById(41);
+
+        debug($message->getFiles());
     }
 
 }

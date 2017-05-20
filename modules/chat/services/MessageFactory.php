@@ -24,6 +24,7 @@ class MessageFactory {
         $messageRecord = MessageRecord::find()
             ->where(['id' => $id])
             ->with('references')
+            ->with('fileReferences')
             ->one();
 
         return new MessageN($messageRecord, $this->processMessageReferences($messageRecord->references));
@@ -33,9 +34,9 @@ class MessageFactory {
     public function getMessageInstancesByConditions(int $offset = null, int $limit = null, array $conditions = null) {
         $query = MessageRecord :: find()
             -> innerJoin('message_ref', '`message`.`id` = `message_ref`.`messageId`')
-            //-> groupBy('`message`.`id`')
             -> where("`message_ref`.`dialogId` = {$this->dialog->getId()} AND `message_ref`.`userId` = {$this->dialog->getUserId()}")
-            -> with('references');
+            -> with('references')
+            -> with('fileReferences');
 
         if ( !empty($conditions))
             foreach ($conditions as $condition)

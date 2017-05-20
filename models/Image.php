@@ -61,23 +61,19 @@ class Image extends Model
 
 
     protected function getResizedImageUrl($path, $size){
-        $resized_file_path = static::CASH_PATH . "{$size[0]}x{$size[1]}_" . basename($path);
+        $resizedImageFilePath = static::CASH_PATH . "{$size[0]}x{$size[1]}_" . basename($path);
 
-        if (file_exists($resized_file_path)){
-            return $resized_file_path;
-        }
-
-        else {
+        if (!file_exists($resizedImageFilePath)){
             $Imagine  =  new Imagine();
             $image    =  $Imagine -> open($path);
 
             $this->checkSize($size, $image);
 
             $box = new Box($size[1], $size[0]);
-            $image -> resize($box) -> save($resized_file_path);
+            $image -> resize($box) -> save($resizedImageFilePath);
         }
 
-        return $resized_file_path;
+        return $resizedImageFilePath;
     }
 
 

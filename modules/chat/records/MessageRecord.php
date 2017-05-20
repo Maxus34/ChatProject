@@ -15,7 +15,8 @@ use app\behaviors\AttachedFileBehavior;
  * @property String  $content
  * @property Integer $createdAt
  * @property Integer $createdBy
- *
+ * @property array|MessageReferenceRecord $references
+ * @property array|MessageFileRecord  $messageFiles
  * @method  attachFiles(array $files)
  */
 class MessageRecord extends ActiveRecord
@@ -46,15 +47,19 @@ class MessageRecord extends ActiveRecord
         ];
     }
 
-    public function __construct(int $dialog_id = null, string $content = null)
+    public function __construct(int $dialogId = null, string $content = null)
     {
         parent::__construct();
 
-        $this->dialogId = $dialog_id;
+        $this->dialogId = $dialogId;
         $this->content   = $content;
     }
 
     public function getReferences(){
-        return $this->hasMany(MessageReferenceRecord::className(), ['messageId' => 'id']);
+        return $this->hasMany(MessageReferenceRecord::class, ['messageId' => 'id']);
+    }
+
+    public function getFileReferences(){
+        return $this->hasMany(MessageFileRecord::class, ['messageId' => 'id'])->with('file');
     }
 }
