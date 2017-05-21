@@ -16,9 +16,12 @@ use app\models\Image;
 
 class MessageFilesWidget extends Widget
 {
+
     public $model;
 
+
     protected $files = [];
+
 
     public function run(){
         if (empty($this->model))
@@ -29,6 +32,7 @@ class MessageFilesWidget extends Widget
         return $this->renderFiles();
     }
 
+
     protected function renderFiles(){
         if (isset($this->files['image'])){
             $this->renderImages($this->files['image']);
@@ -38,21 +42,20 @@ class MessageFilesWidget extends Widget
         }
 
         if (isset($this->files['file'])){
-            foreach ($this->files['file'] as $file){
-                echo "<a download href='/$file->path'>Download -- $file->name.$file->extension</a>";
-            }
+            $this->renderDefaultFiles($this->files['file']);
         }
     }
 
-    protected function renderImages($array){
+
+    protected function renderImages (array $files){
         $size = [300, null];
 
-        if (count($array) > 1){
+        if (count($files) > 1){
             $size = [null, 150];
         }
 
 
-        foreach ($this->files['image'] as $file){
+        foreach ($files as $file){
             $image = new Image($file->path  );
 
             echo Html::img($image->getUrl($size),
@@ -63,13 +66,23 @@ class MessageFilesWidget extends Widget
         }
     }
 
-    protected function renderAudios($array){
-        foreach ($array as $file){
+
+    protected function renderAudios (array $files){
+        foreach ($files as $file){
 
             echo  "<div class='message-audio'>"
                 . "<p>$file->name</p>"
                 . "<audio controls src='/" . $file->path ."'></audio>"
                 . "</div>";
+        }
+    }
+
+
+    protected function renderDefaultFiles (array $files){
+        foreach ($files as $file){
+            echo `<div class='message-default-file">
+                    <a download href='/$file->path'>Download -- $file->name.$file->extension</a>
+                  </div>`;
         }
     }
 }

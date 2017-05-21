@@ -43,10 +43,6 @@ class HandleJsonRequestAction extends Action {
 
     public function run(){
 
-        if (!\Yii::$app->request->isAjax){
-            throw new HttpException(405, 'Only for AJAX use');
-        }
-
         $requestArray = Json::decode(\Yii::$app->request->post('json_string'));
 
         try{
@@ -182,7 +178,7 @@ class HandleJsonRequestAction extends Action {
 
     protected function  checkIsSeenMessages(DialogN $dialog, $requestArray){
 
-        $messageIds = $requestArray[static::CHECK_IS_SEEN]['messages'];
+        $messageIds = $requestArray[static::CHECK_IS_SEEN];
 
         if (empty($messageIds))
             return [];
@@ -197,7 +193,7 @@ class HandleJsonRequestAction extends Action {
 
 
     protected function  setSeenMessages(DialogN $dialog, $requestArray) {
-        $messageIds = $requestArray['seen_messages']['messages'];
+        $messageIds = $requestArray['seen_messages'];
         if (empty($messageIds))
             return [];
 
@@ -206,7 +202,7 @@ class HandleJsonRequestAction extends Action {
 
 
     protected function  deleteMessages(DialogN $dialog, $requestArray){
-        $messageIds = $requestArray['delete_messages']['messages'];
+        $messageIds = $requestArray['delete_messages'];
 
         return $dialog->messageRepository->deleteMessages($messageIds);
     }

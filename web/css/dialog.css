@@ -26,7 +26,7 @@ ul.files-list{
 .message{
     position: relative;
     padding: 3px 0px 3px 0px;
-    margin: 12px 4px 0px 4px;
+    margin: 16px 4px 0px 4px;
 
     border-radius: 6px;
     vertical-align:bottom;
@@ -84,19 +84,14 @@ ul.files-list{
     background-color: rgba(181, 247, 222, 0.4);
 }
 
-/* CSS Magic*/
-.message-incoming + .message-incoming,
-.message-outgoing + .message-outgoing{
+.message-hidden-info{
     margin-top: 2px;
 }
 
-.message-incoming + .message-incoming .message-image,
-.message-outgoing + .message-outgoing .message-image,
-.message-incoming + .message-incoming h5,
-.message-outgoing + .message-outgoing h5{
+.message-hidden-info h5,
+.message-hidden-info .message-image{
     display: none;
 }
-
 
 .message .message-image{
     position:absolute;
@@ -375,12 +370,14 @@ a.btn-delete:hover i{
 
 /* Message files styles*/
 .message-audio{
+    background-color: rgba(0, 0, 255, 0.21);
     padding: 2px 4px 2px 4px;
     margin-top: 4px;
+    border-radius: 4px;
 }
 .message-audio p {
     margin: 0px;
-    padding: 5px 0px 3px 2px;
+    padding: 5px 0px 3px 7px;
     font-weight: 400;
     font-style: italic;
 }
