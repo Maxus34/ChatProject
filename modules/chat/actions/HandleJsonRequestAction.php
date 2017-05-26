@@ -105,7 +105,11 @@ class HandleJsonRequestAction extends Action {
 
     protected function  loadOldMessages(DialogN $dialog, $requestArray)
     {
+        if (empty($requestArray['load_old_messages']))
+            return;
+
         $first_message_id = $requestArray['load_old_messages']['first_message-id'];
+
         $messages = $dialog->messageRepository
             ->findMessagesByConditions(-static::MESSAGES_PER_PAGE, null, [
                 ["<", "messageId", $first_message_id]

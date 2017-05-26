@@ -14,6 +14,7 @@ use yii\base\Model;
 use Imagine\Image\Box;
 use Imagine\Imagick\Imagine;
 
+
 class Image extends Model
 {
     const CASH_PATH = 'upload/images/cash/';

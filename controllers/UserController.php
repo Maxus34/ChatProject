@@ -57,6 +57,7 @@ class UserController extends Controller
             if ($model->register()){
                 Yii::$app->session->setFlash('success', "Registration success."
                     . "<br>A message with instructions to confirm registration has been sent to your email.");
+
                 return $this->goHome();
             } else {
 

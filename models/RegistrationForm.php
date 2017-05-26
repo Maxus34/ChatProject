@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use yii\helpers\Url;
 use yii\base\Model;
 use Yii;
 
@@ -59,7 +60,14 @@ class RegistrationForm extends Model
         $user->activationKey  = Yii::$app->security->generateRandomString(40);
         $user->save();
 
-        $this->sendEmail();
+        try{
+            $this->sendEmail($user);
+        } catch (\Swift_TransportException $e){
+            Yii::$app->session->setFlash('error', "Error: Cannot send email. | Account is active.");
+            $user->isActive = 1;
+            $user->save();
+        }
+
         return $user;
     }
 
@@ -68,7 +76,20 @@ class RegistrationForm extends Model
         Yii::$app->authManager->assign($userRole, $user->getId());
     }
 
-    protected function sendEmail(){
+    protected function sendEmail($user){
 
+        $link = Url::to(['user/confirm-registration', 'id' => $user->id, 'hash' => $user->activationKey]);
+
+        Yii::$app->mailer->compose([
+            'confirm-registration',
+            [
+                'link' => $link
+            ]
+        ])
+
+        -> setFrom(['msx34post@gmail.com' => "MXS34Chat"])
+        -> setTo($user->email)
+        -> setSubject('Activate an account')
+        -> send();
     }
 }

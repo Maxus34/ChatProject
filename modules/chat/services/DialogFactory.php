@@ -80,7 +80,7 @@ class DialogFactory {
     }
 
 
-    public function getDialogInstancesByCondition(int $offset = null, int $limit = null, array $condition) {
+    public function getDialogInstancesByCondition(int $offset = null, int $limit = null, array $condition) :array {
         $query = DialogRecord::find()
             ->innerJoin('dialog_ref', '`dialog`.`id` = `dialog_ref`.`dialogId`')
             ->where("`dialog_ref`.`userId` = {$this->userId}")
@@ -88,7 +88,6 @@ class DialogFactory {
 
         if (!empty($offset) && ($offset < 0))
             $offset += $query->count();
-
         if (!empty($offset))
             $query = $query->offset($offset);
         if (!empty($limit))

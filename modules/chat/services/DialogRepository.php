@@ -80,8 +80,8 @@ class DialogRepository {
         if (count($references) > 1){
             $dialog -> dialogReferences[$dialog->getUserId()] -> delete();
 
-            $message_references = MessageReferenceRecord::findAll(['dialogId' => $dialog->getId(), 'userId' => $dialog->getUserId()]);
-            foreach ($message_references as $reference) {
+            $messageReferences = MessageReferenceRecord::findAll(['dialogId' => $dialog->getId(), 'userId' => $dialog->getUserId()]);
+            foreach ($messageReferences as $reference) {
                 $reference->delete();
             }
 

@@ -326,7 +326,7 @@ class MessagesHandler {
     loadOldMessages() {
         function callback_load_old(result) {
 
-            if (typeof result.load_old_messages == "undefined")
+            if (!result.load_old_messages)
                 return;
 
             this.isLoadingOldMessages = false;
@@ -345,7 +345,7 @@ class MessagesHandler {
 
             document.body.scrollTop = document.body.scrollHeight - scrollBottom;
 
-
+            this.isLoadingOldMessages = false;
         }
 
         function getFirstMessage(messages_list) {
@@ -365,7 +365,7 @@ class MessagesHandler {
 
         let firstMessage = getFirstMessage(this.messages_list);
 
-        if (this.is_loading_old || !firstMessage)
+        if (this.isLoadingOldMessages || !firstMessage)
             return;
 
 

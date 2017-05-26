@@ -42,7 +42,15 @@ $config = [
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
-            'useFileTransport' => true,
+            'transport' => [
+                'class' => 'Swift_SmtpTransport',
+                'host'  => 'smtp.gmail.com',
+                'username' => 'mxs34post@gmail.com',
+                'password' => 'Mxs34SecretPassword',
+                'port'     => '587',
+                'encryption' => 'tls'
+            ],
+            'useFileTransport' => false,
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
